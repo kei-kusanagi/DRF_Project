@@ -207,3 +207,114 @@ Lo que estábamos haciendo actualmente era obtener datos complejos que son nuest
 Ahora que es la **deserializacion** , si ahorita queremos entregar información a un usuario estamos serializando, pero si necesitamos _obtener_ información del usuario (GET) para almacenarla en la base de datos, para esto tenemos que deserializar los datos. Suponiendo que tenemos información en forma de JSON, luego necesitamos convertirla en un diccionario y luego desrealizarlo y almacenarlo en forma de objeto en nuestra DB eso seria la deserialización, comenta aquí que es donde todos cometemos errores pero que entre mas lo trabajemos mejor lo entenderemos
 
 ![[IMG/Pasted image 20221004101920.png]]
+
+
+habla mucho sobre los tipos de serialización y que usaremos postman y que no nos preocupemos si ahorita no le entendemos, pero que casi todo mundo se pasa directo a serializar sin siquiera explicar que es, sin mencionar que no dicen que por ejemplo la "funciones basadas en vistas" es como "serializers.Serializer" y que las "clases basadas en vistas" es "serializers.ModelSerializer"
+
+![[IMG/Pasted image 20221004152909.png]]
+
+Entonces empecemos a codificar, vallamos a nuestra "watchlist_app" y creemos una nueva carpet llamada api, dentro de ella pongamos un archivo "urls.py" y otro llamado "views.py", en el "urls.py" utilizaremos casi lo mismo que teníamos en nuestro anterior archivo as que copy/paste
+lo salvamos y vamos a nuestro "watchmate/urls.py" principal y ahora ponemos que use el que acabamos de crear
+
+```Python
+from django.contrib import admin
+
+from django.urls import path, include
+
+  
+
+urlpatterns = [
+
+    path('admin/', admin.site.urls),
+
+    path('movie/', include('watchlist_app.api.urls')),
+
+]
+```
+
+Y en nuestra nueva "urls.py" mandamos a llamar nuestro nuevo archivo de "views.py"
+
+```Python
+from django.urls import path, include
+
+from watchlist_app.api.views import movie_list, movie_details
+
+  
+
+urlpatterns = [
+
+    path('list/', movie_list, name='movie-list'),
+
+    path('<int:pk>', movie_details, name='movie-detail'),
+
+]
+```
+
+hecho esto podemos borrar nuestro anterior archivo de "urls.py" y comentar todo dentro del "views.py" anterior porque de ves en cuando regresaremos a verlo
+
+ahora creamos un nuevo archivo dentro de la carpeta api llamado "serializers.py" este es importante porque hara el mapeo de todos los valores paso a paso (por eso comentamos lo de "views.py" porque ya no lo haremos allí si no aquí)
+
+```Python
+from rest_framework import serializers
+
+  
+
+class MovieSerializer(serializers.Serializer):
+
+    id = serializers.IntegerField(read_only=True)
+
+    name = serializers.CharField()
+
+    description = serializers.CharField()
+
+    active = serializers.BooleanField()
+```
+
+Creamos nuestros serializadores aquí, primero importamos ``serializers`` de ``rest_framework`` y declaramos nuestras formas por así decirlo, "id" como solo de lectura porque nos interesa nunca poderlo alterar y listo, ahora podremos hacer el mapeo aqui para poder hacer validaciones, crear borrar y actualizar.
+
+
+Entonces vamos a nuestro archivo" api/views.py" y  creemos nuestro función que nos regresara el "movie_details" pero ahora usando nuestras serializaciones para que nos regrese un "JsonResponse"
+
+```Python
+from rest_framework.response import Response
+
+from watchlist_app.models import Movie
+
+from watchlist_app.api.serializers import MovieSerializer
+
+  
+
+def movie_list(request):
+
+    movies = Movie.objects.all()
+
+    serializer = MovieSerializer(movies)
+
+    return Response(serializer.data)
+```
+
+Vamos a usar "movies" y le seleccionamos todo los "Movie.objecst.all()" (ojo, estamos usando el objeto "movie" creado precisamente en "watchlist_app/models.py" muchas veces me confundía de donde sacaba los objetos pero ahora lo entiendo, allí le estamos agregando todos los objetos que creamos allí como son "name", "description" y "active").
+
+Lo siguiente es crear nuestro "serializer" entonces lo mandamos a llamar "serializer" jajaja, lo podemos llamar como queramos pero mejor llamarlo asi, ahora mandamos a llamar nuestro "movieSerializer()" que es precisamente nuestro serializador creado en "serializers.py" y le pasamos nuestro "complex data" que en este caso es movies (lo que creamos arriba 😉)
+
+Ya esta todo preparado, ahora solo nos falta "retornar" este "Response", así que importamos eso del "rest_framework" y lo regresamos con el objeto "serializer.data" pa que nos mande los datos pues, para acceder a toda la información de ese objeto que estamos serializando (parece trabalenguas tanto serializador 😵)
+
+nos falta agregar a ese response la función de "movie_details" porque si no, nos marcara error en "urls.py" así que lo creamos
+
+```Python
+def movie_details(request, pk):
+
+    movie = Movie.objects.get(pk=pk)
+
+    serializer = MovieSerializer(movie)
+
+    return Response(serializer.data)
+```
+
+Desglosado esto, creamos nuestro objeto "movie" que sera igual a nuestro ya existente objeto "movies.objects" y le ponemos el ".get(pk=pk)" para que nos traiga SOLO el archivo cuyo "id"  #Duda sea igual al "pk" eso la neta no se como demonios lo hace si no le asigna en ningún momento el "pk" al "id" pero dice que luego lo veremos junto con los decoradores.
+
+Ahora si corremos nuestro servidor y visitamos http://127.0.0.1:8000/movie/1
+… 
+
+😬 Que bonito error, ahora veremos como corregirlo
+![[IMG/Pasted image 20221004163222.png]]
