@@ -4,7 +4,7 @@
     "type": "split",
     "children": [
       {
-        "id": "1a3f60516f404ee4",
+        "id": "2fbe4a9d1c0bec8a",
         "type": "leaf",
         "state": {
           "type": "markdown",
@@ -129,6 +129,10 @@
     "width": 300,
     "collapsed": true
   },
-  "active": "1a3f60516f404ee4",
-  "lastOpenFiles": []
+  "active": "2fbe4a9d1c0bec8a",
+  "lastOpenFiles": [
+    "04-octubre-2022.md",
+    "Oreilly curse notes.md",
+    "wiki/REST APIs Django REST Framework/IMG/Pasted image 20221003175917.png.md"
+  ]
 }

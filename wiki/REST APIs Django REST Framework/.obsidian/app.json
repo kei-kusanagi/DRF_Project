@@ -4,5 +4,6 @@
   "spellcheckLanguages": [
     "es",
     "en-US"
-  ]
+  ],
+  "newLinkFormat": "relative"
 }
