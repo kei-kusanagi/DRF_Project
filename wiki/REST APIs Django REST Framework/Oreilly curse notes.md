@@ -318,3 +318,50 @@ Ahora si corremos nuestro servidor y visitamos http://127.0.0.1:8000/movie/1
 
 😬 Que bonito error, ahora veremos como corregirlo
 ![[IMG/Pasted image 20221004163222.png]]
+
+despues de un clavado que se avento en stack overflow y de revisar la documentacion, resulta que nos faltaba un decorador ``@api_view()``, estos nos permitirán decirle a Django REST framework si estamos haciendo Create, Read, Update o Delete  
+
+```Python
+from rest_framework.response import Response
+
+from rest_framework.decorators import api_view
+
+  
+
+from watchlist_app.models import Movie
+
+from watchlist_app.api.serializers import MovieSerializer
+
+  
+
+@api_view()
+
+def movie_list(request):
+
+    movies = Movie.objects.all()
+
+    serializer = MovieSerializer(movies)
+
+    return Response(serializer.data)
+
+  
+
+@api_view()
+
+def movie_details(request, pk):
+
+    movie = Movie.objects.get(pk=pk)
+
+    serializer = MovieSerializer(movie)
+
+    return Response(serializer.data)
+```
+
+y listo, con esto ya nos regresa el "Response" dependiendo de que "pk" le demos
+
+![[IMG/Pasted image 20221004175951.png]]
+
+pero si queremos entrar a http://127.0.0.1:8000/movie/list/ tenemos un error y de tarea tenemos que resolverlo
+
+![[IMG/Pasted image 20221004184759.png]]
+
