@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     # _app's creadas
     'watchlist_app',
+    'rest_framework',
 ]
 
 MIDDLEWARE = [
