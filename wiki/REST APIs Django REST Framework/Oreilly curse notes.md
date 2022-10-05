@@ -500,6 +500,110 @@ si volvemos a visitar http://127.0.0.1:8000/movie/list/ nos regresara ahora ls 3
 
 ![[IMG/Pasted image 20221005121047.png]]
 
-perfecto, ahora iremos con el método ['UPDATE']
+Perfecto, ahora iremos con el método ['UPDATE'] y ['DELETE']
 
-https://learning.oreilly.com/videos/build-rest-apis/9781801819022/9781801819022-video5_2/ 09:11
+vamos a "api/views.py" y agregamos a nuestro decorador de "movie_details" )este porque este nos permite ver 1 sola película y no una lista. Primero pondremos un "if" para cada caso, para que dependiendo del REQUEST que nos manden sea el Response que le mandemos, 
+
+si nos manda ['UPDATE'] tendremos que actualizar todos los datos (name, description y active) si nos manda ['PUT'] solo actualizaremos uno de los datos, así que en el "if" lo primero que le mandamos son los datos (data=request.data) serializados, luego checamos si son datos validos con otro "if", si es valido le damos "serializer.save()" pa que lo salve y un return Response y si no, le mandamos un else con el error, quedando mas o menos asi
+
+```Python
+...
+
+@api_view(['GET', 'PUT', 'DELETE'])
+
+def movie_details(request, pk):
+
+    if request.method == 'GET':
+
+        movie = Movie.objects.get(pk=pk)
+
+        serializer = MovieSerializer(movie)
+
+        return Response(serializer.data)
+
+    if request.method == 'PUT':
+
+        serializer = MovieSerializer(data=request.data)
+
+        if serializer.is_valid():
+
+            serializer.save()
+
+            return Response(serializer.data)
+
+        else:
+
+            return Response(serializer.errors)
+...
+```
+
+ahora antes de pasar a 'DELETE' tenemos que actualizar una condición en "serializers.py" aquí crearemos las instrucciones de como "actualizar" cada "instancia", lo pongo entre comillas porque es importante ya que tenemos que separar con ese "instance.name" para solo actualizar el nombre y así con los demás campos, al final solo salvamos con "instance.save()" y eso nos guardara solo esa instancia y las demás no las tocara
+
+```Python
+...
+
+    def update(self, instance, validated_data):
+
+        instance.name = validated_data.get('name', instance.name)
+
+        instance.description = validated_data.get('description', instance.description)
+
+        instance.active = validated_data.get('active', instance.active)
+
+        instance.save()
+
+        return instance
+...
+```
+
+Ahora si, volvemos a correr el servidor y el buen REST framework nos regala la opción ya de DELETE(arriba a la derecha) y de PUT (abajo a la derecha) intentemos mandarle un PUT para actualizar la primera película
+
+![[IMG/Pasted image 20221005161306.png]]
+
+Pareciera que si lo hizo pero en realidad nos creo un nuevo objeto (vean el "id": 4) esto paso porque no le dijimos con el "pk" que objeto es el que queremos actualizar y por eso creo un nuevo ( #Duda sigo sin saver como demonios le dices eso con el "pk")
+![[IMG/Pasted image 20221005161823.png]]
+
+entonces le agregamos el objeto movie y en el serializador se lo indicamos
+
+```Python
+...
+
+if request.method == 'PUT':
+
+        movie = Movie.objects.get(pk=pk)
+
+        serializer = MovieSerializer(movie, data=request.data)
+
+        if serializer.is_valid():
+...
+```
+
+vamos nuevamente al "/movie/1" y actualizamos los datos
+![[IMG/Pasted image 20221005162251.png]]
+
+ Y ahora si, solo nos actualizo el campo de descripción sin que nos creara una nueva película
+![[IMG/Pasted image 20221005162352.png]]
+
+
+Bien ahora el método que nos falta ['DELETE']
+igual que en el caso de actualizar debemos seleccionar que película es la que queremos borrar... sip, nuevamente con el "pk=pk" ya que la tengo seleccionada (asignándosele el objeto a la variable "movie") le damos movie.delete()
+
+```Python
+...
+
+if request.method == 'DELETE':
+
+        movie = Movie.objects.get(pk=pk)
+
+        movie.delete()
+```
+
+tratemos de borrar el que creamos de mas "id":4 en http://127.0.0.1:8000/movie/4 dandole en el boton grandote que dice DELETE
+
+![[IMG/Pasted image 20221005163058.png]]
+
+nos sale una bonita advertencia gracias al REST framework y ...
+
+![[IMG/Pasted image 20221005163124.png]]
+
+nos da este error porque claro, no estamos regresando ningún "Response" al momento de borrar, así que le agregamos ese ``return Response()`` que por el momento dejaremos así en blanco, pero podríamos ponerle algún buen mensaje, pero eso lo veremos hasta el siguiente capitulo ya que tenemos que hablar sobre "status code"
