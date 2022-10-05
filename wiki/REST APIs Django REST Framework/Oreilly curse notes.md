@@ -206,12 +206,12 @@ Lo que estábamos haciendo actualmente era obtener datos complejos que son nuest
 
 Ahora que es la **deserializacion** , si ahorita queremos entregar información a un usuario estamos serializando, pero si necesitamos _obtener_ información del usuario (GET) para almacenarla en la base de datos, para esto tenemos que deserializar los datos. Suponiendo que tenemos información en forma de JSON, luego necesitamos convertirla en un diccionario y luego desrealizarlo y almacenarlo en forma de objeto en nuestra DB eso seria la deserialización, comenta aquí que es donde todos cometemos errores pero que entre mas lo trabajemos mejor lo entenderemos
 
-![[IMG/Pasted image 20221004101920.png]]
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221004101920.png)
 
 
 habla mucho sobre los tipos de serialización y que usaremos postman y que no nos preocupemos si ahorita no le entendemos, pero que casi todo mundo se pasa directo a serializar sin siquiera explicar que es, sin mencionar que no dicen que por ejemplo la "funciones basadas en vistas" es como "serializers.Serializer" y que las "clases basadas en vistas" es "serializers.ModelSerializer"
 
-![[IMG/Pasted image 20221004152909.png]]
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221004152909.png)
 
 Entonces empecemos a codificar, vallamos a nuestra "watchlist_app" y creemos una nueva carpet llamada api, dentro de ella pongamos un archivo "urls.py" y otro llamado "views.py", en el "urls.py" utilizaremos casi lo mismo que teníamos en nuestro anterior archivo as que copy/paste
 lo salvamos y vamos a nuestro "watchmate/urls.py" principal y ahora ponemos que use el que acabamos de crear
@@ -317,7 +317,7 @@ Ahora si corremos nuestro servidor y visitamos http://127.0.0.1:8000/movie/1
 … 
 
 😬 Que bonito error, ahora veremos como corregirlo
-![[IMG/Pasted image 20221004163222.png]]
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221004163222.png)
 
 despues de un clavado que se avento en stack overflow y de revisar la documentacion, resulta que nos faltaba un decorador ``@api_view()``, estos nos permitirán decirle a Django REST framework si estamos haciendo Create, Read, Update o Delete  
 
@@ -359,11 +359,11 @@ def movie_details(request, pk):
 
 y listo, con esto ya nos regresa el "Response" dependiendo de que "pk" le demos
 
-![[IMG/Pasted image 20221004175951.png]]
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221004175951.png)
 
 pero si queremos entrar a http://127.0.0.1:8000/movie/list/ tenemos un error y de tarea tenemos que resolverlo  #Tarea
 
-![[IMG/Pasted image 20221004184759.png]]
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221004184759.png)
 
 
 la solución es modificar "views.py" agregar ``many=True`` en el "serializer" ya que estamos mandando a llamar multiples instancias, en el de movie details no hay bronca porque solo estamos llamando una gracias al "pk" entonces con esto podemos visitar cada elemento de la lista y serializarlo tan sencillo como eso, con decirle que van a ser vario ``many=True``
@@ -372,13 +372,13 @@ la solución es modificar "views.py" agregar ``many=True`` en el "serializer" ya
 serializer = MovieSerializer(movies, many=True)
 ```
 
-![[IMG/Pasted image 20221004190517.png]]
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221004190517.png)
 
 y aquí aclara el porque aunque no le estamos poniendo ninguna clase de interfaz nos da esa vista tan bonita, todo es gracias a Django REST framework, si allí donde dice ``GET`` lo cambiamos a Json nos dará una respuesta como las que estábamos acostumbrados
 
-![[IMG/Pasted image 20221004192237.png]]
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221004192237.png)
 
 
 y eso es todo por hoy, aprendimos el como usar los ``serializadores``, los decoradores ``@api_view`` y donde antes asábamos los views.py (que dejamos comentado todo) allí teníamos un un objeto que usaba un complex data, luego lo convertíamos y lo mandábamos como un Response, peor ahora que creamos un serializador que maneja todo con respecto a esta conversion y todo lo que tenemos que hacer es en "api/views.py seleccionar un complex data, pasar estos datos al serializador 
-![[IMG/Pasted image 20221004193013.png]]
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221004193013.png)
 decirle que son multiples objetos ``many=True`` luego solo use serializador y ``.data`` y envíe una respuesta y listo, con eso mandamos la información que pedimos por un GET, en los próximos episodios veremos como mandar un POST, PUT o DELETE request y todo eso usando el decorador ``@api_view()``  y utilizando bien la guía https://www.django-rest-framework.org/api-guide/views/
