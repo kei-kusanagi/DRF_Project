@@ -382,3 +382,124 @@ y aquí aclara el porque aunque no le estamos poniendo ninguna clase de interfaz
 y eso es todo por hoy, aprendimos el como usar los ``serializadores``, los decoradores ``@api_view`` y donde antes asábamos los views.py (que dejamos comentado todo) allí teníamos un un objeto que usaba un complex data, luego lo convertíamos y lo mandábamos como un Response, peor ahora que creamos un serializador que maneja todo con respecto a esta conversion y todo lo que tenemos que hacer es en "api/views.py seleccionar un complex data, pasar estos datos al serializador 
 ![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221004193013.png)
 decirle que son multiples objetos ``many=True`` luego solo use serializador y ``.data`` y envíe una respuesta y listo, con eso mandamos la información que pedimos por un GET, en los próximos episodios veremos como mandar un POST, PUT o DELETE request y todo eso usando el decorador ``@api_view()``  y utilizando bien la guía https://www.django-rest-framework.org/api-guide/views/
+
+Bien, ya tenemos hasta ahora nuestra forma de obtener ['GET'] nuestras películas por id y por lista, todo gracias a nuestros serializadores, ahora aparte de obtener hagamos uno para crear, para esto vamos a https://www.django-rest-framework.org/api-guide/views/#api_view 
+
+![[IMG/Pasted image 20221005112714.png]]
+
+Segun la documentación tenemos que agregar ``['GET', 'POST']`` a nuestro decorador en "api/views.py"
+
+```Python
+...
+
+@api_view(['GET', 'POST'])
+
+def movie_list(request):
+
+    movies = Movie.objects.all()
+
+    serializer = MovieSerializer(movies, many=True)
+
+    return Response(serializer.data)
+...
+```
+
+ahora vamos a nuestro "serializers.py" y creamos el método de crear
+
+esto va dentro de la clase "MovieSerializer" que es algo que se me complica aun #Duda le pasamos como parámetro a el mismo y luego un _"validatred_data"_  (según esto ya nos explicara cada uno y el porque)
+
+luego creamos un objeto con "Movie.objects.create" y le pasamos el mentado "validated_data" que contiene nuestro nombre, descripción y si esta activa (aun no se como obtiene eso) y lo regresamos con un "return"
+
+```Python
+...
+    def create(self, validated_data):
+
+        return Movie.objects.create(**validated_data)
+...
+```
+
+ahora vamos a "api/views.py" y dividiremos nuestro "movie_list" en dos partes, poniéndole un if para que cheque si nuestro "REQUEST" es 'GET' o 'POST'
+
+
+si el "request" trae 'POST' entonces creamos un serializador nuevo con "MovieSerializer" y le pasamos "data" y según esto viene dentro del "request.data" #Duda porque según esto al mandarle el request con 'POST' el usuario mandara aparte la otra información (seguro ahorita veremos como), ahora le ponemos otro if para ver si el objeto él cual creamos con "MovieSerializer" es valido y si lo es le damos un "serializer.save()" y listo retornamos como "Response(serializer.data)"
+
+por ultimo tenemos que pasarle un "else" por si el serializador no es valido (ósea que pasen mal los datos dentro del "reques.data")
+
+```Python
+...
+
+@api_view(['GET', 'POST'])
+
+def movie_list(request):
+
+  
+
+    if request.method == 'GET':
+
+        movies = Movie.objects.all()
+
+        serializer = MovieSerializer(movies, many=True)
+
+        return Response(serializer.data)
+
+    if request.method == 'POST':
+
+        serializer = MovieSerializer(data=request.data)
+
+        if serializer.is_valid():
+
+            serializer.save()
+
+            return Response(serializer.data)
+
+        else:
+
+            return Response(serializer.errors)
+...
+```
+
+corremos nuestro servidor y vamos a http://127.0.0.1:8000/movie/list/
+
+![[IMG/Pasted image 20221005115859.png]]
+
+nos sale esa caja de texto, que viene precisamente del decorador
+```Python
+@api_view(['GET', 'POST'])
+```
+(si le quitamos ['POST'] se quitara) recordemos que esto es gracias al Django REST framework que nos da esa pequeña interfaz, ahora provisos mandarle un 'POST', este tiene que ser en forma de Json asi que copiemos el ultimo y cambiémosle los datos (ojo quitamos el "id" porque ese se lo pondrá automático y no nos dejara cambiarlo)
+```Json
+    {
+        "name": "Programmer X",
+        "description": "Description 3",
+        "active": true
+    }
+```
+
+Y obtenemos este bonito error, que según esto falto algo en nuestro "serializers.py"
+
+![[IMG/Pasted image 20221005120326.png]]
+
+asi que revisando falto importar
+
+```Python
+from watchlist_app.models import Movie
+```
+
+lo importamos y lo volvemos a pasar
+
+![[IMG/Pasted image 20221005120813.png]]
+
+listo allí esta, por fin nuestro método ['POST'] sirve, recordemos que nos esta mostrando la información porque le pusimos en el "If" de ['POST']
+```Python
+...
+return Response(serializer.data)
+...
+```
+
+si volvemos a visitar http://127.0.0.1:8000/movie/list/ nos regresara ahora ls 3 películas
+
+![[IMG/Pasted image 20221005121047.png]]
+
+perfecto, ahora iremos con el método ['UPDATE']
+
+https://learning.oreilly.com/videos/build-rest-apis/9781801819022/9781801819022-video5_2/ 09:11
