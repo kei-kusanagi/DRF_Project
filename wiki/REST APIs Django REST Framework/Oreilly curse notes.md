@@ -385,7 +385,7 @@ decirle que son multiples objetos ``many=True`` luego solo use serializador y ``
 
 Bien, ya tenemos hasta ahora nuestra forma de obtener ['GET'] nuestras películas por id y por lista, todo gracias a nuestros serializadores, ahora aparte de obtener hagamos uno para crear, para esto vamos a https://www.django-rest-framework.org/api-guide/views/#api_view 
 
-![[IMG/Pasted image 20221005112714.png]]
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221005112714.png)
 
 Segun la documentación tenemos que agregar ``['GET', 'POST']`` a nuestro decorador en "api/views.py"
 
@@ -460,7 +460,7 @@ def movie_list(request):
 
 corremos nuestro servidor y vamos a http://127.0.0.1:8000/movie/list/
 
-![[IMG/Pasted image 20221005115859.png]]
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221005115859.png)
 
 nos sale esa caja de texto, que viene precisamente del decorador
 ```Python
@@ -477,7 +477,7 @@ nos sale esa caja de texto, que viene precisamente del decorador
 
 Y obtenemos este bonito error, que según esto falto algo en nuestro "serializers.py"
 
-![[IMG/Pasted image 20221005120326.png]]
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221005120326.png)
 
 asi que revisando falto importar
 
@@ -487,7 +487,7 @@ from watchlist_app.models import Movie
 
 lo importamos y lo volvemos a pasar
 
-![[IMG/Pasted image 20221005120813.png]]
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221005120813.png)
 
 listo allí esta, por fin nuestro método ['POST'] sirve, recordemos que nos esta mostrando la información porque le pusimos en el "If" de ['POST']
 ```Python
@@ -498,7 +498,7 @@ return Response(serializer.data)
 
 si volvemos a visitar http://127.0.0.1:8000/movie/list/ nos regresara ahora ls 3 películas
 
-![[IMG/Pasted image 20221005121047.png]]
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221005121047.png)
 
 Perfecto, ahora iremos con el método ['UPDATE'] y ['DELETE']
 
@@ -558,10 +558,10 @@ ahora antes de pasar a 'DELETE' tenemos que actualizar una condición en "serial
 
 Ahora si, volvemos a correr el servidor y el buen REST framework nos regala la opción ya de DELETE(arriba a la derecha) y de PUT (abajo a la derecha) intentemos mandarle un PUT para actualizar la primera película
 
-![[IMG/Pasted image 20221005161306.png]]
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221005161306.png)
 
 Pareciera que si lo hizo pero en realidad nos creo un nuevo objeto (vean el "id": 4) esto paso porque no le dijimos con el "pk" que objeto es el que queremos actualizar y por eso creo un nuevo ( #Duda sigo sin saver como demonios le dices eso con el "pk")
-![[IMG/Pasted image 20221005161823.png]]
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221005161823.png)
 
 entonces le agregamos el objeto movie y en el serializador se lo indicamos
 
@@ -579,10 +579,10 @@ if request.method == 'PUT':
 ```
 
 vamos nuevamente al "/movie/1" y actualizamos los datos
-![[IMG/Pasted image 20221005162251.png]]
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221005162251.png)
 
  Y ahora si, solo nos actualizo el campo de descripción sin que nos creara una nueva película
-![[IMG/Pasted image 20221005162352.png]]
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221005162352.png)
 
 
 Bien ahora el método que nos falta ['DELETE']
@@ -600,10 +600,10 @@ if request.method == 'DELETE':
 
 tratemos de borrar el que creamos de mas "id":4 en http://127.0.0.1:8000/movie/4 dandole en el boton grandote que dice DELETE
 
-![[IMG/Pasted image 20221005163058.png]]
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221005163058.png)
 
 nos sale una bonita advertencia gracias al REST framework y ...
 
-![[IMG/Pasted image 20221005163124.png]]
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221005163124.png)
 
 nos da este error porque claro, no estamos regresando ningún "Response" al momento de borrar, así que le agregamos ese ``return Response()`` que por el momento dejaremos así en blanco, pero podríamos ponerle algún buen mensaje, pero eso lo veremos hasta el siguiente capitulo ya que tenemos que hablar sobre "status code"
