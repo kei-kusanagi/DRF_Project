@@ -834,11 +834,11 @@ Moy bien, ahora vamos a la documentation y buscamos "Class-based Views" https://
 
 Lo primero sera importar esta clase ``from rest_framework.views import APIView`` y comentamos el "api_view" que estábamos usando
 
-![[IMG/Pasted image 20221006165221.png]]
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221006165221.png)
 
 luego lo primero que haremos sera crear una "Clase" llamada "movie_list" (le agregamos "AV" al final para distinguir que es una APIView y asi no mezclarla) ahora si queremos usar las condicionales que ya teníamos, ahora tendremos que usar definir ese método, con este definiremos todo lo que era hacer un 'GET' para hacer todas estas tareas en esta función. Vamos a la documentación y buscamos este método.
 
-![[IMG/Pasted image 20221006170506.png]]
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221006170506.png)
 
 lo ponemos en nuestra nueva clase y alli declaramos todo lo que necesitara, le ponemos 
 ```Python
@@ -889,7 +889,7 @@ class MovieListAV(APIView):
 ```
 
 Aqui estamos llemando mi serializador y pasando el ``data=request.data`` (que es el Json que estamos pasando)
-![[IMG/Pasted image 20221006171928.png]]
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221006171928.png)
 
 Cuando tenemos todo esto checamos si esta bien con el "if serializer.is_valid():" y si es valido usamos el método salver "serializer.save()" si todo esta bien regresamos el "Response(serializer.data)"
 
@@ -952,7 +952,7 @@ def delete(self, request, pk):
 
 Con todo esto ya solo nos falta actualizar nuestras "URLs" porque alli estamos usando la anterior "movie_list" que esta apuntando a la anterior función en views
 
-![[IMG/Pasted image 20221006180022.png]]
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221006180022.png)
 
 lo cambiaremos por  y en el path ponerle ".as_view" para indicarle que es una vista
 ```Python
@@ -977,12 +977,12 @@ corremos el servidor y agreguemos un elemento mas para poder hacer pruebas
 
 El 'POST' trabaja bien
 
-![[IMG/Pasted image 20221006180858.png]]
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221006180858.png)
 
 
 Ahora si intentamos obtener una pelicula en particular por el "pk" 'GET'
 
-![[IMG/Pasted image 20221006181239.png]]
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221006181239.png)
 
 Probemos el 'PUT'
 ```Json
@@ -992,11 +992,11 @@ Probemos el 'PUT'
     "active": false
 }
 ```
-![[IMG/Pasted image 20221006181536.png]]
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221006181536.png)
 
 Perfecto, ahora borremos uno con 'DELETE'
 
-![[IMG/Pasted image 20221006181720.png]]
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221006181720.png)
 
 
 Y eso es todo con respecto con la introducción las "Class-based Views" ya que hay muchas mas que veremos, más adelante, vamos a utilizar esta clase genérica y vamos a tener este "ListCreateAPIView". Luego hay varias otras vistas de API tenemos "RetrieveAPIView", "DestroyAPIView", "CreateAPIView".pero hablaremos de ellas en los siguientes capítulos junto con expandir nuestra base de datos y usar un "Foreign Key".
