@@ -607,3 +607,213 @@ nos sale una bonita advertencia gracias al REST framework y ...
 ![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221005163124.png)
 
 nos da este error porque claro, no estamos regresando ningún "Response" al momento de borrar, así que le agregamos ese ``return Response()`` que por el momento dejaremos así en blanco, pero podríamos ponerle algún buen mensaje, pero eso lo veremos hasta el siguiente capitulo ya que tenemos que hablar sobre "status code"
+
+Bien, que es un status code, simple es el "ERROR 404" que nos da cada que no encontramos algo, eso es un "status code" y ahora se lo podemos configurar cada que mandemos una petición, podemos ir a https://www.django-rest-framework.org/api-guide/status-codes/ y revisar bien cada uno, y lo primero que sale es ``from rest_framework import status`` y después de importar esto checando al documentación, al momento de borrar pues ya no tendremos el contenido que estábamos viendo así que le diremos que nos regrese un "HTTP_204_NO_CONTENT"
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221006134532.png)
+
+Así que pasémoslo al código
+```Python
+...
+
+from rest_framework import status
+
+...
+
+    if request.method == 'DELETE':
+
+        movie = Movie.objects.get(pk=pk)
+
+        movie.delete()
+
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+```
+
+vamos a testearlo, intentemos borrar el "id" 6
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221006135124.png)
+
+le damos en "DELETE" y 
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221006135337.png)
+
+Pareciera que nada cambio pero podemos ver esto, que en efecto es el "status code" que le dijimos nos diera
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221006135312.png)
+
+ahora pondremos un "status code" a cada request, empecemos por el de error que nos podia dar en ep 'POST' y en el 'PUT' si nuestra petición estaba mal, vamos a la documentación y checamos los diferentes errores
+
+```Python
+else:
+
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+```
+
+si checamos el de 'GET' este ya tiene definido un  "HTTP_200_OK"
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221006141029.png)
+
+Nada mas por curiosidad lo voy a cambiar yo (esto no vienen en el curso) pa ver si esto depende de realmente lo que se esta haciendo (en este caso 'GET' o si puedo personalizarlo)
+```Python
+...
+if request.method == 'GET':
+
+	movie = Movie.objects.get(pk=pk)
+
+	serializer = MovieSerializer(movie)
+
+	return Response(serializer.data, status=status.HTTP_208_ALREADY_REPORTED)
+...
+```
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221006141159.png)
+
+ok, al parecer en efecto pueden ser los status code exactamente lo que yo quiera, incluso si no es solo 2XX si no cualquiera 4XX por ejemplo
+```Python
+...
+if request.method == 'GET':
+
+	movie = Movie.objects.get(pk=pk)
+
+	serializer = MovieSerializer(movie)
+
+	return Response(serializer.data, status=status.HTTP_428_PRECONDITION_REQUIRED)
+        
+...
+```
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221006141359.png)
+
+Ok lo regresamos a como estaba y que pasa si le ponemos que nos busque la película "id"=15, esta no existe y si lo buscamos nos sacara un error pero un un "Response" con un "status code" así que vamos a ponerle una condición con un ``try`` (hace mucho no usaba uno de esos) diciéndole que intente try: si con el GET hay una película collo id sea = al "pk" except: la película no existe entonces te mando este mensaje de error y también añadimos que el status sea un HTTP_404
+
+```Python
+...
+
+@api_view(['GET', 'PUT', 'DELETE'])
+
+def movie_details(request, pk):
+
+  
+
+    if request.method == 'GET':
+
+        try:
+
+            movie = Movie.objects.get(pk=pk)
+
+        except Movie.DoesNotExist:
+
+            return Response({'error': 'Movie not found'}, status=status.HTTP_404_NOT_FOUND)
+
+  
+
+        serializer = MovieSerializer(movie)
+
+        return Response(serializer.data)
+
+...
+```
+
+Perfecto, chequen como el mensaje dentro del Json es 
+```Json
+{
+    "Error": "Movie not found"
+}
+```
+
+y el mensaje en status si es igual al que le pusimos ``HTTP_404_NOT_FOUND`` 
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221006142317.png)
+
+Y es todo pro ese capitulo de "status code" estuvo interesante me abrió un poco mas los ojos a los códigos ya que yo pensaba que no podia customisarlos, que al momento de borrar algo me debería dar algo como 4xx pero no, yo puedo definir que ponerle y no necesariamente 4xx si no un 204 de no hay contenido, al final le puse nuevos "status code" y termino quedando así:
+
+```Python
+from rest_framework.response import Response
+
+from rest_framework.decorators import api_view
+
+  
+
+from watchlist_app.models import Movie
+
+from watchlist_app.api.serializers import MovieSerializer
+
+  
+
+from rest_framework import status
+
+  
+  
+
+@api_view(['GET', 'POST'])
+
+def movie_list(request):
+
+  
+
+    if request.method == 'GET':
+
+        movies = Movie.objects.all()
+
+        serializer = MovieSerializer(movies, many=True)
+
+        return Response(serializer.data)
+
+    if request.method == 'POST':
+
+        serializer = MovieSerializer(data=request.data)
+
+        if serializer.is_valid():
+
+            serializer.save()
+
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+        else:
+
+            return Response(serializer.errorsm, status=status.HTTP_400_BAD_REQUEST)
+
+  
+
+@api_view(['GET', 'PUT', 'DELETE'])
+
+def movie_details(request, pk):
+
+  
+
+    if request.method == 'GET':
+
+        try:
+
+            movie = Movie.objects.get(pk=pk)
+
+        except Movie.DoesNotExist:
+
+            return Response({'error': 'Movie not found'}, status=status.HTTP_404_NOT_FOUND)
+
+  
+
+        serializer = MovieSerializer(movie)
+
+        return Response(serializer.data)
+
+    if request.method == 'PUT':
+
+        movie = Movie.objects.get(pk=pk)
+
+        serializer = MovieSerializer(movie, data=request.data)
+
+        if serializer.is_valid():
+
+            serializer.save()
+
+            return Response(serializer.data)
+
+        else:
+
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    if request.method == 'DELETE':
+
+        movie = Movie.objects.get(pk=pk)
+
+        movie.delete()
+
+        return Response(status=status.HTTP_204_NO_CONTENT)
+```
