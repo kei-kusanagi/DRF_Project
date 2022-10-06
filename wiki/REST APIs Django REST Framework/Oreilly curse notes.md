@@ -828,3 +828,177 @@ def movie_details(request, pk):
 
         return Response(status=status.HTTP_204_NO_CONTENT)
 ```
+## APIView Class
+
+Moy bien, ahora vamos a la documentation y buscamos "Class-based Views" https://www.django-rest-framework.org/api-guide/views/ lo que aprenderemos a usar ahora son las ``APIView`` podemos allí mismo en la documentación ver el repositorio de GitHub donde esta detallada toda esta clase, pero por ahora solo necesitamos entender como utilizar esta "APIView class" y pos bueno, aunque sonara feo ya no usaremos la "api/views.py" que hemos estado creando hasta ahora, bueno el archivo si pero las funciones no así que la la comentaremos para no darle borrar así nomas 😢...
+
+Lo primero sera importar esta clase ``from rest_framework.views import APIView`` y comentamos el "api_view" que estábamos usando
+
+![[IMG/Pasted image 20221006165221.png]]
+
+luego lo primero que haremos sera crear una "Clase" llamada "movie_list" (le agregamos "AV" al final para distinguir que es una APIView y asi no mezclarla) ahora si queremos usar las condicionales que ya teníamos, ahora tendremos que usar definir ese método, con este definiremos todo lo que era hacer un 'GET' para hacer todas estas tareas en esta función. Vamos a la documentación y buscamos este método.
+
+![[IMG/Pasted image 20221006170506.png]]
+
+lo ponemos en nuestra nueva clase y alli declaramos todo lo que necesitara, le ponemos 
+```Python
+movies = Movie.objects.all()
+```
+quedaria mas o menos asi:
+
+```Python
+...
+
+class MovieListAV(APIView):
+
+    def get(self, request):
+
+        movies = Movie.objects.all()
+
+        serializer = MovieSerializer(movies, many=True)
+
+        return Response(serializer.data)
+
+...
+```
+
+Para asignarle la lista completa de películas a esta variable por eso la s al final de movie"s" jajajaja, ahora todo lo que necesitamos para acceder a esto seria utilizar mi "serializador" y regresar nuestro "Response" y listo, esta definido mi metodo 'GET',ahora solo falta ponerle el condicional "if" (osea antes era con el fi preguntar si era un 'GET' o un 'POST' pero ahora estamos definiendolo por separado)
+
+Entonces tenemos que recolectar todos los datos  usar este serializador 
+
+```Python
+...
+
+class MovieListAV(APIView):
+...
+
+	def post(self, request):
+	
+	        serializer = MovieSerializer(data=request.data)
+	
+	        if serializer.is_valid():
+	
+	            serializer.save()
+	
+	            return Response(serializer.data, status=status.HTTP_201_CREATED)
+	
+	        else:
+	
+	            return Response(serializer.errorsm, status=status.HTTP_400_BAD_REQUEST)
+
+```
+
+Aqui estamos llemando mi serializador y pasando el ``data=request.data`` (que es el Json que estamos pasando)
+![[IMG/Pasted image 20221006171928.png]]
+
+Cuando tenemos todo esto checamos si esta bien con el "if serializer.is_valid():" y si es valido usamos el método salver "serializer.save()" si todo esta bien regresamos el "Response(serializer.data)"
+
+Y listo, algo que tenemos que tener en cuenta es que no vamos a usar ningun timpo de decorador en neustras classes basadas en vistas, además, no necesitamos definir este tipo de condiciones (el ``(['GET', 'POST'])``).
+
+En este momento no tenemos nada como eliminar o colocar, por lo que debemos crear otra clase para nuestro elemento específico.
+
+Y mas en especifico ya que tenemos que seleccionar un "id" en especifico (ya dije muchas veces especifico jajaja) y volverá a nosotros el famoso "pk" así que crearemos una nueva "clase"
+```Python
+class MovieDetailAV(APIView):
+```
+ahora dentro de esta tenemos que definir nuevamente un método tipo 'GET', 'PUT' y 'DELETE' porque aquí podremos seleccionar un elemento especifico tanto para obtener su información, ponerle o borrarla, así que creemos una función para primero obtener ('GET')
+
+```Python
+...
+
+def get(self, request, pk):
+
+	try:
+
+		movie = Movie.objects.get(pk=pk)
+
+	except Movie.DoesNotExist:
+
+		return Response({'error': 'Movie not found'}, status=status.HTTP_404_NOT_FOUND)
+...
+```
+
+luego nuestro método ('PUT')
+
+```Python
+def put(self, request, pk):
+
+	movie = Movie.objects.get(pk=pk)
+
+	serializer = MovieSerializer(movie, data=request.data)
+
+	if serializer.is_valid():
+
+		serializer.save()
+
+		return Response(serializer.data)
+
+	else:
+
+		return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+```
+
+y por ultimo nuestro ('DELETE')
+
+```Python
+def delete(self, request, pk):
+
+	movie = Movie.objects.get(pk=pk)
+
+	movie.delete()
+
+	return Response(status=status.HTTP_204_NO_CONTENT)
+```
+
+Con todo esto ya solo nos falta actualizar nuestras "URLs" porque alli estamos usando la anterior "movie_list" que esta apuntando a la anterior función en views
+
+![[IMG/Pasted image 20221006180022.png]]
+
+lo cambiaremos por  y en el path ponerle ".as_view" para indicarle que es una vista
+```Python
+from django.urls import path, include
+
+#from watchlist_app.api.views import movie_list, movie_details
+
+from watchlist_app.api.views import MovieListAV, MovieDetailAV
+
+  
+
+urlpatterns = [
+
+    path('list/', MovieListAV.as_view(), name='movie-list'),
+
+    path('<int:pk>', MovieDetailAV.as_view(), name='movie-detail'),
+
+]
+```
+
+corremos el servidor y agreguemos un elemento mas para poder hacer pruebas
+
+El 'POST' trabaja bien
+
+![[IMG/Pasted image 20221006180858.png]]
+
+
+Ahora si intentamos obtener una pelicula en particular por el "pk" 'GET'
+
+![[IMG/Pasted image 20221006181239.png]]
+
+Probemos el 'PUT'
+```Json
+{
+    "name": "Java vs Python",
+    "description": "Description 3 - update",
+    "active": false
+}
+```
+![[IMG/Pasted image 20221006181536.png]]
+
+Perfecto, ahora borremos uno con 'DELETE'
+
+![[IMG/Pasted image 20221006181720.png]]
+
+
+Y eso es todo con respecto con la introducción las "Class-based Views" ya que hay muchas mas que veremos, más adelante, vamos a utilizar esta clase genérica y vamos a tener este "ListCreateAPIView". Luego hay varias otras vistas de API tenemos "RetrieveAPIView", "DestroyAPIView", "CreateAPIView".pero hablaremos de ellas en los siguientes capítulos junto con expandir nuestra base de datos y usar un "Foreign Key".
+
+## Validation
