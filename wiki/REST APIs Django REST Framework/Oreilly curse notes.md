@@ -778,7 +778,7 @@ def movie_list(request):
 
         else:
 
-            return Response(serializer.errorsm, status=status.HTTP_400_BAD_REQUEST)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
   
 
@@ -884,7 +884,7 @@ class MovieListAV(APIView):
 	
 	        else:
 	
-	            return Response(serializer.errorsm, status=status.HTTP_400_BAD_REQUEST)
+	            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 ```
 
@@ -1002,3 +1002,163 @@ Perfecto, ahora borremos uno con 'DELETE'
 Y eso es todo con respecto con la introducción las "Class-based Views" ya que hay muchas mas que veremos, más adelante, vamos a utilizar esta clase genérica y vamos a tener este "ListCreateAPIView". Luego hay varias otras vistas de API tenemos "RetrieveAPIView", "DestroyAPIView", "CreateAPIView".pero hablaremos de ellas en los siguientes capítulos junto con expandir nuestra base de datos y usar un "Foreign Key".
 
 ## Validation
+
+Ok hoy toca Validaciones (después de un repaso rápido de todo lo que había echo hasta ahora), así que vamos a la documentación y veamos que nos dice https://www.django-rest-framework.org/api-guide/serializers/#validation lo primero que nos salta son 3 tipos de validaciones "Fiel-level", "Object.level" y por ultimo "Validators" estas validaciones las utilizaremos en nuestro archivo "serializers.py" y en nuestro archivo "views.py" las mandaremos llamar donde pusimos el ``if serializer.is_valid():``
+
+"Fiel-level"
+
+La primera de la que hablaremos sera "Field.level", se refiere a que solo estaremos revisando un campo en particular en busca de alguna palabra duplicada, entonces si por ejemplo nos vamos al campo de "name" en 
+
+```Python
+...
+name = serializers.CharField()
+...
+```
+
+si agrego una validación "Field.level", eso significa que estoy verificando su longitud o tal vez cualquier otra condición según yo elija. Pero eso significa que solo estoy revisando este único campo que no se repita por ejemplo el nombre con la descripción de la película y así, ta medio confuso pero lo veremos paso a paso.
+
+Así que vamos a nuestro "serializers.py" y definamos nuestra validación para un campo en especifico, tomemos ahorita el campo de "name", lo que haremos sera checar el valor actual de su longitud del nombre, para esto creemos un método (función nueva) y la llamaremos "validate_name" y tomara ds entradas, una sera "self" osea ella misma y la segunda sera "value" que sera el valor de nombre, empezamos con una condicional if y le decimos que si la longitud del nombre es menor a 2 (ósea dos caracteres) le regresaremos un error de validación y le diremos que el nombre es muy corto
+
+```Python
+...
+	# Field level validation
+    def validate_name(self, value):
+
+        if len(value):
+
+            raise serializers.ValidationError('Name is too short')
+
+        else:
+
+            return value
+            
+...
+```
+
+provemoslo, vallamos a crear un nuevo item pasándole un nombre de película normal y luego con uno muy shiquito jejejeje
+
+Provemos con 
+
+```Json
+    {
+        "name": "PHP - The Old King",
+        "description": "Description 3",
+        "active": true
+    }
+```
+
+![[IMG/Pasted image 20221007154357.png]]
+
+ahora con
+```Json
+    {
+        "name": "J",
+        "description": "Description 4",
+        "active": true
+    }
+```
+
+![[IMG/Pasted image 20221007154448.png]]
+
+
+"Object.level"
+
+Perfecto, ahora sigamos con el "Object.level" comparando si el nombre de la película no es exactamente igual que la descripción, igual haremos una comparación pasándole el "data['title']" comparándolo si es idéntico al "data['description']:" si no es el caso entonces con un "else:" le regresamos el "data"
+
+```Python
+...
+# Object level Validation
+
+def validate(self, data):
+
+	if data['name'] == data['description']:
+	
+		raise serializers.ValidationError('Description cannot be the same as the title')
+	
+	else:
+	
+		return data
+...
+```
+
+Probémoslo haciendo un nuevo elemento poniéndole como nombre y descripción lo mismo
+
+```Json
+    {
+        "name": "Description ",
+        "description": "Description",
+        "active": true
+    }
+```
+
+![[IMG/Pasted image 20221007182522.png]]
+
+
+"Validators"
+
+Ahora, el validador es en realidad un argumento central que debemos pasar a nuestros campos actuales. entonces si vamos a la documentación vemos que estamos pasando este validador como valor dentro de nuestro serializador, necesitamos agregar una validación de nivel de campo a nuestro nombre, puedo hacerlo con la ayuda de validadores, vamos a nuestro archivo "serializers.py" y comentemos por el momento el "Field level validation" y entonces dentro de donde convertimos el nombre con el serializador le pasamos la validación
+
+```Python
+name = serializers.CharField(validators=[ ])
+```
+
+y aquí le debemos pasar una función (que aun no definimos), la llamaremos "name_length" y en ella haremos la magia
+
+```Python
+name = serializers.CharField(validators=[name_length])
+```
+
+creamos nuestra función
+
+```Python
+def name_length(value):
+
+    if len(value) < 2:
+
+        raise serializers.ValidationError('Name is too short')
+```
+
+y al final el código queda así:
+
+```Python
+...
+
+from rest_framework import serializers
+
+from watchlist_app.models import Movie
+
+  
+
+def name_length(value):
+
+    if len(value) < 2:
+
+        raise serializers.ValidationError('Name is too short')
+
+class MovieSerializer(serializers.Serializer):
+
+    id = serializers.IntegerField(read_only=True)
+
+    name = serializers.CharField(validators=[name_length])
+
+    description = serializers.CharField()
+
+    active = serializers.BooleanField()
+...
+```
+
+Vamos a probarlo, metamos a http://127.0.0.1:8000/movie/list/ el siguiente Json
+
+```Json
+    {
+        "name": "J",
+        "description": "Description 3",
+        "active": true
+    }
+```
+
+![[IMG/Pasted image 20221007185206.png]]
+
+Y listo, eso es todo con estos tres tipos de validaciones, para mi me gusto mas la de "Object Level" aunque esta ultima suena mas complicada pero creo es la mas sencilla.
+
+## Serializer Fields and Core Arguments
