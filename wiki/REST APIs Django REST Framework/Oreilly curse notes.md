@@ -1047,7 +1047,7 @@ Provemos con
     }
 ```
 
-![[IMG/Pasted image 20221007154357.png]]
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221007154357.png)
 
 ahora con
 ```Json
@@ -1058,7 +1058,7 @@ ahora con
     }
 ```
 
-![[IMG/Pasted image 20221007154448.png]]
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221007154448.png)
 
 
 "Object.level"
@@ -1091,7 +1091,7 @@ Probémoslo haciendo un nuevo elemento poniéndole como nombre y descripción lo
     }
 ```
 
-![[IMG/Pasted image 20221007182522.png]]
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221007182522.png)
 
 
 "Validators"
@@ -1157,7 +1157,7 @@ Vamos a probarlo, metamos a http://127.0.0.1:8000/movie/list/ el siguiente Json
     }
 ```
 
-![[IMG/Pasted image 20221007185206.png]]
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221007185206.png)
 
 Y listo, eso es todo con estos tres tipos de validaciones, para mi me gusto mas la de "Object Level" aunque esta ultima suena mas complicada pero creo es la mas sencilla.
 
