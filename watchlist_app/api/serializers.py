@@ -43,8 +43,9 @@ from watchlist_app.models import Movie
 class MovieSerializer(serializers.ModelSerializer):
     class Meta:
         model = Movie
-        # fields = "__all__"
-        fields = ['id', 'name', 'description']
+        fields = "__all__"
+        # fields = ['id', 'name', 'description']
+        # exclude = ['name']
 
 # Object level Validation
     def validate(self, data):
