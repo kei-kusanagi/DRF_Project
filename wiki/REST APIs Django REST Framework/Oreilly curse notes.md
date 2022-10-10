@@ -11,7 +11,7 @@ luego creamos un super usuario
 ![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221003175917.png)
 
 
-listo ya entramos al panel de administracion, ahora crearemos: 
+listo ya entramos al panel de administración, ahora crearemos: 
 - los modelos
 - las vistas
 - las urls
@@ -1162,3 +1162,31 @@ Vamos a probarlo, metamos a http://127.0.0.1:8000/movie/list/ el siguiente Json
 Y listo, eso es todo con estos tres tipos de validaciones, para mi me gusto mas la de "Object Level" aunque esta ultima suena mas complicada pero creo es la mas sencilla.
 
 ## Serializer Fields and Core Arguments
+
+Hoy analizaremos el campo del serializador en "serializers.py"
+
+```Python
+class MovieSerializer(serializers.Serializer):
+
+    id = serializers.IntegerField(read_only=True)
+
+    name = serializers.CharField(validators=[name_length])
+
+    description = serializers.CharField()
+
+    active = serializers.BooleanField()
+```
+
+estos, donde podemos indicar si es un "IntegerField" y por ejemplo ese del "id" que es "read_only" eso quiere decir que quien nos mande peticiones puede verlo, pero no puede modificarlo, en pocas palabras hay posibilidades de que necesitemos agregar una cualidad o una instrucción específica, entonces con este "Core Argument" o "argumento central" podemos pasar ese valor.
+
+No se porque s eme complico tanto esto, ya lo vi varias veces y pues lo que entendí que habla sobre el como podemos especificar el como se comportaran estos campos, como de solo lectura, o que sea un campo necesario y así, la única #Duda que me surgió es cuando habla que tenemos estos campos aquí en "seializers.py" y también en "models.py"
+
+
+``` #Duda 
+02:56 03:22
+
+Ahora, la mayoría de nosotros que ya tenemos información sobre estos modelos, podemos juzgar directamente el campo del serializador. Pero si no tiene conocimiento sobre los modelos, es probable que si está escribiendo consultas SQL usted mismo, entonces tal vez no tenga esta información del modelo. En ese momento, debe escribir este campo. Pero supongo que la mayoría de nosotros ya tenemos información sobre este modelo, la mayoría de nosotros ya tenemos información de lo que es nuestro CharField. Así que no tienes que preocuparte mucho.
+```
+
+## Model Serializer
+
