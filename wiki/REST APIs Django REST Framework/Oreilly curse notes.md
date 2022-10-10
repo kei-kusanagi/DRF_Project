@@ -1293,3 +1293,33 @@ Salvamos y vamos a http://127.0.0.1:8000/movie/list/ y veos que nuestro campo "a
 ![[IMG/Pasted image 20221010152424.png]]
 
 
+podemos llegar al mismo resultado si le damos ``exclude = ['active']`` y eso le dirá que tome todos menos ese 
+
+![[IMG/Pasted image 20221010173030.png]]
+
+a ver intentemos quitar `['name']`
+
+![[IMG/Pasted image 20221010173126.png]]
+
+
+Y bueno des comentemos estoy y lo dejaremos solo para recordarlo
+
+```Python
+...
+
+class MovieSerializer(serializers.ModelSerializer):
+
+    class Meta:
+
+        model = Movie
+
+        fields = "__all__"
+
+        # fields = ['id', 'name', 'description']
+
+        # exclude = ['name']
+...
+```
+
+
+## Custom Serializer Fields
