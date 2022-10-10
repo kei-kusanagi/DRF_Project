@@ -1202,12 +1202,12 @@ Lo importante aquí es que ese ``ModelSerializer`` contiene todo lo relacionado 
 
 Si vamos a https://github.com/encode/django-rest-framework/blob/master/rest_framework/serializers.py y hacemos scroll mas abajo podemos encontrar las diferentes funciones que podemos usar para hacer el CRUD así como la información de como usarla
 
-![[IMG/Pasted image 20221010140426.png]]
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221010140426.png)
 
 
-![[IMG/Pasted image 20221010140543.png]]
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221010140543.png)
 
-![[IMG/Pasted image 20221010140609.png]]
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221010140609.png)
 
 Ya viendo todo esto ahora si vamos a codificar, camos a nuestro "serializers.py"
 
@@ -1264,7 +1264,7 @@ class MovieSerializer(serializers.ModelSerializer):
 
 Repasando, definimos nuestro ``class Meta:`` enseguida definimos nuestros modelos indicándole que usara todos los campos con`` fields = "__all__"`` y luego le pasamos las validaciones que ya habíamos creado, ahora que pasa detrás de cámaras es que como ya tenemos este modelo en "models.py" ( #Duda aaaaaaa ven ven si era lo que yo decía) el serializador los mapea respectivamente , al decirle que ocupamos todos los campos ``fields = "__all__"``le estamos diciendo que agarre todos los de allí, se pueden excluir o usar solo algunos pero para este ejemplo lo seguiremos usando así
 
-![[IMG/Pasted image 20221010150008.png]]
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221010150008.png)
 
 Probemos agregar un nuevo item con este método "Model Serializer"
 
@@ -1276,7 +1276,7 @@ Probemos agregar un nuevo item con este método "Model Serializer"
     }
 ```
 
-![[IMG/Pasted image 20221010150723.png]]
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221010150723.png)
 
 Perfecto, si lo creo con todos los campos, ahora intentemos crear uno pero sin que salga el campo "active", para esto vamos a "serializers.py" y cambiemos el campo ``fields = "__all__"`` y definimos cada campo individualmente pasándole una lista tupla sin poner el campo "active"
 
@@ -1290,16 +1290,16 @@ fields = ['id', 'name', 'description']
 
 Salvamos y vamos a http://127.0.0.1:8000/movie/list/ y veos que nuestro campo "active" se fue
 
-![[IMG/Pasted image 20221010152424.png]]
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221010152424.png)
 
 
 podemos llegar al mismo resultado si le damos ``exclude = ['active']`` y eso le dirá que tome todos menos ese 
 
-![[IMG/Pasted image 20221010173030.png]]
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221010173030.png)
 
 a ver intentemos quitar `['name']`
 
-![[IMG/Pasted image 20221010173126.png]]
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221010173126.png)
 
 
 Y bueno des comentemos estoy y lo dejaremos solo para recordarlo
