@@ -1190,3 +1190,106 @@ Ahora, la mayoría de nosotros que ya tenemos información sobre estos modelos, 
 
 ## Model Serializer
 
+Lo primero que haremos sera comentar todo lo que hicimos hasta ahora de serializadores en "serializers.py" ya que crearemos un nuevo modelo de serializador
+
+Para crear un nuevo "Model Serializer" tenemos que crear una nueva "class" 
+
+```Python
+class MovieSerializer(serializers.ModelSerializer)
+```
+
+Lo importante aquí es que ese ``ModelSerializer`` contiene todo lo relacionado con el CRUD de estos campos (los creados en "models.py" o eso es lo que entendí #Duda ) lo único que necesito es mencionar que "modelo" voy a usar, y en que "field" o campo voy a trabajar, si mencionamos "__all__" significa que usaremos todos
+
+Si vamos a https://github.com/encode/django-rest-framework/blob/master/rest_framework/serializers.py y hacemos scroll mas abajo podemos encontrar las diferentes funciones que podemos usar para hacer el CRUD así como la información de como usarla
+
+![[IMG/Pasted image 20221010140426.png]]
+
+
+![[IMG/Pasted image 20221010140543.png]]
+
+![[IMG/Pasted image 20221010140609.png]]
+
+Ya viendo todo esto ahora si vamos a codificar, camos a nuestro "serializers.py"
+
+dentro de mi "class Meta" necesitamos definir nuestro modelos ( #Duda ven es a lo que me refería, pos no que tomaba todos de models.py) podemos definir cada uno individualmente o podemos definir todos
+
+```Python
+...
+
+class MovieSerializer(serializers.ModelSerializer):
+
+    class Meta:
+
+        model = Movie
+
+        fields = "__all__"
+```
+
+Y con eso es todo para definir el modelo del serializador, si necesitamos definir validaciones la podemos definir como lo hicimos anterior mente y las definimos separadamente como cuando definimos "Object level Validation" y "Field level validation"
+
+```Python
+...
+
+class MovieSerializer(serializers.ModelSerializer):
+
+    class Meta:
+
+        model = Movie
+
+        fields = "__all__"
+
+# Object level Validation
+     def validate(self, data):
+
+        if data['name'] == data['description']:
+
+            raise serializers.ValidationError('Description cannot be the same as the title')
+
+        else:
+
+            return data
+
+# Field level validation
+
+    def validate_name(self, value):
+
+        if len(value) < 2:
+
+            raise serializers.ValidationError('Name is too short')
+
+        else:
+
+            return value
+```
+
+Repasando, definimos nuestro ``class Meta:`` enseguida definimos nuestros modelos indicándole que usara todos los campos con`` fields = "__all__"`` y luego le pasamos las validaciones que ya habíamos creado, ahora que pasa detrás de cámaras es que como ya tenemos este modelo en "models.py" ( #Duda aaaaaaa ven ven si era lo que yo decía) el serializador los mapea respectivamente , al decirle que ocupamos todos los campos ``fields = "__all__"``le estamos diciendo que agarre todos los de allí, se pueden excluir o usar solo algunos pero para este ejemplo lo seguiremos usando así
+
+![[IMG/Pasted image 20221010150008.png]]
+
+Probemos agregar un nuevo item con este método "Model Serializer"
+
+```Json
+    {
+        "name": "DRF",
+        "description": "Description",
+        "active": true
+    }
+```
+
+![[IMG/Pasted image 20221010150723.png]]
+
+Perfecto, si lo creo con todos los campos, ahora intentemos crear uno pero sin que salga el campo "active", para esto vamos a "serializers.py" y cambiemos el campo ``fields = "__all__"`` y definimos cada campo individualmente pasándole una lista tupla sin poner el campo "active"
+
+```Python
+...
+
+fields = ['id', 'name', 'description']
+
+...
+```
+
+Salvamos y vamos a http://127.0.0.1:8000/movie/list/ y veos que nuestro campo "active" se fue
+
+![[IMG/Pasted image 20221010152424.png]]
+
+
