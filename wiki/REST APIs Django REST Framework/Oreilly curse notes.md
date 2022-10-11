@@ -1345,3 +1345,365 @@ Y alli esta nuestra longitud del nombre
 ![[IMG/Pasted image 20221011124700.png]]
 
 #Duda no vi como es que hace que esto salga dentro del Json final, como lo encadena con el len_name si solo puso en la funcion get_len_name y nunca lo llama 
+
+## Updating Models
+
+Ahora nos tocara nuevamente hablar sobre modelos, actualmente contamos con 3
+
+```Python
+...
+class Movie(models.Model):
+
+    name = models.CharField(max_length=50)
+
+    description = models.CharField(max_length=200)
+
+    active= models.BooleanField(default=True)
+...
+```
+
+Y si queremos crear un con de IMDb, vamos a necesitar mas campos, asi que vamos a borrar completamente nuestra base de datos y crear nuevos modelos y actualizar mis vistas y serializers
+
+Así que vamos a "serializers.py" y ya no necesitaremos las validaciones así que borrémoslas (o mejor las comentamos no valla a ser) y cambiemos el nombre de nuestro modelo de Movie a algo mas genérico por si son podcast, o series, algo como "Watchlist" pero primero localicemos nuestro archivo db.squlite3 y borremosla
+
+![[IMG/Pasted image 20221011143305.png]]
+
+Ahora si pongámosle bien el nombre, cambiemos el nombre de "name" a "title" y pongamos uno nuevo llamado "created" que usara el "DateTimeField" y le pondremos "auto_now_add=True" para que quede como una estampa de tiempo indicándonos cuando fue creado, al final lucira asi
+
+```Python
+...
+class Watchlist(models.Model):
+
+    title = models.CharField(max_length=50)
+
+    storyline = models.CharField(max_length=200)
+
+    active= models.BooleanField(default=True)
+
+    created = models.DateTimeField(auto_now_add=True)
+
+  
+
+    def __str__(self):
+
+        return self.title
+...
+```
+
+Ahora creemos un nuevo modelo llamado "streamingPlataform" pa saver en donde verlo y poner directamente el link, agréguenosle un campo de "name" con un "mx_length" de 30, un campo llamado "about" com 150 caracteres y el "website" este sera un "URLField" y este le pondremos 100 caracteres y al final definimos una función, le pasamos a el mismo (self) y regresamos como ``return self.name``
+
+```Python
+...
+class StreamPlataform(models.Model):
+
+    name = models.CharField(max_length=30)
+
+    about = models.CharField(max_length=150)
+
+    website = models.URLField(max_length=100)
+
+    def __str__(self):
+
+        return self.name
+...
+```
+
+#Duda porque solo regresamos el nombre si vamos a usar todos los demás campos????
+
+Ahora debemos remplazar todo esto en nuestras "views.py", "serializers.py" y "models.py" quedando asi
+
+```Python 
+## views.py
+from rest_framework.response import Response
+# from rest_framework.decorators import api_view
+from rest_framework.views import APIView
+
+from watchlist_app.models import WatchList
+from watchlist_app.api.serializers import WatchListSerializer
+
+from rest_framework import status
+  
+
+class WatchListAV(APIView):
+
+
+    def get(self, request):
+
+        movies = WatchList.objects.all()
+
+        serializer = WatchListSerializer(movies, many=True)
+
+        return Response(serializer.data)
+
+  
+
+    def post(self, request):
+
+        serializer = WatchListSerializer(data=request.data)
+
+        if serializer.is_valid():
+
+            serializer.save()
+
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+        else:
+
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+  
+
+class WatchDetailAV(APIView):
+
+    def get(self, request, pk):
+
+        try:
+
+            movie = WatchList.objects.get(pk=pk)
+
+        except WatchList.DoesNotExist:
+
+            return Response({'error': 'Not found'}, status=status.HTTP_404_NOT_FOUND)
+
+  
+
+        serializer = WatchListSerializer(movie)
+
+        return Response(serializer.data)
+
+    def put(self, request, pk):
+
+        movie = WatchList.objects.get(pk=pk)
+
+        serializer = WatchListSerializer(movie, data=request.data)
+
+        if serializer.is_valid():
+
+            serializer.save()
+
+            return Response(serializer.data)
+
+        else:
+
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def delete(self, request, pk):
+
+        movie = WatchList.objects.get(pk=pk)
+
+        movie.delete()
+
+        return Response(status=status.HTTP_204_NO_CONTENT)
+```
+
+```Python 
+## serializers.py
+from rest_framework import serializers
+
+from watchlist_app.models import WatchList
+
+  
+class WatchListSerializer(serializers.ModelSerializer):
+
+  
+
+    class Meta:
+
+        model = WatchList
+
+        fields = "__all__"
+```
+
+```Python
+## models.py
+from django.db import models
+
+  
+
+class StreamPlataform(models.Model):
+
+    name = models.CharField(max_length=30)
+
+    about = models.CharField(max_length=150)
+
+    website = models.URLField(max_length=100)
+
+    def __str__(self):
+
+        return self.name
+
+  
+
+class WatchList(models.Model):
+
+    title = models.CharField(max_length=50)
+
+    storyline = models.CharField(max_length=200)
+
+    active= models.BooleanField(default=True)
+
+    created = models.DateTimeField(auto_now_add=True)
+
+  
+
+    def __str__(self):
+
+        return self.title
+```
+
+Hecha toda la refactorización debemos hablar de la class "StreamPlataform" donde necesitamos escribir un serializer basado en vistas como lo vimos anteriormente, para esto en "serializers.py" importamos nuestro modelo
+
+```Python
+from watchlist_app.models import WatchList, StreamPlataform
+...
+```
+
+y creamos nuestra clase para el
+
+```Python
+...
+class StreamPlataformSerializer(serializers.ModelSerializer):
+
+  
+
+    class Meta:
+
+        model = StreamPlataform
+
+        fields = "__all__"
+...
+```
+
+Y ahora como la ves anterior vamos a "views.py" a crear nuestra clase
+
+```Python
+class StreamPlataformAV(APIView):
+```
+
+(recuerden le ponemos el AV al final porque es una Api View)
+
+ahora necesitamos un método 'GET' y otro de 'POST', asi que importamos el modelo (como pa decirle que alli van a dar los datos a la base de datos) y tambien nuestro serializador "StreamPlataformSerializer"
+
+```Python
+from watchlist_app.models import WatchList, StreamPlataform
+...
+from watchlist_app.api.serializers import WatchListSerializer, StreamPlataformSerializer
+...
+```
+
+Creamos nuestro metodo 'GET' le pasamos el mentado self y el request, ahora llamaremos a la variable "plataform" y le pasaremos todos los objetos, ya que tenemos acceso a ellos ahora usaremos el serializador "StreamPlataSerializer" le pasamos "plataform" y le decimos que pueden ser muchos objetos pa que no nos de el error de la otra vez "many=True", una ves hecho esto le regresamos un "Response" con los datos serializados ``return Response(serializer.data)`` 
+
+```Python
+...
+class StreamPlataformAV(APIView):
+
+    def get(self, request):
+
+        plataform = StreamPlataform.objects.all()
+
+        serializer = StreamPlataSerializer(plataform, many=True)
+
+        return Response(serializer.data)
+```
+
+Listo eso es todo sobre mi 'GET' ahora vamos con el 'POST', vamos a hacer algo similar, necesitamos el acceso a mi self y al request, usaremos nuestro serializador otra ves pero ahora tendremos acceso al contenido pero no necesitaremos el "many=True" porque solo necesitaremos el accesos al data ``serializer = StreamPlataformSerializer(data=request.data)`` y ahora le pondremos una condición de que si es valido lo salve si no que de un "HTTP_400_BAD_REQUEST"
+
+```Python
+...
+
+    def post(self, request):
+
+        serializer = StreamPlataformSerializer(data=request.data)
+
+        if serializer.is_valid():
+
+            serializer.save()
+
+            return Response(serializer.data)
+
+        else:
+
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+...
+```
+
+ahora vamos a "api/urls.py" e importamos esto y añadimos su path (vengo del futuro, aquí también había un error con el import ya que importamos MovieLisAV y era ya WatchListAV y asi las otras)
+
+```Python
+from django.urls import path, include
+from watchlist_app.api.views import WatchListAV, WatchDetailAV, StreamPlataformAV
+
+
+urlpatterns = [
+
+    path('list/', WatchListAV.as_view(), name='movie-list'),
+
+    path('<int:pk>', WatchDetailAV.as_view(), name='movie-detail'),
+
+    path('stream/', StreamPlataformAV.as_view(), name='stream'),
+
+]
+```
+
+Bueno vamos a salvar y hacer las migraciones porque borramos la base de datos, pero nos salta un error
+
+![[IMG/Pasted image 20221011162415.png]]
+
+esto no lo había visto antes pero hay que ir al archivo "watchlist_app/admin.py" y modificar lo siguiente
+
+```Python
+from django.contrib import admin
+
+from watchlist_app.models import WatchList, StreamPlataform
+  
+
+# Register your models here.
+
+admin.site.register(WatchList)
+
+admin.site.register(StreamPlataform)
+```
+
+ahora si le damos ``python manage.py makemigrations``
+
+![[IMG/Pasted image 20221011162929.png]]
+
+ahora si le damos ``python manage.py migrate``
+
+![[IMG/Pasted image 20221011163031.png]]
+
+
+Recordemos crear un super usuario porque borramos todo lo anterior
+![[IMG/Pasted image 20221011163429.png]]
+Corremos el servidor y nos logeamos en http://127.0.0.1:8000/admin/
+![[IMG/Pasted image 20221011163539.png]]
+
+Bien ya tenemos nuestro Stream plataforms, vamos a añadir una pelicula en Watch list
+
+![[IMG/Pasted image 20221011163625.png]]
+
+ahora vamos a http://127.0.0.1:8000/movie/list/ y ya podemos ver hasta cuando fue creado
+
+![[IMG/Pasted image 20221011163722.png]]
+
+ahora vamos a http://127.0.0.1:8000/movie/stream/ (aqui el tenia un error porque no lo había importado pero a mi me salto y lo corregí desde antes)
+
+![[IMG/Pasted image 20221011163910.png]]
+
+añadamos un elemento desde el panel de administración
+
+![[IMG/Pasted image 20221011170040.png]]
+
+Ahora agreguemos uno por una petición por medio de un Json
+
+```Json
+    {
+        "name": "Prime Video",
+        "about": "Streaming Service",
+        "website": "https://www.primevideo.com"
+    }
+```
+
+![[IMG/Pasted image 20221011170253.png]]
+
+Como lo creamos solo podemos acceder a todos los elementos y si queremos actualizar un elemento por separado tenemos que entrar al panel de administración
