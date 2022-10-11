@@ -1323,3 +1323,25 @@ class MovieSerializer(serializers.ModelSerializer):
 
 
 ## Custom Serializer Fields
+
+Bueno ahora hablemos sobre los "Custom Serializer Fields", anteriormente tenemos estos campos mencionados en nuestro "models.py" pero que pasa si queremos calcular algo con estos, por ejemplo con ratings o cosas así, y que debamos desplegar un nuevo campo que tenga una longitud u otro nombre, esto lo haremos especificando otro método, vallamos entonces a nuestro "serializers.py" y justo enzima de nuestro "class Meta:" pongamos nuestro nuevo serializador al cual llamaremos "len_name" y le asignamos un "SerializerMethodField" cn esto estamos definiendo un método que calculara la longitud de los nombres y esto nos los regresara en el "Response"
+
+```Python
+len_name = serializers.SerializerMethodField()
+```
+
+ahora solo tenemos que definir un método (una función pues) abajo de "class Meta:" y lo llamaremos "get_len_name"
+
+```Python
+...
+
+    def get_len_name(self, object):
+
+        return len(object.name)
+...
+```
+
+Y alli esta nuestra longitud del nombre
+![[IMG/Pasted image 20221011124700.png]]
+
+#Duda no vi como es que hace que esto salga dentro del Json final, como lo encadena con el len_name si solo puso en la funcion get_len_name y nunca lo llama 
