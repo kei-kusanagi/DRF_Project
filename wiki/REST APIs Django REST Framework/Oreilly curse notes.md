@@ -1342,7 +1342,7 @@ ahora solo tenemos que definir un método (una función pues) abajo de "class Me
 ```
 
 Y alli esta nuestra longitud del nombre
-![[IMG/Pasted image 20221011124700.png]]
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221011124700.png)
 
 #Duda no vi como es que hace que esto salga dentro del Json final, como lo encadena con el len_name si solo puso en la funcion get_len_name y nunca lo llama 
 
@@ -1366,7 +1366,7 @@ Y si queremos crear un con de IMDb, vamos a necesitar mas campos, asi que vamos 
 
 Así que vamos a "serializers.py" y ya no necesitaremos las validaciones así que borrémoslas (o mejor las comentamos no valla a ser) y cambiemos el nombre de nuestro modelo de Movie a algo mas genérico por si son podcast, o series, algo como "Watchlist" pero primero localicemos nuestro archivo db.squlite3 y borremosla
 
-![[IMG/Pasted image 20221011143305.png]]
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221011143305.png)
 
 Ahora si pongámosle bien el nombre, cambiemos el nombre de "name" a "title" y pongamos uno nuevo llamado "created" que usara el "DateTimeField" y le pondremos "auto_now_add=True" para que quede como una estampa de tiempo indicándonos cuando fue creado, al final lucira asi
 
@@ -1647,7 +1647,7 @@ urlpatterns = [
 
 Bueno vamos a salvar y hacer las migraciones porque borramos la base de datos, pero nos salta un error
 
-![[IMG/Pasted image 20221011162415.png]]
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221011162415.png)
 
 esto no lo había visto antes pero hay que ir al archivo "watchlist_app/admin.py" y modificar lo siguiente
 
@@ -1666,33 +1666,33 @@ admin.site.register(StreamPlataform)
 
 ahora si le damos ``python manage.py makemigrations``
 
-![[IMG/Pasted image 20221011162929.png]]
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221011162929.png)
 
 ahora si le damos ``python manage.py migrate``
 
-![[IMG/Pasted image 20221011163031.png]]
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221011163031.png)
 
 
 Recordemos crear un super usuario porque borramos todo lo anterior
-![[IMG/Pasted image 20221011163429.png]]
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221011163429.png)
 Corremos el servidor y nos logeamos en http://127.0.0.1:8000/admin/
-![[IMG/Pasted image 20221011163539.png]]
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221011163539.png)
 
 Bien ya tenemos nuestro Stream plataforms, vamos a añadir una pelicula en Watch list
 
-![[IMG/Pasted image 20221011163625.png]]
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221011163625.png)
 
 ahora vamos a http://127.0.0.1:8000/movie/list/ y ya podemos ver hasta cuando fue creado
 
-![[IMG/Pasted image 20221011163722.png]]
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221011163722.png)
 
 ahora vamos a http://127.0.0.1:8000/movie/stream/ (aqui el tenia un error porque no lo había importado pero a mi me salto y lo corregí desde antes)
 
-![[IMG/Pasted image 20221011163910.png]]
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221011163910.png)
 
 añadamos un elemento desde el panel de administración
 
-![[IMG/Pasted image 20221011170040.png]]
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221011170040.png)
 
 Ahora agreguemos uno por una petición por medio de un Json
 
@@ -1704,6 +1704,6 @@ Ahora agreguemos uno por una petición por medio de un Json
     }
 ```
 
-![[IMG/Pasted image 20221011170253.png]]
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221011170253.png)
 
 Como lo creamos solo podemos acceder a todos los elementos y si queremos actualizar un elemento por separado tenemos que entrar al panel de administración
