@@ -11,6 +11,9 @@ class StreamPlataform(models.Model):
 class WatchList(models.Model):
     title = models.CharField(max_length=50)
     storyline = models.CharField(max_length=200)
+
+    plataform = models.ForeignKey(StreamPlataform, on_delete=models.CASCADE, related_name="watchlist")
+
     active= models.BooleanField(default=True)
     created = models.DateTimeField(auto_now_add=True)
 
