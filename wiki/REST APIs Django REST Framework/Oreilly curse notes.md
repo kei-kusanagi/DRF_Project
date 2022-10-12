@@ -1810,7 +1810,7 @@ urlpatterns = [
 
 ]
 ```
-![[IMG/Pasted image 20221012142538.png]]
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221012142538.png)
 
 Ahora, necesitamos agregar algo para que al momento de agregar una película podamos añadir en que plataforma podemos verla, esto lo haremos con el "relationship method in Django" y existen 3, el "one-to-one", "one-to-many" y "many-to-many" y aquí nos envió a google a buscar mas sobre eso
 
@@ -1845,4 +1845,25 @@ class WatchList(models.Model):
 ```
 
 Hecha nuestra relación nos queda hacer las migraciones otra ves, nos pedirá elijamos una opción, le pondremos "1" y luego "None" (esto lo hace porque a los datos que ya hay les faltara ese campo, entonces le decimos que si lo agregue y que a todos los que ya esten les ponga None como valor y listo)
-![[IMG/Pasted image 20221012152447.png]]
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221012152447.png)
+Vallamos nuevamente a http://127.0.0.1:8000/admin/watchlist_app/watchlist/ y ya nos da la opción de relacionar con que plataforma es
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221012174352.png)
+
+pongamos algunos ejemplos, llenando primero las plataformas, haciendo una con "None" , "netflix" y otra con "Prime Video" y luego creemos "watch list"
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221012181215.png)
+
+Si vamos a http://127.0.0.1:8000/watch/stream/ veremos que si nos aparecen normalmente 
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221012181926.png)
+
+pero si vamos a http://127.0.0.1:8000/watch/list/ nos aparecen como ``"plataform": 4`` 
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221012181917.png)
+
+tambien i vamos a los detalles de una plataforma http://127.0.0.1:8000/watch/stream/5 
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221012182127.png)
+
+Nos aparecen sus datos pero no que películas están relacionadas con el, pero todo eso lo veremos el siguiente capitulo.
