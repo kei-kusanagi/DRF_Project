@@ -1792,3 +1792,57 @@ Y por ultimo y por lo que estaba trabado porque no sabia que faltaba, pos vamos 
 path('stream/<int:pk>', StreamPlataformDetailAV.as_view(), name='stream-detail'),
 ...
 ```
+
+Dejando de lado la tarea ahora si veamos las "Django Relationships" o relaciones, lo primero que haremos es actualizar nuestro URL para que no se siga llamando /movies/ lo cambiaremos a /watch/ esto lo hacemos en "/watchmate/urls.py" pa que valla coherente con lo que estamos haciendo
+
+```Python
+from django.contrib import admin
+
+from django.urls import path, include
+
+  
+
+urlpatterns = [
+
+    path('admin/', admin.site.urls),
+
+    path('watch/', include('watchlist_app.api.urls')),
+
+]
+```
+![[IMG/Pasted image 20221012142538.png]]
+
+Ahora, necesitamos agregar algo para que al momento de agregar una película podamos añadir en que plataforma podemos verla, esto lo haremos con el "relationship method in Django" y existen 3, el "one-to-one", "one-to-many" y "many-to-many" y aquí nos envió a google a buscar mas sobre eso
+
+Relación uno a uno
+https://youtu.be/fEf1LWYfb9A
+
+Relación uno a muchos 
+https://youtu.be/VxrHagfpr2k
+
+Relaciones muchos a muchos 
+https://youtu.be/oDeHM_SQNnM
+
+Ok ya aclarado el tema ahora vamos a nuestro panel de administracion a borrar nuevamente todo pero sin borrar nuestra base de datos, ahora vamos a "models.py" y creamos nuestra nueva "relationship" alli:
+
+Crearemos una variable con nombre "plataform" y de modelo usaremos el "ForeignKey" y le pasaremos "StreamingPlataform" (lo que dijimos, una película o una serie o un show solo podrá tener una plataforma, pero una plataforma si podrá tener varias películas, series o shows, ósea, este video solo podrá ser visto en Netflix por ejemplo), le pasamos el "on_delete=models.CASCADE" por si se borra la plataforma borrar todos los que tengan relación con ella y así no dejar películas sin plataforma
+
+```Python
+...
+
+class WatchList(models.Model):
+    title = models.CharField(max_length=50)
+    storyline = models.CharField(max_length=200)
+	#Relathiuonship "one-to-many"
+    plataform = models.ForeignKey(StreamPlataform, on_delete=models.CASCADE, related_name="watchlist
+	#####
+    active= models.BooleanField(default=True)
+    created = models.DateTimeField(auto_now_add=True)
+ 
+
+    def __str__(self):
+        return self.title
+```
+
+Hecha nuestra relación nos queda hacer las migraciones otra ves, nos pedirá elijamos una opción, le pondremos "1" y luego "None" (esto lo hace porque a los datos que ya hay les faltara ese campo, entonces le decimos que si lo agregue y que a todos los que ya esten les ponga None como valor y listo)
+![[IMG/Pasted image 20221012152447.png]]
