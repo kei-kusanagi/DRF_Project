@@ -1707,3 +1707,88 @@ Ahora agreguemos uno por una petición por medio de un Json
 ![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221011170253.png)
 
 Como lo creamos solo podemos acceder a todos los elementos y si queremos actualizar un elemento por separado tenemos que entrar al panel de administración
+## Django Relationships
+
+A como me costo trabajo la tarea pero ya quedo, se trataba de poner el "StreamPlataformDetailAV" para poder hacer un get, put y delete especifico pero de las plataformas, entonces vamos a "views.py" y creamos nuestra clase ``class StreamPlataformDetailAV(APIView):`` y le definimos la opcion de ger, put y delete
+
+```Python
+  
+...
+    def get(self, request, pk):
+
+        return Response(serializer.data)
+
+    def put(self, request, pk):
+
+         return Response(serializer.data)
+
+
+    def delete(self, request, pk):
+
+        return Response(status=status.HTTP_204_NO_CONTENT)
+...
+```
+
+le pasamos su serializador pero tambien el mentado y famosisimo "pk", en el get bastara con eso y ponerle una excepcion por si no existe y su mensaje de error
+
+```Python
+...
+
+    def get(self, request, pk):
+
+        try:
+
+            plataform = StreamPlataform.objects.get(pk=pk)
+
+        except StreamPlataform.DoesNotExist:
+
+            return Response({'error': 'Not found'}, status=status.HTTP_404_NOT_FOUND)
+...
+```
+
+para el put le agregamos al serializer los datos que nos estan pasando y un if por si es valido lo salvamos si no va pa atras
+
+```Python
+...
+
+    def put(self, request, pk):
+
+        plataform = StreamPlataform.objects.get(pk=pk)
+
+        serializer = StreamPlataformSerializer(plataform, data=request.data)
+
+        if serializer.is_valid():
+
+            serializer.save()
+
+            return Response(serializer.data)
+
+        else:
+
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+...
+```
+
+Y en el delete con el poderosísimo "ok" le indicamos cual es y le damos ".delete()" y le pasamos un Response de no hay contenido
+
+```Python
+  
+...
+    def delete(self, request, pk):
+
+        plataform = StreamPlataform.objects.get(pk=pk)
+
+        plataform.delete()
+
+        return Response(status=status.HTTP_204_NO_CONTENT)
+...
+```
+
+Y por ultimo y por lo que estaba trabado porque no sabia que faltaba, pos vamos a "urls.py" y le pasamos el path
+
+```Python
+...
+path('stream/<int:pk>', StreamPlataformDetailAV.as_view(), name='stream-detail'),
+...
+```
