@@ -1867,3 +1867,79 @@ tambien i vamos a los detalles de una plataforma http://127.0.0.1:8000/watch/str
 ![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221012182127.png)
 
 Nos aparecen sus datos pero no que películas están relacionadas con el, pero todo eso lo veremos el siguiente capitulo.
+## Nested Serializers
+
+En este capitulo veremos sobre la relación anidada o "Nested Relationship" o como la manejaremos aquí "Nested Serializer", entonces lo que queremos hacer es si vamos a http://127.0.0.1:8000/watch/stream/ veremos que tenemos nuestros 3 servicios de stream (bueno 2 namas y el none) y lo que queremos lograr es "relacionar" que peliculas tiene cada una, y para hacer eso debemos crear una Relación en el Serializador (aaaah lo dijo lo dijo)
+
+Para ayudarnos iremos a la documentación a https://www.django-rest-framework.org/api-guide/relations/#nested-relationships entonces después de una breve introducción vamos a "serializers.py" y tomemos nuestra class "StreamPlataformSerializer" y pongámosla después de nuestra WatchListSerializer (porque? pues no se!) y alli8 mismo antes de nuestra clase Meta creamos una variable llamada "watchlist" o un nuevo item y un nuevo campo, que va a tener todos los elementos con respecto a esta "watchlist" en traducción, si seleccionamos Netflix se le asignara a este item todas las películas o watchlist (recuerden que cambiamos el nombre por si eran series o podcast) que contenga Netflix
+
+```Python
+...
+
+class StreamPlataformSerializer(serializers.ModelSerializer):
+
+    watchlist = WatchListSerializer(many=True, read_only=True)
+
+    class Meta:
+
+        model = StreamPlataform
+
+        fields = "__all__"
+...
+```
+
+si vamos nuevamente a http://127.0.0.1:8000/watch/stream/ vemos como ya nos aprese en forma de lista las "watchlist" que tenemos asignadas a Netflix y PrimeVideo
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221013135246.png)
+
+Recordemos que este watchlist:
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221013135442.png)
+es mui importante, porque lo definimos aquí en "models.py" en "related_name"
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221013135552.png)
+
+Si le cambiamos ese nombre en nuestro "Nested Serializer" no funcionara
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221013135933.png)
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221013135945.png)
+
+En resumen o lo que entendí es que con esa simple instrucción 
+```Python
+...
+watchlist = WatchListSerializer(many=True, read_only=True)
+...
+```
+Estamos guardando en ese item llamado "watchlist" que lo pasamos dentro de models con el mismo nombre como 
+
+```Python
+...
+plataform = models.ForeignKey(StreamPlataform, on_delete=models.CASCADE, related_name="watchlist")
+...
+```
+y a el le asignamos todas las watchlist que posea el serializador
+
+Bueno intentemos añadir una nueva plataforma pero desde las peticiones
+
+```Json
+    {
+        "name": "Disney +",
+        "about": "D+",
+        "website": "https://www.disneyplus.com"
+    }
+```
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221013141232.png)
+
+Ahora agreguemos algunas Watchlist a nuestra nueva plataforma, vamos a http://127.0.0.1:8000/watch/list/  y pasémosle una petición 
+
+```Json
+    {
+        "title": "C++",
+        "storyline": "Description",
+        "active": false,
+        "plataform": 6
+    }
+```
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221013142645.png)
+
+y si vamos a checar el detalle de nuestra nueva plataforma
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221013142745.png)
