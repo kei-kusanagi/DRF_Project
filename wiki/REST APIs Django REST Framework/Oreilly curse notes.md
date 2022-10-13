@@ -1943,3 +1943,117 @@ Ahora agreguemos algunas Watchlist a nuestra nueva plataforma, vamos a http://12
 y si vamos a checar el detalle de nuestra nueva plataforma nos aparecerá esta relación anidada jejeje
 
 ![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221013142745.png)
+
+
+## Serializer Relations
+
+En el capitulo anterior vimos como usar el serializador anidado pero que pasa, que nos muestra todo el contenido relacionado, que pasa si solo queremos cierta parte del contenido como el nombre o la descripción solamente, para esto podemos usar los "serializer relations", si vamos a la documentacion podemos usar el "StringRelatedField" https://www.django-rest-framework.org/api-guide/relations/#stringrelatedfield
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221013173548.png)
+
+Nos viene hasta con un ejemplo, el cual usaremos (igualito que el anidado)
+
+```Python
+serializers.StringRelatedField(many=True)
+```
+
+en este retornaremos todo lo que tiene el "modelo" como un string (una cadena pues o el famoso ``__str__`` ), asi que igual vamos a nuestro archivo "serializers.py" y comentemos el anterior y pongamos este mas especifico:
+
+```Python
+...
+class StreamPlataformSerializer(serializers.ModelSerializer):
+
+    # watchlist = WatchListSerializer(many=True, read_only=True)
+
+    watchlist = serializers.StringRelatedField(many=True)
+
+    class Meta:
+
+        model = StreamPlataform
+
+        fields = "__all__"
+...
+```
+
+Lo que hara esto es utilizar nuestro modelo  y lo regresara como esto "title"
+
+Imagen de "models.py"
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221013175016.png)
+
+Si vamos nuevamente a http://127.0.0.1:8000/watch/stream/ veremos que ya solo nos muestra los titulos de las peliculas
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221013175142.png)
+
+#Duda hasta dónde entendí esto pasa porque en el model, le dijimos cuando lo creamos que regresara el titulo pero que hubiera pasado si le ponemos otro campo, a ver movámoslo a ver si no la riego, vamos a "models.py"
+y sip, le puse el "storyline" y me regresa eso, que raro porque en la instrucción solo le estoy diciendo "StringRelatedField" apoco ese save que me estoy refiriendo a lo que estoy retornando en el modelo..
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221013175411.png)
+
+En fin sigamos a ver si después puedo resolver la duda
+
+
+Ahora según el curso, que pasa si en ves de querer regresar el nombre queremos regresar el PrimaryKey o el famoso "pk", pues hay una instrucción que nos ayuda
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221013175817.png)
+
+vamos a copiarla y usarla como la anterior, asignándole eso a nuestra variable watchlist
+
+```Python
+...
+class StreamPlataformSerializer(serializers.ModelSerializer):
+
+    # watchlist = WatchListSerializer(many=True, read_only=True)
+
+    # watchlist = serializers.StringRelatedField(many=True)
+
+    watchlist = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
+
+    class Meta:
+
+        model = StreamPlataform
+
+        fields = "__all__"
+...
+```
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221013180009.png)
+
+Y sip, nos muestra nuestro "pk" pero pues no nos sirve de mucho, seria mejor que nos mostrara el link directo para poder ver las peliculas y adivinen que, si hay un Serializador para esto llamad o "HyperlinkRelatedField"
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221013180131.png)
+
+Pero este no solo es cortar y pegar como en los anteriores, aquí debemos cuidar nuestro nombre de nuestra vista, entonces necesitamos crear nuestros links de películas (los que habíamos creado eran para plataformas) así que le pasamos ``view_name='movie-detail'`` 
+
+```Python
+    watchlist = serializers.HyperlinkedRelatedField(
+
+        many=True,
+
+        read_only=True,
+
+        view_name='movie-detail'
+
+    )
+```
+
+Esto nos generara un error
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221013180922.png)
+
+pero alli mismo nos da la respuesta, tenemos que pasar el contexto como parte del request en el serializador, entonces vamos anuestra vista en "views.py" y en nuestra clase "StreamPlataformAV" en el request (del serializador) le agregamos el contexto
+
+```Python
+...
+class StreamPlataformAV(APIView):
+
+    def get(self, request):
+
+        plataform = StreamPlataform.objects.all()
+
+        serializer = StreamPlataformSerializer(plataform, many=True, context={'request': request})
+
+        return Response(serializer.data)
+...
+```
+
+Wow neta pareció magia que nomas no capisque como lo hizo bien, pero ahora cada que le damos click a uno nos lleva al "movie detail"... aaaaaaaaaaaaaah por eso usa el pk, ósea lo que hizo fue darnos el link de la petición del movie detail y namas le pasa el pk de cada uno
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221013181332.png)
+
+Y bueno quitemos todo eso porque le gusta mas como esta XD
