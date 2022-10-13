@@ -1,0 +1,149 @@
+{
+  "main": {
+    "id": "cf7673ccbfeb3120",
+    "type": "split",
+    "children": [
+      {
+        "id": "604bce9064896146",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "2fbe4a9d1c0bec8a",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "Oreilly curse notes.md",
+                "mode": "source",
+                "source": false
+              }
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "vertical"
+  },
+  "left": {
+    "id": "4f2cd3b473b91777",
+    "type": "split",
+    "children": [
+      {
+        "id": "953e140269450c7f",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "ab3e13c177858a2b",
+            "type": "leaf",
+            "state": {
+              "type": "file-explorer",
+              "state": {
+                "sortOrder": "alphabetical"
+              }
+            }
+          },
+          {
+            "id": "5a25ed0e7be69340",
+            "type": "leaf",
+            "state": {
+              "type": "search",
+              "state": {
+                "query": "",
+                "matchingCase": false,
+                "explainSearch": false,
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical"
+              }
+            }
+          },
+          {
+            "id": "07fc3640babfcd41",
+            "type": "leaf",
+            "state": {
+              "type": "starred",
+              "state": {}
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300,
+    "collapsed": true
+  },
+  "right": {
+    "id": "190138397169d696",
+    "type": "split",
+    "children": [
+      {
+        "id": "4bb8bb0ac52b139a",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "3627cf711a7ceaeb",
+            "type": "leaf",
+            "state": {
+              "type": "backlink",
+              "state": {
+                "file": "Oreilly curse notes.md",
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical",
+                "showSearch": false,
+                "searchQuery": "",
+                "backlinkCollapsed": false,
+                "unlinkedCollapsed": true
+              }
+            }
+          },
+          {
+            "id": "1de91ab35fdb35a4",
+            "type": "leaf",
+            "state": {
+              "type": "outgoing-link",
+              "state": {
+                "file": "Oreilly curse notes.md",
+                "linksCollapsed": false,
+                "unlinkedCollapsed": true
+              }
+            }
+          },
+          {
+            "id": "fed8ce90c142a4dd",
+            "type": "leaf",
+            "state": {
+              "type": "tag",
+              "state": {
+                "sortOrder": "frequency",
+                "useHierarchy": true
+              }
+            }
+          },
+          {
+            "id": "c2c9830dd7d812ee",
+            "type": "leaf",
+            "state": {
+              "type": "outline",
+              "state": {
+                "file": "Oreilly curse notes.md"
+              }
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300,
+    "collapsed": true
+  },
+  "ribbon": {
+    "mostRecentAction": ""
+  },
+  "active": "2fbe4a9d1c0bec8a",
+  "lastOpenFiles": [
+    "04-octubre-2022.md",
+    "Oreilly curse notes.md",
+    "wiki/REST APIs Django REST Framework/IMG/Pasted image 20221003175917.png.md"
+  ]
+}
