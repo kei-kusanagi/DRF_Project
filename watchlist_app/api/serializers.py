@@ -61,14 +61,14 @@ from watchlist_app.models import WatchList, StreamPlataform
             return value
 '''
 
-class StreamPlataformSerializer(serializers.ModelSerializer):
-
-    class Meta:
-        model = StreamPlataform
-        fields = "__all__"
-
 class WatchListSerializer(serializers.ModelSerializer):
     class Meta:
         model = WatchList
         fields = "__all__"
 
+class StreamPlataformSerializer(serializers.ModelSerializer):
+    
+    watchlist = WatchListSerializer(many=True, read_only=True)
+    class Meta:
+        model = StreamPlataform
+        fields = "__all__"
