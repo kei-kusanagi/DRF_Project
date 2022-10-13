@@ -1940,6 +1940,6 @@ Ahora agreguemos algunas Watchlist a nuestra nueva plataforma, vamos a http://12
 ```
 ![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221013142645.png)
 
-y si vamos a checar el detalle de nuestra nueva plataforma
+y si vamos a checar el detalle de nuestra nueva plataforma nos aparecerá esta relación anidada jejeje
 
 ![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221013142745.png)
