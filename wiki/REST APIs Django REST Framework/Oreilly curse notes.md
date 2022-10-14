@@ -2057,3 +2057,48 @@ Wow neta pareció magia que nomas no capisque como lo hizo bien, pero ahora cada
 ![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221013181332.png)
 
 Y bueno quitemos todo eso porque le gusta mas como esta XD
+
+## HyperLinked Model Serializer
+
+hoy toca hablar del "HyperLinked Model Serializer" esto al igual que el anterior "HyperlinkedRelatedField" que vimos, nos ayudara a acceder pro medio de un URL a algún elemento en particular, por ejemplo en este momento, hemos estado usando el "id" para relacionar todos los elementos, pero con este "HyperLinked Model Serializer" podremos tener el link para entrar al detail de este elemento en ves de ese feo "id"
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221014113920.png)
+
+Si nos vamos a la documentación https://www.django-rest-framework.org/api-guide/serializers/#hyperlinkedmodelserializer el HLMS es igual que el modern serializer, con excepción que representa la relacion como una "pk" (esa es la única diferencia #Duda no entendí 😅), para usarlo tenemos que pasárselo en la clase 
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221014121403.png)
+
+Vamos a "serializers.py" y experimentemos, en la class ``class StreamPlataformSerializer(serializers.ModelSerializer):`` cambiemos el ModelSerializer por el HLMS
+```Python
+...
+class StreamPlataformSerializer(serializers.HyperlinkedModelSerializer):
+
+    watchlist = WatchListSerializer(many=True, read_only=True)
+...
+```
+
+
+ahora cada que mandemos llamar ese serializador debemos mandar un contexto
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221014121750.png)
+
+así que vamos a "views.py" y le pasamos el contexto en donde inicializamos nuestro serializador "StreamPlataformSerializer"
+
+```Python
+...
+class StreamPlataformAV(APIView):
+
+    def get(self, request):
+
+        plataform = StreamPlataform.objects.all()
+
+        serializer = StreamPlataformSerializer(plataform, many=True, context={'request': request})
+        return Response(serializer.data)
+...
+```
+
+Y se supone que deveria darnos esto
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221014135300.png)
+pero a mi por mas que lo intente no me salió #Duda regresar después a ver que paso aqui que ya gaste mucho tiempo tratando de ver porque me salia esto
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221014135435.png)
+
+
+Y eso es todo por este capitulo, recomienda dar un repaso de todo porque se vienen cosas mas difíciles 
