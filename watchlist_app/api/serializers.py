@@ -1,5 +1,6 @@
+from asyncore import read
 from rest_framework import serializers
-from watchlist_app.models import WatchList, StreamPlataform
+from watchlist_app.models import Review, WatchList, StreamPlataform, Review
 '''
 # def name_length(value):
 #     if len(value) < 2:
@@ -60,13 +61,19 @@ from watchlist_app.models import WatchList, StreamPlataform
         else:
             return value
 '''
+class ReviewSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Review
+        fields = "__all__"
 
 class WatchListSerializer(serializers.ModelSerializer):
+    reviews = ReviewSerializer(many=True, read_only=True)
     class Meta:
         model = WatchList
         fields = "__all__"
 
-class StreamPlataformSerializer(serializers.HyperlinkedModelSerializer):
+class StreamPlataformSerializer(serializers.ModelSerializer):
 # class StreamPlataformSerializer(serializers.ModelSerializer):
     
     watchlist = WatchListSerializer(many=True, read_only=True)
