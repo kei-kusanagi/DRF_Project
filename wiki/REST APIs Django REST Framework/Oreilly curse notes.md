@@ -2102,3 +2102,134 @@ pero a mi por mas que lo intente no me salió #Duda regresar después a ver que 
 
 
 Y eso es todo por este capitulo, recomienda dar un repaso de todo porque se vienen cosas mas difíciles 
+## Serializer Relations Continued
+
+Ahora en esta y las siguientes lecciones, nos estaremos enfocando en las "Generic views", pero no iniciaremos esto directamente, empezáremos a expandir el proyecto empezando con los "models" otra vez.
+
+Ahorita tenemos información respecto a las películas o series, como en que plataforma están pero queremos agregar un nuevo "feature", que sera los "Ratings"  entonces en ves de reescribir todas las vistas y tareas mejor agregaremos esto creando una nueva "class", asi que vamos a nuestro archivo "models.py" y creamos esta nueva "class" y la llamaremos "Review" esto igual tomara nuestro "models.Model".
+
+Ahora, recuerde, el motivo principal es crear una clase de revisión adecuada y luego conectarla a través de una clave externa o "foreign key".
+
+Entonces, si abro cualquier película o watchlist podremos tener opciones para ver su reseña, y recordemos que la "relationship" que usaremos es que cada "review" solo podrá calificar una película pero una "watchlist" podrá tener muchas "reviews"
+
+Pues bien vamos a "models.py" y escribamos nuestra clase, donde definitivamente necesitamos la variable "rating" la cual variara entre el 1 y el 5, necesitamos un sistema de reseñas usando valores positivos así que de models usaremos "PositiveIntegerField" y ahora podemos añadirle validadores aqui y los validadores nos ayudan a definir una brecha específica o definir un rango específico para números y aqui usaremos lo que es el "MinValueValidator" y "MaxValueValidator" (y necesitamos importarlos primero)
+
+```Python
+...
+from django.core.validators import MinValueValidator, MaxValueValidator
+...
+
+class Review(models.Model):
+
+    rating = models.PositiveIntegerField(validators=[MinValueValidator(1), MaxValueValidator(5)])
+```
+
+Lo siguiente que necesitamos es que este es una reseña, pero necesitamos una descripción de la reseña así que se la agregamos como "model.CharField", también necesitaremos dos "DateTimeField" unos para cuando fue creado y otro cuando se actualiza
+
+Ahora, sabemos que debemos conectarlo con un active por si son "reviews" falsas poderlo poner como desactivado y listo
+
+
+```Python
+...
+class Review(models.Model):
+
+    rating = models.PositiveIntegerField(validators=[MinValueValidator(1), MaxValueValidator(5)])
+
+    description = models.CharField(max_length=200, null=True)
+
+    active = models.BooleanField(default=True)
+
+    created = models.DateTimeField(auto_now_add=True)
+
+    update = models.DateTimeField(auto_now=True)
+```
+
+Listo ya tenemos todo para los "reviews" ahora solo necesitamos conectarlo con las multiples películas, entonces lo añadimos abajo de la descripción, lo vamos a conectar a nuestra watchlist (por eso le ponemos el nombre de la variable asi), esto va a ser una relacion "models.ForeignKey" y supongamos que si alguien eliminó esta película, eso significa que todas las reseñas deberían eliminarse. Así que esto debería ser models.CASCADE. Esto se ve bien y luego necesito proporcionar "related_name" si alguien abre una película aquí, ¿cuál debería ser el término que debería estar visible aquí? Llamémoslo solo como "reviews". ya solo nos falta pasar el rating ( #Duda aun no me queda claro como despues de uan class por medio de una funcion regresamos algo de ella)
+
+```Python
+...
+class Review(models.Model):
+
+    rating = models.PositiveIntegerField(validators=[MinValueValidator(1), MaxValueValidator(5)])
+
+    description = models.CharField(max_length=200, null=True)
+
+    #Relationship
+    watchList = models.ForeignKey(WatchList, on_delete=models.CASCADE, related_name="reviews")
+
+    active = models.BooleanField(default=True)
+
+    created = models.DateTimeField(auto_now_add=True)
+
+    update = models.DateTimeField(auto_now=True)
+
+  
+
+    def __str__(self):
+
+        return str(self.rating)
+```
+
+Paramos el servidor y le damos "makemigrations" y "migrate"
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221017141515.png)
+
+una cosa mas que debemos hacer es registrarlo para que nos salga en el sitio de administración de Django, así que vamos a "admin.py" y registramos nuestro modelo.
+
+```Python
+from django.contrib import admin
+
+from watchlist_app.models import WatchList, StreamPlataform, Review
+
+
+# Register your models here.
+
+admin.site.register(WatchList)
+
+admin.site.register(StreamPlataform)
+
+admin.site.register(Review)
+```
+
+Listo, ahora creemos un "review"
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221017142327.png)
+
+Ahora en ves de que solo se vea el 5 hagamos que se vea el nombre de la pelicula o wactchlist a la que se refiere, vamos  a "models.py" en la funcion que nos regresa el rating le pondremos esto
+
+```Python
+...
+    def __str__(self):
+
+        return str(self.rating) + " | " + self.watchList.title
+```
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221017142545.png)
+
+Ahora eso se hace en nuestra sección de administración y esto solo verifica que hayamos escrito el modelo correcto. Ahora lo que tenemos que hacer es acceder a esta información. Así que tenemos que escribir puntos de vista. Y necesitamos escribir un serializador, lo importante es que necesitamos hacer una relación. Entonces, aquí en nuestra "StreamPlataform" podemos tener muchas películas. Del mismo modo, ahora con nuestras películas, podemos tener muchas críticas y debemos seguir algo similar en nuestro archivo "serializers.py" escribimos una nueva clase "ReviewSerializer" y usaremos nuestro "ModelSerializer" lo importamos arriba, añadimos nuestro "class MEta:" y dentro necesitamos tomar todo de mi model y nuestros campos, yle pasaremos todos
+
+```Python
+...
+from watchlist_app.models import Review, WatchList, StreamPlataform, Review
+...
+class ReviewSerializer(serializers.ModelSerializer):
+
+    class Meta:
+
+        model = Review
+
+        fields = "__all__"
+...
+```
+
+Ya que tenemos eso creemos nuestra "relationship" necesitamos definir "reviews" le pasamos su serializador "ReviewSerializer" y le decimos que "many=True" y lo ponemos como solo de lectura, esto significa que cuando envío una solicitud de publicación mientras agrego una película, un podcast o cualquier tipo de programa, no voy a agregar una reseña. Luego voy a agregar todos estos campos. Pero cuando voy a enviar una solicitud de obtención, también voy a recibir este campo de solo lectura. Entonces podemos agregar una revisión a través de este campo solo este serializador, no podemos agregar una revisión desde el serializador.
+
+```Python
+...
+class WatchListSerializer(serializers.ModelSerializer):
+
+    reviews = ReviewSerializer(many=True, read_only=True)
+...
+```
+
+y listo ahora si accedemos a cada watchlist nos aparecerá sus reviews
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221017144749.png)
