@@ -2366,3 +2366,26 @@ Listo ahora vamos a nuestro servidor e intentemos acceder a un review, mediante 
 ![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221018121551.png)
 
 Y recordemos que hemos agregado solo obtener "request". Eso significa que básicamente no podemos realizar la solicitud de creación o "post". Estos son bastante importantes cuando tenemos que realizar tareas sencillas como acceder, crear, eliminar o actualizar y eso veremos en la siguiente lección donde aprenderemos a como eliminarlos con este método basado en clases que usara una "generic view" basada en clases, y en la próxima lección reduciremos aun mas esto para que quede mas como en el ejemplo de la documentación.
+
+## URL Structure
+
+Muy bien, en los capítulos anteriores habíamos creado estas dos clases
+![[IMG/Pasted image 20221018161507.png]]
+
+estas vistas estan bien asi pero, al momento de darle en http://127.0.0.1:8000/watch/review me muestra TODAS las reviews, entonces vamos a crear una URL para revisar individualmente por peliculas o watchlist (porque pueden ser podcast o series) tipo ponerle esta ruta http://127.0.0.1:8000/stream/1/review y nos de todos los reviews de esa pelicula y por otra parte si queremos revisar una sola review poderle poner una ruta tipo http://127.0.0.1:8000/watch/review/1 y que nos salga solo esa review
+
+ahorita de echo podemos ingresar a ese enlace y nos saldra el detalle del review como queremos
+![[IMG/Pasted image 20221018162515.png]]
+
+Pero no podemos modificarlo ni destruirlo, así que en las siguientes lecciones veremos como y ahorita esta solo fue para enseñarnos la estructura de como quedara.
+
+## Concrete View Classes
+
+En esta lección comenzaremos un nuevo viaje 🚞 que serán las "Concrete View Clases" oxea las clases de vista concretas, asi que si vamos a la documentación podemos dar click aquí donde dice ``generics.py`` 
+![[IMG/Pasted image 20221018163951.png]]
+que nos llevara aqui https://github.com/encode/django-rest-framework/blob/master/rest_framework/generics.py
+
+![[IMG/Pasted image 20221018164050.png]]
+
+y si hacemos scroll para abajo podremos ver las diferentes clases que usremos como la "CreateAPIView"
+
