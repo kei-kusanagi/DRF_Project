@@ -2325,4 +2325,44 @@ Recordemos que le tenemos que pasar nuestro famoso "pk" que seria en este caso q
 y si regresamos a http://127.0.0.1:8000/watch/review nos mostrara una lista con todas las reviews
 ![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221017213159.png)
 
-# me quede en https://learning.oreilly.com/videos/build-rest-apis/9781801819022/9781801819022-video5_15/ 10:11
+Muy bien, como mencionamos tenemos múltiples clases, pero tal vez si queremos recuperar un solo un elemento(como cuando mandabamos a llamar un "watchlist" por detalle), lo que voy a hacer es utilizar este "RetrieveModelMixin" en neustro "views.py". 
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221018115228.png)
+Así que lo que vamos a hacer crear una nueva clase y la llamaremos "ReviewDetail", voy a importar "mixins" y el "RetrieveModelMixin" y al final también importamos el "GenericAPIView". Ya hecho esto definimos nuestro "queryset" y solo necesitamos pasarle nuestro objeto "review"  y nuestro "serializer_class" que es "ReviewSerializer" y dentro de mi "gest request" solo necesitamos regresar una opcion de recuperacion o "retrive option (que seria la función que les digo que tengo #Duda de porque se usa eso pa regresar datos)" 
+
+```Python
+...
+class ReviewDetai1(mixins.RetrieveModelMixin, generics.GenericAPIView) :
+
+    queryset = Review.objects.all()
+
+    serializer_class = ReviewSerializer
+
+    def get(self, request, *args, **kwargs):
+
+        return self.retrieve(request, *args, **kwargs)
+...
+```
+
+Ahora solo tenemos que crear una url en nuestro "urls.py" primero usaré esta clave principal ("pk") y luego, en lugar de "list", usaré "detail" aparte necesitamos agregarlo en las importaciones como "ReviewDetail" Y en lugar de "review-list", lo llamaré "review-detail"
+
+```Python
+from django.urls import path, include
+from watchlist_app.api.views import ReviewList, ReviewDetail, WatchListAV, WatchDetailAV, StreamPlataformAV,StreamPlataformDetailAV
+
+urlpatterns = [
+    path('list/', WatchListAV.as_view(), name='movie-list'),
+    path('<int:pk>', WatchDetailAV.as_view(), name='movie-detail'),
+    path('stream/', StreamPlataformAV.as_view(), name='stream'),
+    path('stream/<int:pk>', StreamPlataformDetailAV.as_view(), name='stream-detail'),
+
+    path('review', ReviewList.as_view(), name='review-list'),
+    # GenericAPIView and Mixins
+    path('review/<int:pk>', ReviewDetail.as_view(), name='review-detail'),
+]
+```
+
+Listo ahora vamos a nuestro servidor e intentemos acceder a un review, mediante la url http://127.0.0.1:8000/watch/review/1
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221018121551.png)
+
+Y recordemos que hemos agregado solo obtener "request". Eso significa que básicamente no podemos realizar la solicitud de creación o "post". Estos son bastante importantes cuando tenemos que realizar tareas sencillas como acceder, crear, eliminar o actualizar y eso veremos en la siguiente lección donde aprenderemos a como eliminarlos con este método basado en clases que usara una "generic view" basada en clases, y en la próxima lección reduciremos aun mas esto para que quede mas como en el ejemplo de la documentación.
