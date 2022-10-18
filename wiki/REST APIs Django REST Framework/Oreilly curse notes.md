@@ -2233,3 +2233,96 @@ class WatchListSerializer(serializers.ModelSerializer):
 y listo ahora si accedemos a cada watchlist nos aparecerá sus reviews
 
 ![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221017144749.png)
+## GenericAPIView and Mixins
+
+En el capitulo anterior nos quedamos en que ya podemos hacer los ratings, y los vamos a mostrar pero no vamos a utilizar esta clase APIView (por ejemplo en  ``class StreamPlataformAV(APIView):`` ), usaremos la vista genérica junto con los mixins osease "GenericAPIView" y "Mixins". Asi que brinquemos a la documentación y vamos donde dice "Tutorial" y luego donde dice "class based views" https://www.django-rest-framework.org/tutorial/3-class-based-views/
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221017193210.png)
+
+Estando alli veremos que tenemos 3 Vistas basadas en clases la "using APIView class", la segunda parte que debemos discutir será usar "mixins" esta esla que nos interesa.
+
+Entonces, ¿cómo vamos a usar estos mixins? Básicamente, vamos a importar GenericAPIView. Ahora, junto con este GenericAPIView, podemos importar mixins y ¿por qué los vamos a usar? Tenemos esta clase APIView, ¿por qué necesitamos otro tipo de vista API? Entonces, la cuestión es que estos mixins son muy populares para realizar tareas comunes.
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221017194221.png)
+Todo lo que tenemos que hacer es proveerle settings básicos y podremos realizar estos métodos comunes como enumerar, crear, recuperar, actualizar y podemos realizar todas estas tareas comunes muy rápidamente. No tenemos que definir todo así con estos detalles (como en nuestras funciones en "views.py". Así que no tenemos que escribir todo, todo lo que vamos a hacer es definir nuestro conjunto de consultas "query set" y luego definir qué tipo de método necesitamos.
+Todo lo que vamos a hacer es definir nuestro conjunto de consultas y luego definir qué tipo de método necesitamos. Recordemos que con estos mixins, tenemos el método ".list", ".create", ".retrieve", ".update" y ".destroy". Estos son los métodos comunes que necesitamos, cuando queremos extraer todos los elementos(osea los "reviews") vamos a usar "ListModel", cuando necesitamos realizar una solicitud "post request" (ósea crear una "review"), vamos a usar "create" cuando necesitemos recuperar un elemento individual (como cuando queremos el detail de solo uno), usaremos "retrieve", luego tenemos "update" y "destroy".
+
+Bueno ahora si vamos a codificar, vamos a copiar el ejemplo que nos aparece y lo ponemos en "views.py"
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221017195704.png)
+
+Así que por ahora voy a recuperar todas las "reviews" y voy a crear una "post request" en una sola página, osea poner todas las reviews en una lista simple, y recordar que lo que queremos hacer es crear una dirección tipo "stream/1/review" y que esto me de TODOS los reviews que tenga la película o watchlist "1", que no se mezclen los reviews pues que solo nos de los de la pelicula 1 y muestre todos pero de esa misma, si le ponemos la 2 que no nos muestre los reviews mezclados de la 1 y la 2, que solo sean los reviews de la 2 pero que sean todos y asi.
+
+Entonces, lo que vamos a hacer es por ahora con fines de prueba, voy a crear una lista de revisión "ReviewList" y aquí también necesito importar mi "generic class" ``from rest_framework import status, mixins, generics``
+Entonces, lo que estamos haciendo aquí es pasar directamente nuestro "queryset". No tenemos que hacer todo línea por línea, solo necesito compartir mi "queryset" importamos esta clase (de "watchlist_app.models") y ahora mi "queryset" está listo, solo necesito usar mi serializador (lo importamos)
+
+```Python
+from rest_framework.response import Response
+from rest_framework import status
+from rest_framework.views import APIView
+
+from rest_framework import generics
+from rest_framework import mixins
+
+
+from watchlist_app.models import WatchList, StreamPlataform, Review
+from watchlist_app.api.serializers import WatchListSerializer, StreamPlataformSerializer, ReviewSerializer
+
+
+class ReviewList(mixins.ListModelMixin, mixins.CreateModelMixin, generics.GenericAPIView):
+
+    queryset = Review.objects.all()
+    serializer_class = ReviewSerializer
+
+    def get(self, request, *args, **kwargs):
+        return self.list(request, *args, **kwargs)
+
+    def post(self, request, *args, **kwargs):
+        return self.create(request, *args, **kwargs)
+...
+```
+En "resumen" hemos creado nuestra clase "ReviewList", ahora vamos a utilizar esta importación de vista genérica "GenericAPIView". Entonces importartamos todas las mezclas de métodos que necesitamos realizar. Si vemos, hemos importado "ListModelMixin", eso significa que necesito realizar una solicitud de "request for list". Y aquí también hemos realizado "CreateModelMixins", eso significa que necesito realizar una "post request" que se creará.  Luego, necesitamos definir mi "queryset" en el que voy a recopilar todos los objetos. Luego necesito definir mi "serializer_class", recuerde, este es un nombre de atributo y no podemos cambiarlos.
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221017211353.png)
+
+Ahora lo que tenemos que hacer es dentro de nuestra solicitud de obtención, solo necesito devolver mi lista y dentro de mi solicitud de publicación, solo necesito crearla.
+
+Ahora debemos ir a "urls.py" y crear sus paths, estamos tratando de obtener todas las reseñas que están disponibles en nuestra base de datos así que vamos a usar la "review" como mi enlace y luego voy a importar mi "revisión.as_views"
+```Python
+from django.urls import path, include
+
+from watchlist_app.api.views import ReviewList, WatchListAV, WatchDetailAV, StreamPlataformAV,StreamPlataformDetailAV
+
+
+urlpatterns = [
+
+    path('list/', WatchListAV.as_view(), name='movie-list'),
+    path('<int:pk>', WatchDetailAV.as_view(), name='movie-detail'),
+    path('stream/', StreamPlataformAV.as_view(), name='stream'),
+    path('stream/<int:pk>', StreamPlataformDetailAV.as_view(), name='stream-detail'),
+	#GenericAPIView and Mixins
+    path('review', ReviewList.as_view(), name='review-list'),
+
+]
+```
+
+Listo, vamos a http://127.0.0.1:8000/watch/review y 
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221017212423.png)
+
+Actualmente solo tenemos un elemento dentro de nuestra sección de "review", eso significa que solo tenemos un objeto dentro de nuestra tabla de "review". Y nos recomienda no usar la opción de HTML form, que mejor sigamos usando el Json con Raw data, porque despues usaremos PostMan y pues alli es a puro Json también
+
+Y bueno, recordemos que con esta vista podemos hacer "post request" tambien, asi que hagamos una para darle un "review" a otra peliclua
+
+```Json
+    {
+        "rating": 5,
+        "description": "Good Movie - second review",
+        "active": true,
+        "watchList": 4
+    }
+```
+
+Recordemos que le tenemos que pasar nuestro famoso "pk" que seria en este caso que watchlist nos referimos (osea que pelicula), en este caso la ``"watchList": 4`` 
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221017213118.png)
+
+y si regresamos a http://127.0.0.1:8000/watch/review nos mostrara una lista con todas las reviews
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221017213159.png)
+
+# me quede en https://learning.oreilly.com/videos/build-rest-apis/9781801819022/9781801819022-video5_15/ 10:11
