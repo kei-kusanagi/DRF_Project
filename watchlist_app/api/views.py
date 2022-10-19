@@ -7,7 +7,16 @@ from rest_framework import generics
 from watchlist_app.models import WatchList, StreamPlataform, Review
 from watchlist_app.api.serializers import WatchListSerializer, StreamPlataformSerializer, ReviewSerializer
 
-class ReviewList(generics.ListCreateAPIView):
+class ReviewCreate(generics.CreateAPIView):
+    serializer_class = ReviewSerializer
+
+    def perform_create(self, serializer):
+        pk = self.kwargs.get('pk')
+        watchlist = WatchList.objects.get(pk=pk)
+
+        serializer.save(watchList=watchlist)
+
+class ReviewList(generics.ListAPIView):
     # queryset = Review.objects.all()
     serializer_class = ReviewSerializer
 
