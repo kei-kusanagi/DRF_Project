@@ -2370,22 +2370,113 @@ Y recordemos que hemos agregado solo obtener "request". Eso significa que básic
 ## URL Structure
 
 Muy bien, en los capítulos anteriores habíamos creado estas dos clases
-![[IMG/Pasted image 20221018161507.png]]
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221018161507.png)
 
 estas vistas estan bien asi pero, al momento de darle en http://127.0.0.1:8000/watch/review me muestra TODAS las reviews, entonces vamos a crear una URL para revisar individualmente por peliculas o watchlist (porque pueden ser podcast o series) tipo ponerle esta ruta http://127.0.0.1:8000/stream/1/review y nos de todos los reviews de esa pelicula y por otra parte si queremos revisar una sola review poderle poner una ruta tipo http://127.0.0.1:8000/watch/review/1 y que nos salga solo esa review
 
 ahorita de echo podemos ingresar a ese enlace y nos saldra el detalle del review como queremos
-![[IMG/Pasted image 20221018162515.png]]
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221018162515.png)
 
 Pero no podemos modificarlo ni destruirlo, así que en las siguientes lecciones veremos como y ahorita esta solo fue para enseñarnos la estructura de como quedara.
 
 ## Concrete View Classes
 
 En esta lección comenzaremos un nuevo viaje 🚞 que serán las "Concrete View Clases" oxea las clases de vista concretas, asi que si vamos a la documentación podemos dar click aquí donde dice ``generics.py`` 
-![[IMG/Pasted image 20221018163951.png]]
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221018163951.png)
 que nos llevara aqui https://github.com/encode/django-rest-framework/blob/master/rest_framework/generics.py
 
-![[IMG/Pasted image 20221018164050.png]]
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221018164050.png)
 
-y si hacemos scroll para abajo podremos ver las diferentes clases que usremos como la "CreateAPIView"
+y si hacemos scroll para abajo podremos ver las diferentes clases que usaremos como la "CreateAPIView", "ListAPIView", "RetriveAPIView" aqui ya viene toda la información, por ejemplo en "ListAPIView" ya viene con la función de lista , en la de  "RetriveAPIView" igual ya tiene la función de obtención y así.
 
+Entonces, cuando vamos a utilizar estas "clases de vista concreta", no necesitamos escribir estas listas ni nada más, aunque ahorita estubimos usando "mixins", necesitamos escribir las funciones. Pero cuando vamos a usar estas "Clases de Vista Concreta", no necesitamos importarlas porque ya las tienen.
+
+Lo primero que haremos sera comentarlos en nuestro archivo "views.py" y comentamos nuestras dos clases anteriormente creadas, la "ReviewDetail" y la "ReviewList" y luego los modificaremos de acuerdo con nuestras nuevas URL.
+
+Asi que vamos a la documentacion y buscamos "ListCreateAPIView" que es lo que queremos "crear una lista de nuestros ratings" https://www.django-rest-framework.org/api-guide/generic-views/#listcreateapiview
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221018190851.png)
+Alli nos menciona que nos dara tanto un "get" como un "post"
+
+Entonces vamos a "views.py" y creemos una clase, a eso si, tambien teniamos que importar "generics" (como lo dice el ejemplo) pero ya lo habiamos importado antes junto con "mixins" entonces namas comentamos el "mixins"
+
+Creamos la class y llamamos a "ReviewList" primero y haremos todo igualito a como creamos las clases anteriores con los "mixins" pero en ves de usar esos "mixins" usaremos la clase generica "ListCreateAPIView" y asi, esto me dara el poder de mandar un "get" y de "post", luego dre crear mi casa devemos definir dentro mi "query set" y mi "serializer class", entronces nuestro "queryset" igual que la ves anterior sera "Review.objects.all()" y nuestro serializador de clase sera "ReviewSerializer"
+
+```Python
+...
+from rest_framework import generics
+...
+class ReviewList(generics.ListCreateAPIView):
+
+    queryset = Review.objects.all()
+
+    serializer_class = ReviewSerializer
+...
+```
+
+Y listo, con esto no tendremos que escribir NADA MAS 😲, ahora tenemos que ir a nuestro "urls.py" y alli deveriamos escribir su URL pero ya la escribimos anteriormente
+```Python
+...
+path('review/', ReviewList.as_view(), name='review-list'),
+...
+```
+
+Ahora necesitamos otra pero para los detalles, regresamos a "views.py", creamos nuestra clase y la llamamos "ReviewDetail" igual le pasamos la clase genérica "generics.RetriveUpdateDestroyAPIView" esto me dará opciones para hacer "get", "put" y "delete", después definimos nuestro "queryset" y nuestro "serializer_calss" (igualito que con los mixins, peor a diferencia que esto es todo)
+
+```Python
+...
+class ReviewDetail(generics.RetrieveUpdateDestroyAPIView):
+
+    queryset = Review.objects.all()
+
+    serializer_class = ReviewSerializer
+...
+```
+
+Después deberíamos ir a "urls.py" y definir su path pero ya lo habíamos echo anteriormente
+
+```Python
+...
+path('review/<int:pk>', ReviewDetail.as_view(), name='review-detail'),
+...
+```
+
+vamos a nuestro servidor a ver como se ve http://127.0.0.1:8000/watch/review/1
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221018194130.png)
+
+Oh que diferencia, ahora si nos da la opción de borrar y solo con dos líneas. Anteriormente, tenemos que definir todo en forma de get, put y delete. Luego tratamos de reducirlos en forma de estos mixins. Ahora los hemos eliminado por completo.
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221018195728.png)
+
+antes de terminar intentemos mandar otro review, metemos este json en http://127.0.0.1:8000/watch/review/ 
+
+```Json
+    {
+        "rating": 5,
+        "description": "Great Movie",
+        "active": true,
+        "watchList": 4
+    }
+```
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221018200040.png)
+
+perfecto, ya tenemos nuestra tercera review, intentemos hacerle un update entrando al detalle de ese review http://127.0.0.1:8000/watch/review/3
+
+
+```Json
+    {
+        "rating": 5,
+        "description": "Great Movie - update",
+        "active": true,
+        "watchList": 4
+    }
+```
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221018200221.png)
+
+Perfecto, ahora intentemos borrarlo
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221018200301.png)
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221018200313.png)
+
+Perfecto, todo lo que habíamos configurado antes cosa pro cosa lo hace con las 2 líneas que escribimos, genial 😲
