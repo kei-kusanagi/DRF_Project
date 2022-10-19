@@ -7,8 +7,10 @@ urlpatterns = [
     path('stream/', StreamPlataformAV.as_view(), name='stream'),
     path('stream/<int:pk>', StreamPlataformDetailAV.as_view(), name='stream-detail'),
 
-    #GenericAPIView and Mixins
-    path('review/', ReviewList.as_view(), name='review-list'),
-    # GenericAPIView and Mixins
-    path('review/<int:pk>', ReviewDetail.as_view(), name='review-detail'),
+
+    # path('review/', ReviewList.as_view(), name='review-list'),
+    # path('review/<int:pk>', ReviewDetail.as_view(), name='review-detail'),
+
+    path('stream/<int:pk>/review', ReviewList.as_view(), name='review-list'),
+    path('stream/review/<int:pk>', ReviewDetail.as_view(), name='review-detail'),
 ]

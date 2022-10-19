@@ -8,8 +8,12 @@ from watchlist_app.models import WatchList, StreamPlataform, Review
 from watchlist_app.api.serializers import WatchListSerializer, StreamPlataformSerializer, ReviewSerializer
 
 class ReviewList(generics.ListCreateAPIView):
-    queryset = Review.objects.all()
+    # queryset = Review.objects.all()
     serializer_class = ReviewSerializer
+
+    def get_queryset(self):
+        pk = self.kwargs['pk']
+        return Review.objects.filter(watchList=pk)
 
 class ReviewDetail(generics.RetrieveUpdateDestroyAPIView):
     queryset = Review.objects.all()
