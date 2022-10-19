@@ -2480,3 +2480,50 @@ Perfecto, ahora intentemos borrarlo
 ![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221018200313.png)
 
 Perfecto, todo lo que habíamos configurado antes cosa pro cosa lo hace con las 2 líneas que escribimos, genial 😲
+## Overwrite Queryset
+
+Ahora cambiaremos los paths para que al momento de ver la lista de "reviews" por ejemplo de la pelicula "4" no nos salgan todos los reviews existentes, si no solo los que sean de esa pelicula o "watchlist".
+
+Para esto primero vamos a "urls.py" y cambiamos nuestros paths de la siguiente forma, para tener una estructura mas apegada a lo que queremos
+
+```Python
+...
+    # path('review/', ReviewList.as_view(), name='review-list'),
+    # path('review/<int:pk>', ReviewDetail.as_view(), name='review-detail'),
+  
+
+    path('stream/<int:pk>/review', ReviewList.as_view(), name='review-list'),
+    path('stream/review/<int:pk>', ReviewDetail.as_view(), name='review-detail'),
+...
+```
+si vamos a http://127.0.0.1:8000/watch/stream/4/review nos muestra la lista completa de reviuews, incluso si ponemos uno nuevo a otra pelicula sale alli
+![[IMG/Pasted image 20221019114444.png]]
+Aunque por el path estamos dándole el "pk" 4 ósea la película "C++", nos debería mostrar solo el review que tiene esta no los de las otras películas
+
+![[IMG/Pasted image 20221019114601.png]]
+
+la razón viene de este querryset en nuestro "views.py"
+![[IMG/Pasted image 20221019120841.png]]
+por default accede a todas las reseñas ``objects.all()`` y no solo a la de la pelicula que queremos, entonces, lo que tenemos que hacer es eliminar este conjunto de consultas y sobrescribirlo, para esto creamos una funcion definiendo nuestro queryset method, esto se tomara a si mismo "self" y le añadimos una declaracion de devolucion "return" accediendo primeramente a nuestra "pk" voy a usar self y luego necesito usar mi ``kargs['pk']``  porque todo va a estar aquí dentro, luego le doy un return al "Review" y vamos a filtrar todas las watchlist y solo regresar la que concuerde con mi "PK"
+
+```Python
+...
+class ReviewList(generics.ListCreateAPIView):
+
+    # queryset = Review.objects.all()
+
+    serializer_class = ReviewSerializer
+
+  
+    def get_queryset(self):
+
+        pk = self.kwargs['pk']
+
+        return Review.objects.filter(watchList=pk)
+...
+```
+
+Guardamos y si vamos nuevamente a http://127.0.0.1:8000/watch/stream/4/review
+![[IMG/Pasted image 20221019122937.png]]
+
+Perfecto, ya solo nos sale la "review" que se le dio a ese "watchlist" en particular
