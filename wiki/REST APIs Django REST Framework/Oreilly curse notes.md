@@ -2497,13 +2497,13 @@ Para esto primero vamos a "urls.py" y cambiamos nuestros paths de la siguiente f
 ...
 ```
 si vamos a http://127.0.0.1:8000/watch/stream/4/review nos muestra la lista completa de reviuews, incluso si ponemos uno nuevo a otra pelicula sale alli
-![[IMG/Pasted image 20221019114444.png]]
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221019114444.png)
 Aunque por el path estamos dándole el "pk" 4 ósea la película "C++", nos debería mostrar solo el review que tiene esta no los de las otras películas
 
-![[IMG/Pasted image 20221019114601.png]]
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221019114601.png)
 
 la razón viene de este querryset en nuestro "views.py"
-![[IMG/Pasted image 20221019120841.png]]
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221019120841.png)
 por default accede a todas las reseñas ``objects.all()`` y no solo a la de la pelicula que queremos, entonces, lo que tenemos que hacer es eliminar este conjunto de consultas y sobrescribirlo, para esto creamos una funcion definiendo nuestro queryset method, esto se tomara a si mismo "self" y le añadimos una declaracion de devolucion "return" accediendo primeramente a nuestra "pk" voy a usar self y luego necesito usar mi ``kargs['pk']``  porque todo va a estar aquí dentro, luego le doy un return al "Review" y vamos a filtrar todas las watchlist y solo regresar la que concuerde con mi "PK"
 
 ```Python
@@ -2524,6 +2524,106 @@ class ReviewList(generics.ListCreateAPIView):
 ```
 
 Guardamos y si vamos nuevamente a http://127.0.0.1:8000/watch/stream/4/review
-![[IMG/Pasted image 20221019122937.png]]
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221019122937.png)
 
-Perfecto, ya solo nos sale la "review" que se le dio a ese "watchlist" en particular
+Perfecto, ya solo nos sale la "review" que se le dio a ese "watchlist" en particular, ya por ultimo cambiaremos nuestra clase "ReviewList" para que solo podamos "ver" , cambiando el "ListCreateAPIView" por un "ListAPIView" (jejeje namas le quitamos la opcion Create)
+
+```Python
+...
+class ReviewList(generics.ListAPIView):
+...
+```
+
+Listo desapareció el cuadro de dialogo donde podíamos crear reviews.
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221019140920.png)
+
+Pero ahora, como podremos crear los reviews si no es para no solo usar el método de entrar a la sección de administración, entonces vamos a nuestro archivo "urls.py" y agregamos este path y añadimos "ReviewCreate" en nuestro "form" aun que aun no creamos esa "class"
+
+```Python
+...
+from watchlist_app.api.views import ReviewList, ReviewDetail, WatchListAV, WatchDetailAV, StreamPlataformAV,StreamPlataformDetailAV, ReviewCreate
+...
+    path('stream/<int:pk>/review-create', ReviewCreate.as_view(), name='review-create'),
+...
+```
+
+Ahora si vamos a "views.py" a crear nuestra "class" y la llamaremos "ReviewCreate" le pasaremos generics.CreateAPIView" (osease pa crear que es lo que estamos viendo con las clases concretas de vistas co "concrete view class"), ahora dentro de esta clase iniciamos el serializador de las "reviews el "ReviewSerializer" y ya con eso creamos nuestra función y la llamaremos "perform_create" para hacerle "override" al método crear (por cierto sacamos ese método de la documentación)
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221019142608.png)
+
+Entonces dentro de nuestro "perform_create" le pasamos el self y luego nuestro seryalizador, luego dentro de esto seleccionamos nuestra "pk", utilizamos nuestro self el tendrá toda la información dentro de nuestros "kwargs" (argumentos) y nuestro "pk" (que estamos obteniendo del link).
+
+Luego iniciamos nuestro "movie" (pa no confundirlos porque le habia puesto igual watchlist) pasándole que obtenga la watchlist que corresponda a nuestro "pk" (cuando obtenga la película que le pasamos por el pk la guardara en movie), lo único que queda es salvar nuestro serializador indicándole que nuestra watchlist (ósea lo que regresaremos en el serializador) sera igual a el "movie" que acabamos de definir
+
+```Python
+...
+class ReviewCreate(generics.CreateAPIView):
+
+    serializer_class = ReviewSerializer
+
+  
+
+    def perform_create(self, serializer):
+
+        pk = self.kwargs.get('pk')
+
+        movie = WatchList.objects.get(pk=pk)
+
+  
+
+        serializer.save(watchList=movie)
+...
+```
+Guardamos y ahora mandamos a llamar este metodo (por medio del link que definimos) 
+http://127.0.0.1:8000/watch/stream/1/review-create
+desglosandolo pa entender
+``http://127.0.0.1:8000/ `` el servidor
+``watch/stream/`` nuestra lista de plataformas
+``1/`` la película dentro de esa plataforma al cual estamos apuntando con nuestro metodo
+``review-create`` el método que acabamos de crear
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221019145156.png)
+
+ojo, nos aparece 
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221019145448.png)
+porque solo esta permitido hacer post (Allow: POST, ), ahora vamos a mandarle un Json para comprobar que funciona 
+```Json
+{
+    "rating": 5,
+    "description": "Again a great movie",
+    "active": true
+}
+```
+
+Ojo quitamos el watchilist porque no lo necesitamos, ya que por el link al que mandaremos el request ya seleccionamos a cual seria la request
+Nos da este error, y menciona que es porque en el serializador (ya ven queni lo tocamos) estamos mandando llamar todo, por copnsecuencia nos pide en el json que mandamos el watchlist, pero no lo necesitamos ya que apuntamos a el con el link
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221019145827.png)
+
+Como solución debemos ir a "serializers.py" y en nuestro "ReviewSerializer" quitarle el ``fields = "__all__"`` y excluir precisamente el watchlist
+
+```Python
+...
+    class Meta:
+
+        model = Review
+
+        exclude = ('watchList',)
+
+        # fields = "__all__"
+...
+```
+
+Listo, ahora si ya incluso en el cuadro de dialogo no nos lo pide
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221019150744.png)
+
+Asi que mandemos nuevamente nuestro Json como review
+
+```Json
+{
+    "rating": 5,
+    "description": "Great movie - New!",
+    "active": true
+}
+```
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221019151216.png)
+
+Y eso es todo por este episodio, la idea es que aunque lo simplificamos con dos líneas con el "concrete View Classes" podemos especificar los métodos por ejemplo este de "POST" para hacerlo mucho mas especifico (ósea primero lo simplificamos y luego lo complicamos jajaja bueno no es cierto)
