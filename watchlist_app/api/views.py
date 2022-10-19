@@ -2,11 +2,20 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework import generics
-from rest_framework import mixins
+# from rest_framework import mixins
 
 from watchlist_app.models import WatchList, StreamPlataform, Review
 from watchlist_app.api.serializers import WatchListSerializer, StreamPlataformSerializer, ReviewSerializer
 
+class ReviewList(generics.ListCreateAPIView):
+    queryset = Review.objects.all()
+    serializer_class = ReviewSerializer
+
+class ReviewDetail(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Review.objects.all()
+    serializer_class = ReviewSerializer
+    
+'''
 class ReviewDetail(mixins.RetrieveModelMixin, generics.GenericAPIView) :
     queryset = Review.objects.all()
     serializer_class = ReviewSerializer
@@ -22,8 +31,7 @@ class ReviewList(mixins.ListModelMixin, mixins.CreateModelMixin, generics.Generi
 
     def post(self, request, *args, **kwargs):
         return self.create(request, *args, **kwargs)
-
-########################################################################
+'''
 class StreamPlataformDetailAV(APIView):
 
     def get(self, request, pk):
@@ -48,7 +56,6 @@ class StreamPlataformDetailAV(APIView):
         plataform = StreamPlataform.objects.get(pk=pk)
         plataform.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
-########################################################################
 class StreamPlataformAV(APIView):
     
     def get(self, request):
