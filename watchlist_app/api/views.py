@@ -73,19 +73,33 @@ class StreamPlataformDetailAV(APIView):
         plataform.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
-class StreamPlataformVS(viewsets.ViewSet):
+class StreamPlataformVS(viewsets.ModelViewSet):
 
-    def list(self, request):
-        queryset = StreamPlataform.objects.all()
-        serializer = StreamPlataformSerializer(queryset, many=True)
-        return Response(serializer.data)
+    queryset = StreamPlataform.objects.all()
+    serializer = StreamPlataformSerializer
 
-    def retrieve(self, request, pk=None):
-        queryset = StreamPlataform.objects.all()
-        watchlist = get_object_or_404(queryset, pk=pk)
-        serializer = StreamPlataformSerializer(watchlist)
-        return Response(serializer.data)
+'''
+# class StreamPlataformVS(viewsets.ViewSet):
 
+#     def list(self, request):
+#         queryset = StreamPlataform.objects.all()
+#         serializer = StreamPlataformSerializer(queryset, many=True)
+#         return Response(serializer.data)
+
+#     def retrieve(self, request, pk=None):
+#         queryset = StreamPlataform.objects.all()
+#         watchlist = get_object_or_404(queryset, pk=pk)
+#         serializer = StreamPlataformSerializer(watchlist)
+#         return Response(serializer.data)
+
+#     def create(self, request):
+#         serializer = StreamPlataformSerializer(data=request.data)
+#         if serializer.is_valid():
+#             serializer.save()
+#             return Response(serializer.data)
+#         else:
+#             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+'''
 
 class StreamPlataformAV(APIView):
     
