@@ -1,3 +1,4 @@
+
 Ya tenia el proyecto creado pero la regué tratando de añadirle archivos estáticos y una pagina de login, entonces opte por crearlo nuevamente (sirve practico)
 
 ## Creating JSON Response - Individual Elements
@@ -1181,12 +1182,6 @@ estos, donde podemos indicar si es un "IntegerField" y por ejemplo ese del "id" 
 
 No se porque s eme complico tanto esto, ya lo vi varias veces y pues lo que entendí que habla sobre el como podemos especificar el como se comportaran estos campos, como de solo lectura, o que sea un campo necesario y así, la única #Duda que me surgió es cuando habla que tenemos estos campos aquí en "seializers.py" y también en "models.py"
 
-
-``` #Duda 
-02:56 03:22
-
-Ahora, la mayoría de nosotros que ya tenemos información sobre estos modelos, podemos juzgar directamente el campo del serializador. Pero si no tiene conocimiento sobre los modelos, es probable que si está escribiendo consultas SQL usted mismo, entonces tal vez no tenga esta información del modelo. En ese momento, debe escribir este campo. Pero supongo que la mayoría de nosotros ya tenemos información sobre este modelo, la mayoría de nosotros ya tenemos información de lo que es nuestro CharField. Así que no tienes que preocuparte mucho.
-```
 
 ## Model Serializer
 
@@ -2627,3 +2622,107 @@ Asi que mandemos nuevamente nuestro Json como review
 ![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221019151216.png)
 
 Y eso es todo por este episodio, la idea es que aunque lo simplificamos con dos líneas con el "concrete View Classes" podemos especificar los métodos por ejemplo este de "POST" para hacerlo mucho mas especifico (ósea primero lo simplificamos y luego lo complicamos jajaja bueno no es cierto)
+## Viewsets and Routers
+
+
+Bueno, este metodo no es algo importante, porque es preferible usar los diferentes tipos de vistas de clase genérica para cualquier tipo de API (de echó yo si vi que usaban mucho esto de los routers en los ejemplos que hacia antes y se me hacia arto complicado) asi que hablaremos de los "ViewSet" y los mendigos "Routers".
+
+Lo primero es que nuestro objetivo es disminuir el tamaño del código de las últimas lecciones, ahora lo que vamos a hacer con "ViewSet" es combinar la logica para las listas "list" y los detalles "detail" entonces vallamos a "views.py" y creemos una clase simple, primero importamos 
+``from rest_framework import viewsets``
+y ensima de nuestra "StreamPlataformAV" crearemos nuestra clase, la llamaremos "StreamPlataform" e importaremos nuestro ViewSet
+``class StreamPlataform(viewsets.ViewSet)``
+este viewset sporta varios metodos como los que queremos usar como lo que es list, create, retrive, update, partial update y destroy 💣, ais que vamos a la documentacion y de alli sacamos este ejemplo y copiamos y pegamos las funciones de list y retrive
+https://www.django-rest-framework.org/api-guide/viewsets/
+![[IMG/Pasted image 20221019203158.png]]
+
+pero obvio no podemos namas copiar y pegar, tenemos que definir nuestro queryset, que en nuestro caso ya habiamos usado StreamPlataform y como serializador igual el que ya habiamos usado StreamPlataformSerializer
+
+```Python
+...
+class StreamPlataform(viewsets.ViewSet):
+
+
+    def list(self, request):
+
+        queryset = StreamPlataform.objects.all()
+
+        serializer = StreamPlataformSerializer(queryset, many=True)
+
+        return Response(serializer.data)
+
+  
+    def retrieve(self, request, pk=None):
+
+        queryset = StreamPlataform.objects.all()
+
+        watchlist = get_object_or_404(queryset, pk=pk)
+
+        serializer = StreamPlataformSerializer(StreamPlataform)
+
+        return Response(serializer.data)
+...
+```
+
+Así que ahora hemos creado una nueva clase en la que estamos importando este ViewSet y actualmente tenemos estos dos métodos, que son la lista "list" y la recuperación "retrieve".
+
+Lo que voy a hacer es crear enrutadores ¿qué es este enrutador? un enrutador nos ayuda a combinar todo tipo de enlace. Entonces, cada vez que usamos un enrutador, no necesitamos crear un enlace separado como lo habíamos hecho ante (como estos de stream y stream-detail)
+![[IMG/Pasted image 20221019204100.png]]
+si bajamos un poco en la documentación https://www.django-rest-framework.org/api-guide/viewsets/ podemos ver que podemos crear routers con diferentes requerimientos
+![[IMG/Pasted image 20221019204000.png]]
+
+entonces vamos a "urls.py" y definimos nuestro router allí acordándonos de importarlo de "rest_framework.routers"
+entonces usaremos router como nombre de la variable, luego usaremos "register" para el link y le pasaremos solo 'str' y le pasaremos nuestras "views" StreamPlataform (la clase que acabamos de crear) y lo incluimos en el import de las vistas, hecho esto solo tenemos que pasarle también un "basename" que sera 'streamplataform'.
+
+Lo unico que nos falta es incluir este "router" en nuestro "urlpattern" asi que comentemos los dos que ya hacían lo de stream-list y stream-detail
+
+```Python
+...
+from watchlist_app.api.views import ReviewList, ReviewDetail, WatchListAV, WatchDetailAV, StreamPlataformAV,StreamPlataformDetailAV, ReviewCreate, StreamPlataform
+  
+from rest_framework.routers import DefaultRouter
+ 
+
+router = DefaultRouter()
+router.register('stream', StreamPlataform, basename='streamplataform')
+
+
+urlpatterns = [
+
+    path('list/', WatchListAV.as_view(), name='movie-list'),
+    path('<int:pk>', WatchDetailAV.as_view(), name='movie-detail'),
+   
+	path('', include(router.urls)),
+...
+```
+
+Entonces, lo que voy a hacer es, una vez que alguien visite el enlace vacío. Se va a conectar con nuestros enrutadores para url. Aquí, vamos a llamar a este "stream" para acceder a esto. Si vamos a llamar a stream/1, que es un elemento individual, seguirá funcionando. Intentemos acceder a esta "stream" y obtenemos un error intencional, solo debemos cambiar nuestra clase porque se llama igual a otra que usamos de "StreamPlataform" a "StreamPlataformVS"  tanto en nuestras views como en nuestras urls
+
+![[IMG/Pasted image 20221019210712.png]]
+
+Ahora tenemos TODA la informacion de nuestras plataformas de stream, tooooda, y si queremos solo de una por ejemplo netflix que es la 4 http://127.0.0.1:8000/watch/stream/4/
+nos da un error, per es porque nos falta importar en "views.py"
+```Python
+from django.shortcuts import get_object_or_404
+...
+```
+
+ahora si vamos al enlace y... otro fregado error...
+
+poner watchlist en el serializador
+
+```Python
+...
+  def retrieve(self, request, pk=None):
+
+        queryset = StreamPlataform.objects.all()
+
+        watchlist = get_object_or_404(queryset, pk=pk)
+
+        serializer = StreamPlataformSerializer(watchlist)
+...
+```
+
+porfin, nos da TODOS los datos de esa plataforma
+![[IMG/Pasted image 20221019212116.png]]
+
+https://learning.oreilly.com/videos/build-rest-apis/9781801819022/9781801819022-video5_19/ 10:23
