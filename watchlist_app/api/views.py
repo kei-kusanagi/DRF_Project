@@ -73,10 +73,10 @@ class StreamPlataformDetailAV(APIView):
         plataform.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
-class StreamPlataformVS(viewsets.ModelViewSet):
+class StreamPlataformVS(viewsets.ReadOnlyModelViewSet):
 
     queryset = StreamPlataform.objects.all()
-    serializer = StreamPlataformSerializer
+    serializer_class = StreamPlataformSerializer
 
 '''
 # class StreamPlataformVS(viewsets.ViewSet):
