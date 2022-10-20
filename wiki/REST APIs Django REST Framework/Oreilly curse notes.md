@@ -2633,7 +2633,7 @@ y ensima de nuestra "StreamPlataformAV" crearemos nuestra clase, la llamaremos "
 ``class StreamPlataform(viewsets.ViewSet)``
 este viewset sporta varios metodos como los que queremos usar como lo que es list, create, retrive, update, partial update y destroy 💣, ais que vamos a la documentacion y de alli sacamos este ejemplo y copiamos y pegamos las funciones de list y retrive
 https://www.django-rest-framework.org/api-guide/viewsets/
-![[IMG/Pasted image 20221019203158.png]]
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221019203158.png)
 
 pero obvio no podemos namas copiar y pegar, tenemos que definir nuestro queryset, que en nuestro caso ya habiamos usado StreamPlataform y como serializador igual el que ya habiamos usado StreamPlataformSerializer
 
@@ -2666,9 +2666,9 @@ class StreamPlataform(viewsets.ViewSet):
 Así que ahora hemos creado una nueva clase en la que estamos importando este ViewSet y actualmente tenemos estos dos métodos, que son la lista "list" y la recuperación "retrieve".
 
 Lo que voy a hacer es crear enrutadores ¿qué es este enrutador? un enrutador nos ayuda a combinar todo tipo de enlace. Entonces, cada vez que usamos un enrutador, no necesitamos crear un enlace separado como lo habíamos hecho ante (como estos de stream y stream-detail)
-![[IMG/Pasted image 20221019204100.png]]
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221019204100.png)
 si bajamos un poco en la documentación https://www.django-rest-framework.org/api-guide/viewsets/ podemos ver que podemos crear routers con diferentes requerimientos
-![[IMG/Pasted image 20221019204000.png]]
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221019204000.png)
 
 entonces vamos a "urls.py" y definimos nuestro router allí acordándonos de importarlo de "rest_framework.routers"
 entonces usaremos router como nombre de la variable, luego usaremos "register" para el link y le pasaremos solo 'str' y le pasaremos nuestras "views" StreamPlataform (la clase que acabamos de crear) y lo incluimos en el import de las vistas, hecho esto solo tenemos que pasarle también un "basename" que sera 'streamplataform'.
@@ -2697,7 +2697,7 @@ urlpatterns = [
 
 Entonces, lo que voy a hacer es, una vez que alguien visite el enlace vacío. Se va a conectar con nuestros enrutadores para url. Aquí, vamos a llamar a este "stream" para acceder a esto. Si vamos a llamar a stream/1, que es un elemento individual, seguirá funcionando. Intentemos acceder a esta "stream" y obtenemos un error intencional, solo debemos cambiar nuestra clase porque se llama igual a otra que usamos de "StreamPlataform" a "StreamPlataformVS"  tanto en nuestras views como en nuestras urls
 
-![[IMG/Pasted image 20221019210712.png]]
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221019210712.png)
 
 Ahora tenemos TODA la informacion de nuestras plataformas de stream, tooooda, y si queremos solo de una por ejemplo netflix que es la 4 http://127.0.0.1:8000/watch/stream/4/
 nos da un error, per es porque nos falta importar en "views.py"
@@ -2723,7 +2723,7 @@ poner watchlist en el serializador
 ```
 
 porfin, nos da TODOS los datos de esa plataforma
-![[IMG/Pasted image 20221019212116.png]]
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221019212116.png)
 
 
 ## ModelViewSets
@@ -2731,9 +2731,9 @@ porfin, nos da TODOS los datos de esa plataforma
 En el capitulo pasado hablamos de como con la clase "StreamPlataformVS" y la función de lista que creamos nos regresa la lista de todo lo que tiene la plataforma que elegimos gracias al potente router, que este método lo recomienda para proyectos grandes, cuando son pequeños prefiere que usemos el APIView
 
 Entonces si ahorita solo nos da la opción de GET 
-![[IMG/Pasted image 20221020140452.png]] 
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221020140452.png])
 de la misma forma en la parte de lista de streams también solo nos da el GET 
-![[IMG/Pasted image 20221020140557.png]]
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221020140557.png)
 
 Entonces si queremos añadirle la opción de crear, añadimos en nuestro archivo "views.py" otra función (de crear jajajaa) entonces si recordamos, necesitamos serializar todo y una validación y luego mandar un response, recordar, todo esto va en nuestra clase "StreamPlataformVS"
 
@@ -2756,7 +2756,7 @@ Entonces si queremos añadirle la opción de crear, añadimos en nuestro archivo
 ```
 
 lo salvamos y 
-![[IMG/Pasted image 20221020150529.png]]
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221020150529.png)
 
 ya nos da la opcion de post, vamos a intentar mandarle un Json
 
@@ -2769,18 +2769,18 @@ ya nos da la opcion de post, vamos a intentar mandarle un Json
 ```
 
 perfecto, si sirve.
-![[IMG/Pasted image 20221020150716.png]]
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221020150716.png)
 
 Si queremos añadir el borrar podemos hacer algo similar y agregar algo similar solo que en ves de Delete se llama Destroy dentro de la documentación
 
-![[IMG/Pasted image 20221020150928.png]]
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221020150928.png)
 
 Pero esto no lo pondremos pa borrar todas nuestras plataformas, eso lo tenemos que hacer de manera individual, como entrar al http://127.0.0.1:8000/watch/stream/3/ y que nos de aqui la opción de borrar 
-![[IMG/Pasted image 20221020151332.png]]
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221020151332.png)
 
 entonces esto lo podriamos hacer manualmente, pero lo bonito de lo que estamos viendo "ModelViewSet" tiene modelos para todo eso (usando mixins)
 
-![[IMG/Pasted image 20221020151518.png]]
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221020151518.png)
 
 entonces usaremos este nuevo método y por lo tanto comentaremos toda la clase "StreamPlataformVS" y creemos la nueva clase arriba y la llamaremos igual, dentro usaremos nuestro "viewset.ModelViewSet" con esto hecho ahora debemos definir nuestro "queryset" y nuestro serializador
 
@@ -2789,7 +2789,38 @@ entonces usaremos este nuevo método y por lo tanto comentaremos toda la clase "
 class StreamPlataformVS(viewsets.ModelViewSet):
 
     queryset = StreamPlataform.objects.all()
-    serializer = StreamPlataformSerializer
+    serializer_class = StreamPlataformSerializer
 ...
 ```
-Y listo, ya con eso creamos un modelo completo que tiene todas las opciones, sera cierto? "pongamoslo a prueba"
+Y listo, ya con eso creamos un modelo completo que tiene todas las opciones, sera cierto? "pongámoslo a prueba"
+
+Vamos a http://127.0.0.1:8000/watch/stream/3/
+
+Perfecto si nos sale la opción de borrar y las demás opciones
+``**Allow:** GET, PUT, PATCH, DELETE, HEAD, OPTIONS`` 
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221020174920.png)
+
+Tenemos un sistema completo con solo 3 lineas
+
+```Python
+class StreamPlataformVS(viewsets.ModelViewSet):
+
+    queryset = StreamPlataform.objects.all()
+    serializer_class = StreamPlataformSerializer
+```
+
+Ahora, tenemos que discutir el "ReadOnlyModelViewSet"  si cambiamos lo que acabamos de hacer por este modelo
+
+```Python
+class StreamPlataformVS(viewsets.ReadOnlyModelViewSet):
+
+    queryset = StreamPlataform.objects.all()
+    serializer_class = StreamPlataformSerializer
+```
+
+y vamos a http://127.0.0.1:8000/watch/stream/3/, vemos que el botón de Delete o algo que pudiera dejarnos modificarlo desapareció (incluso el cuadro de texto de la parte de abajo)
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221020175938.png)
+
+Y bueno en resumen con estos "modelViewSet" y con la ayuda de los Routers podemos con poquitas líneas tener todas las herramientas de un CRUD e incluso cambiando solamente el modelo hacer que todo sea de lectura y se configure automáticamente si mostrando cosas que no modifiquen nada (como el get)
