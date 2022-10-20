@@ -2725,4 +2725,71 @@ poner watchlist en el serializador
 porfin, nos da TODOS los datos de esa plataforma
 ![[IMG/Pasted image 20221019212116.png]]
 
-https://learning.oreilly.com/videos/build-rest-apis/9781801819022/9781801819022-video5_19/ 10:23
+
+## ModelViewSets
+
+En el capitulo pasado hablamos de como con la clase "StreamPlataformVS" y la función de lista que creamos nos regresa la lista de todo lo que tiene la plataforma que elegimos gracias al potente router, que este método lo recomienda para proyectos grandes, cuando son pequeños prefiere que usemos el APIView
+
+Entonces si ahorita solo nos da la opción de GET 
+![[IMG/Pasted image 20221020140452.png]] 
+de la misma forma en la parte de lista de streams también solo nos da el GET 
+![[IMG/Pasted image 20221020140557.png]]
+
+Entonces si queremos añadirle la opción de crear, añadimos en nuestro archivo "views.py" otra función (de crear jajajaa) entonces si recordamos, necesitamos serializar todo y una validación y luego mandar un response, recordar, todo esto va en nuestra clase "StreamPlataformVS"
+
+```Python
+...
+    def create(self, request):
+
+        serializer = StreamPlataformSerializer(data=request.data)
+
+        if serializer.is_valid():
+
+            serializer.save()
+
+            return Response(serializer.data)
+
+        else:
+
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+...
+```
+
+lo salvamos y 
+![[IMG/Pasted image 20221020150529.png]]
+
+ya nos da la opcion de post, vamos a intentar mandarle un Json
+
+```Json
+    {
+        "name": "HBO",
+        "about": "SV",
+        "website": "http://www.hbo.com"
+    }
+```
+
+perfecto, si sirve.
+![[IMG/Pasted image 20221020150716.png]]
+
+Si queremos añadir el borrar podemos hacer algo similar y agregar algo similar solo que en ves de Delete se llama Destroy dentro de la documentación
+
+![[IMG/Pasted image 20221020150928.png]]
+
+Pero esto no lo pondremos pa borrar todas nuestras plataformas, eso lo tenemos que hacer de manera individual, como entrar al http://127.0.0.1:8000/watch/stream/3/ y que nos de aqui la opción de borrar 
+![[IMG/Pasted image 20221020151332.png]]
+
+entonces esto lo podriamos hacer manualmente, pero lo bonito de lo que estamos viendo "ModelViewSet" tiene modelos para todo eso (usando mixins)
+
+![[IMG/Pasted image 20221020151518.png]]
+
+entonces usaremos este nuevo método y por lo tanto comentaremos toda la clase "StreamPlataformVS" y creemos la nueva clase arriba y la llamaremos igual, dentro usaremos nuestro "viewset.ModelViewSet" con esto hecho ahora debemos definir nuestro "queryset" y nuestro serializador
+
+```Python
+...
+class StreamPlataformVS(viewsets.ModelViewSet):
+
+    queryset = StreamPlataform.objects.all()
+    serializer = StreamPlataformSerializer
+...
+```
+Y listo, ya con eso creamos un modelo completo que tiene todas las opciones, sera cierto? "pongamoslo a prueba"
