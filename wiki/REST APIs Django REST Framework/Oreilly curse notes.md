@@ -2830,11 +2830,15 @@ Y bueno en resumen con estos "modelViewSet" y con la ayuda de los Routers podemo
 Hoy hablaremos de "Postman" la app que ya había usado antes para poder mandar las peticiones, ya que ahorita todo lo hemos estado haciendo tanto desde la pagina de administración como desde los mismos links gracias al poder de Django Rest Framework, lo descargamos (por si aun no lo tienen) https://www.postman.com creamos una cuenta y listo, todo free
 
 Desde este programa podemos acceder a nuestra API de la misma forma que en el navegador, solo copiamos nuestro link http://127.0.0.1:8000/watch/stream/ y nos da varias opciones sobre los diferentes request que podemos hacer
+
 ![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221021115935.png)
+
 le damos en GET y luego en Send
+
 ![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221021115951.png)
 
 Los puse asi uno alado del otro para que vean que es lo mismito, algo que no savia es que si le das donde dice Preview, te aparece la respuesta que se manda por ejemplo al Back End u otros usuarios que usen el API desde dispositivos moviles o alomejor algun equipo de escritorio.
+
 ![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221021120111.png)
 
 Mas en el futuro usaremos esto de la autenticación 😨°°°(**war noises**) 
