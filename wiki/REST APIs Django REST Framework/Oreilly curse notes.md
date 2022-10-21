@@ -2824,3 +2824,92 @@ y vamos a http://127.0.0.1:8000/watch/stream/3/, vemos que el botón de Delete o
 ![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221020175938.png)
 
 Y bueno en resumen con estos "modelViewSet" y con la ayuda de los Routers podemos con poquitas líneas tener todas las herramientas de un CRUD e incluso cambiando solamente el modelo hacer que todo sea de lectura y se configure automáticamente si mostrando cosas que no modifiquen nada (como el get)
+
+## Postman
+
+Hoy hablaremos de "Postman" la app que ya había usado antes para poder mandar las peticiones, ya que ahorita todo lo hemos estado haciendo tanto desde la pagina de administración como desde los mismos links gracias al poder de Django Rest Framework, lo descargamos (por si aun no lo tienen) https://www.postman.com creamos una cuenta y listo, todo free
+
+Desde este programa podemos acceder a nuestra API de la misma forma que en el navegador, solo copiamos nuestro link http://127.0.0.1:8000/watch/stream/ y nos da varias opciones sobre los diferentes request que podemos hacer
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221021115935.png)
+le damos en GET y luego en Send
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221021115951.png)
+
+Los puse asi uno alado del otro para que vean que es lo mismito, algo que no savia es que si le das donde dice Preview, te aparece la respuesta que se manda por ejemplo al Back End u otros usuarios que usen el API desde dispositivos moviles o alomejor algun equipo de escritorio.
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221021120111.png)
+
+Mas en el futuro usaremos esto de la autenticación 😨°°°(**war noises**) 
+
+Ok vamos a nuestro archivo "serielizers.py" y quitemos el ReadOnly que habíamos puesto en nuestro capitulo anterior, para poder acceder a las demás opciones del CRUD en nuestro PostMan
+
+```Python
+...
+class StreamPlataformVS(viewsets.ModelViewSet):
+
+    queryset = StreamPlataform.objects.all()
+    serializer_class = StreamPlataformSerialize
+...
+```
+
+Hecho esto ahora haremos pruebas para CRUD pero ahora desde PostMan, tratemos de acceder a nuestra plataforma de streaming numero 3 de neustra appi http://127.0.0.1:8000/watch/stream/3 
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221021120934.png)
+
+Bien, si nos vamos a Headers, nos muestra efectivamente que tenemos las siguientes opciones
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221021121148.png)
+
+si le quitamos el 3 y dejamos todas las plataformas alli no nos sale el delete
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221021121424.png)
+
+Ahora otra cosa que nos aparece alli es el status
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221021121442.png)
+
+intentemos acceder a otro id que sepamos que no exista 
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221021121522.png)
+
+Nos marca 404 Not Found, ahora intentemos un put request con el siguiente Json al http://127.0.0.1:8000/watch/stream/3/
+
+```Json
+{
+
+    "name": "None",
+
+    "about": "None - updated!",
+
+    "website": "http://www.none.com"
+
+}
+```
+
+le cambiamos la opcion de GET a PUT, luego en donde dice Body, seleccionamos ray y por ultimo cambiamos esto a JSON
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221021132529.png)
+
+Le damos en Send y nos lo actualiza, incluso si vamos a nuestra base de datos (nuestro html pues) vemos que si lo actualizo
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221021132741.png)
+
+Bien ahora intentemos hacer un POST request, ponemos http://127.0.0.1:8000/watch/stream/ y le ponemos este Json
+```Json
+{
+
+    "name": "None 2",
+
+    "about": "None - updated!",
+
+    "website": "http://www.none.com"
+
+}
+```
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221021134310.png)
+
+Le damos en send y ya nos creo otra plataforma, que nos servirá para probar delete también
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221021134755.png)
+
+Entonces pongamos la direccion http://127.0.0.1:8000/watch/stream/8/ (importante, poner el ultimo / porque es la direccion correcta para elementos individuales,) y borramos el contenido del raw, de echo para asegurarnos primero le damos un GET, ya que vemos que si es el elemento que queremos borrar le damos en DELETE
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221021135201.png)
+
