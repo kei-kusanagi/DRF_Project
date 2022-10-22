@@ -2917,3 +2917,122 @@ Entonces pongamos la direccion http://127.0.0.1:8000/watch/stream/8/ (importante
 
 ![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221021135201.png)
 
+
+## User Model
+
+Ya va siendo tiempo que empecemos a enfocarnos hacia nuestro proyecto final, y por mientras lo que haremos sera añadir la funcionalidad de que las reviews sean por usuario, esto se lograra añadiendo nuevos models pero por lo mientras, borraremos todos los reviews dentro del sitio de administración para no tener complicaciones a la hora de crear nuestras migraciones, entonces vamos a "models.py" y creemos en nuestra clase Review el campo "user" ( #Duda mas bien aclaración para mi, se pone en la class Review porque sera un campo que se llenara junto con las reviews, a la hora de crear una, obtendremos el nombre de usuario y se lo asignaremos a la review, no es como si a cada usuario le asignaremos las reviews que hace si no al contrario, a cada reviews le pondremos una marquita pa saber que usuario fue)
+
+entonces creamos nuestro campo al cual llamaremos "review_user" luego le asignamos un modelo el cual sera un "ForeignKey( )" este tomara el usuario como forma de entrada, importemos el usuario , entonces eso se lo pasamos al ForeignKey y le pasamos que si se borra sea en cascada (ya hablamos de esto)
+
+```Python
+...
+from django.contrib.auth.models import User
+...
+class Review(models.Model):
+
+    review_user = models.ForeignKey(User, on_delete=models.CASCADE)
+...
+```
+
+y antes de hacer las migraciones e incluso de guardar los cambios vamos a nuestra sección de administración y borramos todas las entradas respecto a reviews
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221021181015.png)
+
+Y antes de hacer las migraciones, vamos a nuestro "serializer.py" e incluyamos este campo respecto a nuestras "review_user" 
+
+```Python
+...
+class ReviewSerializer(serializers.ModelSerializer):
+
+	review_user = serializers.StringRelatedField(read_only=True)
+...
+```
+
+Ahora vamos a hacer las migraciones
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221021182134.png)
+
+Listo, corremos el servidor y revisamos que ta nos deja seleccionar el usuario, asi que creemos una nueva review
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221021182541.png)
+
+Ahora si accedemos a http://127.0.0.1:8000/watch/stream/ veermos que ya nos aparece nuestro review y el usuario que lo creo 
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221021182719.png)
+
+Pero, si intentamos hacer otro a el mismo watchlist, me va a dejar, ya que no hay nad que nos impida hacer mas que un review
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221021182822.png)
+
+Incluso tambien podemos entrar y editar cualquier review, incluso si no fuera nuestra, solo entrando al path http://127.0.0.1:8000/watch/stream/review/1
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221021183008.png)
+
+
+Entonces para parar esto vamos a "views.py" en nuestra class "ReviewCreate" y dentro de nuestra función "perform_create" crearemos nuestra verificación, iniciamos una variable llamada "review_user y la usaremos para añadirle la información del usuario actual, ahora solo queda checar su el usuario actual es quien hiso el review a editar, así qu7e creamos la variable "review_queryset" y le asignamos los objetos de "Review" estos los vamos a filtrar por watchlist y por review_user.
+
+Luego checaremos si tenemos un resultado (osease si ya tenemos que el usuario hizo una review) entonces le mandaremos una validation error
+
+Y por ultimo a la hora de salvarlo, salvaremos también el "review_user"
+
+```Python
+...
+class ReviewCreate(generics.CreateAPIView):
+    serializer_class = ReviewSerializer
+
+    def perform_create(self, serializer):
+
+        pk = self.kwargs.get('pk')
+        watchlist = WatchList.objects.get(pk=pk)
+  
+
+        review_user = self.request.user
+        review_queryset = Review.objects.filter(watchlist=watchlist, review_user=review_user)
+
+        if review_queryset.exists():
+            raise ValidationError("You have already reviewed this movie!")
+
+        serializer.save(watchList=watchlist, review_user=review_user)
+...
+```
+
+Antes de salvarlo hay que borrar las anteriores "reviews" pa no generar conflictos, vamos y seleccionamos una película http://127.0.0.1:8000/watch/stream/1/review-create y le pasamos este Json de Review 
+
+```Json
+{
+    "rating": 5,
+    "description": "Description 1",
+    "active": false
+}
+```
+
+Perfecto, nos dejo crearlo sin problemas
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221021190856.png)
+
+Ahora intentemos páraselo otra ves.. nos da un error, eso porque nos falta pasar el querry set donde creamos nuestra clase ( #Duda la verdad no entendí el porque faltaba esto) 
+
+```Python
+...
+class ReviewCreate(generics.CreateAPIView):
+
+    serializer_class = ReviewSerializer
+
+    def get_queryset(self):
+        return Review.objects.all()
+
+    def perform_create(self, serializer):
+        pk = self.kwargs.get('pk')
+        watchlist = WatchList.objects.get(pk=pk)
+
+        review_user = self.request.user
+        review_queryset = Review.objects.filter(watchList=watchlist, review_user=review_user)
+
+
+        if review_queryset.exists():
+            raise ValidationError("You have already reviewed this movie!")
+
+        serializer.save(watchList=watchlist, review_user=review_user)
+...
+```
+
+y ahora si
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221021191318.png)
