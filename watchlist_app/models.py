@@ -2,6 +2,8 @@ from turtle import update
 from django.db import models
 from django.core.validators import MinValueValidator, MaxValueValidator
 
+from django.contrib.auth.models import User
+
 class StreamPlataform(models.Model):
     name = models.CharField(max_length=30)
     about = models.CharField(max_length=150)
@@ -23,6 +25,8 @@ class WatchList(models.Model):
         return self.title
 
 class Review(models.Model):
+
+    review_user = models.ForeignKey(User, on_delete=models.CASCADE)
     rating = models.PositiveIntegerField(validators=[MinValueValidator(1), MaxValueValidator(5)])
     description = models.CharField(max_length=200, null=True)
     #Relationship
