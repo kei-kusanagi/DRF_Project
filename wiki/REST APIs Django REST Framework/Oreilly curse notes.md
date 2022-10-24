@@ -3087,6 +3087,7 @@ Podemos ir a la documentacion para obtener informacion mas detallada https://www
 ![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221024144757.png)
 
 Tenemos dos formas de agregar permisos, unos son poniendo directamente en los settings, y estos aplican en todas y cada una de las class que tengamos y por otro lado tenemos los "[Object level permissions](https://www.django-rest-framework.org/api-guide/permissions/#object-level-permissions)"  estos nos permiten poner una restriccion a una class en particular (esto es lo que se adecua mas a nostoros)
+
 ![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221024150414.png)
 
 Intentaremos primero poner un "global permission class" 
