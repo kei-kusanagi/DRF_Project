@@ -3084,14 +3084,14 @@ Y listo, ya nos deja entrar a nuestra api desde nuestro usuario de pruebas, esto
 en esta lección, desglosaremos un poco mas los permisos que vimos en la anterior capitulo, donde ya pudimos crear un usuario de pruebas y ahora podemos hacer de todo lo permitido en la api con el, pero no en el area de administración, pero, queremos lograr que solo si este usuario creo el review, solo el peuda modificarlo o eliminarlo, de igual forma que solo usuarios registrados no importando su nivel puedan ver los reviews sin importar su nivel de SATFF (llamemoslo asi aunque yano veremos mucho en este capitulo), en este capitulo hablaremos mas sobre Permissions (permisos pues).
 
 Podemos ir a la documentacion para obtener informacion mas detallada https://www.django-rest-framework.org/api-guide/permissions/
-![[IMG/Pasted image 20221024144757.png]]
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221024144757.png)
 
 Tenemos dos formas de agregar permisos, unos son poniendo directamente en los settings, y estos aplican en todas y cada una de las class que tengamos y por otro lado tenemos los "[Object level permissions](https://www.django-rest-framework.org/api-guide/permissions/#object-level-permissions)"  estos nos permiten poner una restriccion a una class en particular (esto es lo que se adecua mas a nostoros)
-![[IMG/Pasted image 20221024150414.png]]
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221024150414.png)
 
 Intentaremos primero poner un "global permission class" 
 
-![[IMG/Pasted image 20221024150537.png]]
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221024150537.png)
 
 Tan fácil como irnos a nuestro archivo de "settings.py" y pegarlo hasta abajo
 
@@ -3111,16 +3111,16 @@ REST_FRAMEWORK = {
 
 Ahora si recargamos nuestra pagina sin estar identificados
 
-![[IMG/Pasted image 20221024150810.png]]
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221024150810.png)
 
 
 Si nos logeamos nos dará acceso ahora si a todo, esto se acerca medianamente a lo que queremos, pero nos serviría mas el poder custamizarlo un poco mas, para poderle poner que solo un admin o quien lo creo pueda modificarlo, eso lo podremos lograr solo con el "Object level permissions", ais que comentemos el permiso que le acabamos de dar.
 
 Todo lo que tenemos que hacer es definir en la class que queremos una variable llamada "permission_classes" y pasarle el tipo de permiso que queremos (a e importarlo arriba)
-![[IMG/Pasted image 20221024151413.png]]
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221024151413.png)
 
 ojo, si usamos permisos basados en funciones, se hace casi lo mismo pero con decoradores
-![[IMG/Pasted image 20221024151533.png]]
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221024151533.png)
 
 Entonces vamos a "views.py" y en nuestra class ReviewList, la añadiremos
 
@@ -3138,6 +3138,57 @@ class ReviewList(generics.ListAPIView):
 ...
 ```
 
-esto nos dara lo mismo que la ves anterior, solo un usuario identificado (no importando su nivel de staff), vamos a http://127.0.0.1:8000/watch/stream/1/review (ojo vamos aqui porque estamos modificando esa class de ese path, si nos vamos a cualquier otra al solo estar afectando esta clase nos mostrara todas las demás con normalidad y con todas las opciones que le hemos puesto) aqui estamos accediendo a la lista completa de reviews del item 1
+Esto nos dará lo mismo que la ves anterior, solo un usuario identificado (no importando su nivel de staff), vamos a http://127.0.0.1:8000/watch/stream/1/review (ojo vamos aquí porque estamos modificando esa class de ese path, si nos vamos a cualquier otra al solo estar afectando esta clase nos mostrara todas las demás con normalidad y con todas las opciones que le hemos puesto) aquí estamos accediendo a la lista completa de reviews del item 1
 
-![[IMG/Pasted image 20221024152513.png]]
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221024152513.png)
+
+Si hacemos Logout no tendremos permiso para verlo 
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221024172419.png)
+
+Ok pero que pasa si queremos acceder a un review en especifico, poniendo el review 3 http://127.0.0.1:8000/watch/stream/review/3
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221024172614.png)
+
+Nos da completo acceso ya que en nuestra class, solo le dimos la restriccion a la "ReviewList" y no a la "ReviewDetail"
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221024172727.png)
+
+Entonces, pongámosle lo mismo, solo le ponemos el 
+```Python
+permission_classes = [IsAuthenticated]
+```
+
+Perfecto ya no nos da acceso a menos que hagamos Login
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221024172829.png)
+
+Y asi podemos ponerle varios permisos que ya nos provee DjangoREST Framework, por ejemplo cambiemos este por `IsAuthenticatedOrReadOnly` acuerdense de importarle en la parte de arriba
+![[IMG/Pasted image 20221024173143.png]]
+
+Lo pondremos en la class ReviewDetail, para que solo el usuario autenticado pueda editarlo, pero si no lo esta solo pueda leerlo
+```Python
+...
+from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly
+...
+class ReviewDetail(generics.RetrieveUpdateDestroyAPIView):
+
+    queryset = Review.objects.all()
+    serializer_class = ReviewSerializer
+
+    permission_classes = [IsAuthenticatedOrReadOnly]
+...
+```
+
+Vean, podemos verlo sin estar autenticados pero no podemos mas que verlo
+
+![[IMG/Pasted image 20221024173452.png]]
+
+Ahora si hacemos Login con nuestra cuenta de prueba
+
+![[IMG/Pasted image 20221024173605.png]]
+
+nos da total acceso, pero... si vemos, este review esta hecho por mi super user "keikusanagi" y aun así nos deja modificarlo o incluso borrarlo, aun así estamos mas cerca de lo que queremos, para esto tenemos que usar "Custom permissions" pero eso lo veremos en la siguiente lección
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221024173825.png)
+
+
