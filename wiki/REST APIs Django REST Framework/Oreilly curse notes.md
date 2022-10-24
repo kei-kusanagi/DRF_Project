@@ -3163,7 +3163,7 @@ Perfecto ya no nos da acceso a menos que hagamos Login
 ![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221024172829.png)
 
 Y asi podemos ponerle varios permisos que ya nos provee DjangoREST Framework, por ejemplo cambiemos este por `IsAuthenticatedOrReadOnly` acuerdense de importarle en la parte de arriba
-![[IMG/Pasted image 20221024173143.png]]
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221024173143.png)
 
 Lo pondremos en la class ReviewDetail, para que solo el usuario autenticado pueda editarlo, pero si no lo esta solo pueda leerlo
 ```Python
@@ -3181,11 +3181,11 @@ class ReviewDetail(generics.RetrieveUpdateDestroyAPIView):
 
 Vean, podemos verlo sin estar autenticados pero no podemos mas que verlo
 
-![[IMG/Pasted image 20221024173452.png]]
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221024173452.png)
 
 Ahora si hacemos Login con nuestra cuenta de prueba
 
-![[IMG/Pasted image 20221024173605.png]]
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221024173605.png)
 
 nos da total acceso, pero... si vemos, este review esta hecho por mi super user "keikusanagi" y aun así nos deja modificarlo o incluso borrarlo, aun así estamos mas cerca de lo que queremos, para esto tenemos que usar "Custom permissions" pero eso lo veremos en la siguiente lección
 
