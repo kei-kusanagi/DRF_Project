@@ -3036,3 +3036,44 @@ class ReviewCreate(generics.CreateAPIView):
 
 y ahora si
 ![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221021191318.png)
+
+## Temporary Login and Logout
+
+Gracias al poder de DjangoREST framework podemos obtener una solución temporal respecto a los usuarios, si vamos a nuestra sección de administración podemos ver esta sección de usuarios, donde ahorita nuestro super usuario "keikusanagi" tiene todos los permisos
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221024113953.png)
+
+El mas importante es el "Superuser status" que nos permite modificar y ver TODO de la pagina, después esta el de "Staff status" que ese nos permite entrar al sitio de administración pero no podremos cambiar nada y por ultimo tenemos "Active" que pues bueno no hay mucha ciencia, esta activa la cuenta o no, como cuando uno desactiva temporalmente su face pero no lo elimina, así que para propósitos de practica creemos otro usuario el cual sera normal
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221024114257.png)
+
+Listo, de echo si hacemos LOG OUT e intentamos entrar al sitio de administración con este nuevo usuario vean lo que pasa
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221024114402.png)
+
+ya que no tenemos los permisos, regresemos a nuestro super usuario para ver que permisos tiene
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221024114459.png)
+
+en efecto, solo tiene lo que es "Active" seleccionado, pero ahora como podremos usarlo para usar nuestra api, pues entonces vamos a nuestro código y en nuestro archivo "watchmate/urls.py" (ojo no es de la app si no de nuestro programa principal) y agregamos este path
+
+```Python
+from django.contrib import admin
+from django.urls import path, include
+
+urlpatterns = [
+
+    path('admin/', admin.site.urls),
+    path('watch/', include('watchlist_app.api.urls')),
+	#Temporary Login
+    path('api-auth', include('rest_framework.urls')),
+]
+```
+
+Y listo, ahora si vamos a cualquier parte de nuestra api veremos a la derecha que ya aparece nuestro nombre de usuario y un cuadro de dialogo para hacer Log out y Login, intentemos nuevamente entrar pero con nuestro usuario de pruebas
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221024115018.png)
+
+Y listo, ya nos deja entrar a nuestra api desde nuestro usuario de pruebas, esto lo hacemos con la finalidad de poder hacer reviews de diferentes usuarios y como dijimos hace como 2 capitulos que solo el autor de la reseña pueda modificar la suya pero no la de los demas
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221024115140.png)
