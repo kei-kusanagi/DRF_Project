@@ -3117,9 +3117,11 @@ Ahora si recargamos nuestra pagina sin estar identificados
 Si nos logeamos nos dará acceso ahora si a todo, esto se acerca medianamente a lo que queremos, pero nos serviría mas el poder custamizarlo un poco mas, para poderle poner que solo un admin o quien lo creo pueda modificarlo, eso lo podremos lograr solo con el "Object level permissions", ais que comentemos el permiso que le acabamos de dar.
 
 Todo lo que tenemos que hacer es definir en la class que queremos una variable llamada "permission_classes" y pasarle el tipo de permiso que queremos (a e importarlo arriba)
+
 ![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221024151413.png)
 
 ojo, si usamos permisos basados en funciones, se hace casi lo mismo pero con decoradores
+
 ![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221024151533.png)
 
 Entonces vamos a "views.py" y en nuestra class ReviewList, la añadiremos
@@ -3163,6 +3165,7 @@ Perfecto ya no nos da acceso a menos que hagamos Login
 ![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221024172829.png)
 
 Y asi podemos ponerle varios permisos que ya nos provee DjangoREST Framework, por ejemplo cambiemos este por `IsAuthenticatedOrReadOnly` acuerdense de importarle en la parte de arriba
+
 ![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221024173143.png)
 
 Lo pondremos en la class ReviewDetail, para que solo el usuario autenticado pueda editarlo, pero si no lo esta solo pueda leerlo
