@@ -3081,7 +3081,8 @@ Y listo, ya nos deja entrar a nuestra api desde nuestro usuario de pruebas, esto
 
 ## Introduction to Permissions
 
-en esta lección, desglosaremos un poco mas los permisos que vimos en la anterior capitulo, donde ya pudimos crear un usuario de pruebas y ahora podemos hacer de todo lo permitido en la api con el, pero no en el area de administración, pero, queremos lograr que solo si este usuario creo el review, solo el peuda modificarlo o eliminarlo, de igual forma que solo usuarios registrados no importando su nivel puedan ver los reviews sin importar su nivel de SATFF (llamemoslo asi aunque yano veremos mucho en este capitulo), en este capitulo hablaremos mas sobre Permissions (permisos pues).
+en esta lección, desglosaremos un poco mas los permisos que vimos en la anterior capitulo, donde ya pudimos crear un usuario de pruebas y ahora podemos hacer de todo lo permitido en la api con el, pero no en el area de administración, pero, queremos lograr que solo si este usuario creo el review, solo el 
+modificarlo o eliminarlo, de igual forma que solo usuarios registrados no importando su nivel puedan ver los reviews sin importar su nivel de SATFF (llamémoslo asi aunque ya no veremos mucho en este capitulo), en este capitulo hablaremos mas sobre Permissions (permisos pues).
 
 Podemos ir a la documentacion para obtener informacion mas detallada https://www.django-rest-framework.org/api-guide/permissions/
 ![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221024144757.png)
@@ -3194,5 +3195,60 @@ Ahora si hacemos Login con nuestra cuenta de prueba
 nos da total acceso, pero... si vemos, este review esta hecho por mi super user "keikusanagi" y aun así nos deja modificarlo o incluso borrarlo, aun así estamos mas cerca de lo que queremos, para esto tenemos que usar "Custom permissions" pero eso lo veremos en la siguiente lección
 
 ![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221024173825.png)
+
+
+
+
+## Custom Permissions
+
+Bueno después de una breve agonía volvemos, nos quedamos con que queríamos ponerle permisos personalizados, y asi como lo hicimos en el anterior capitulo, en este tenemos que importarlos, pero de donde, pues crearemos nuestro propio archivo de permisos, en la carpeta /api/permissions y allí importamos nuestros permisos de "rest_frameework"
+``from rest_framework import permission`` y aqui nos ayudaremos del ejemplo en la documentación, nuestro objetivo es si es "admin" podrá editar lo que sea, de modo contrario solo sera de lectura, Para esto creemos una ``class=AdminOrReadOnly(permissions.IsAdminUser)`` dentro importamos nuestros permisos y usaremos el que viene en la documentacion que es "IsAdminUser", ahora para implementarlo nos vienen estas dos bases
+![[IMG/Pasted image 20221031165422.png]]
+
+El que usaremos sera este  ``.has_object_permission(self, request, view, obj)`` ya que es el que nos permite interactuar con un objeto en especifico, este se lo daremos al propietario del review, mientras que el otro de ``.has_permission(self, request, view)`` no tiene el permiso para modificar este objeto, ahora, cualquiera de esatas dos bases nos regresara un boleano, tanto True como False, como quien dice "tiene permiso? cierto/falso" si lo traducimos seria
+
+```Python
+from rest_framework import permissions
+
+  
+class AdminOrReadOnly(permissions.IsAdminUser):
+
+    def has_permission(self, request, view):
+
+        admin_permission = bool(request.user and request.user.is_staff)
+        
+        return request.method == "GET" or admin_permission
+```
+
+Esto nos dará como resultado un doble condicional, en primera si esta logeado y luego checa si ese usuario es Admin, eso asigna a "admin_permission" el valor True y ya lo que queda es retornarlo y ahora si usarlo en nuestro archivo "views.py" no sin antes importarlo y le añadimos este permiso personalizado a nuestra ReviewDetail class
+
+```Python
+...
+# Permissions
+from watchlist_app.api.permissions import AdminOrReadOnly
+from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly
+...
+
+class ReviewDetail(generics.RetrieveUpdateDestroyAPIView):
+
+    queryset = Review.objects.all()
+    serializer_class = ReviewSerializer
+    permission_classes = [AdminOrReadOnly]
+...
+```
+
+Vamos a http://127.0.0.1:8000/watch/stream/review/3 y si no estamos identificados nos saldra esto solamente
+![[IMG/Pasted image 20221031172453.png]]
+
+si iniciamos sesión como test (que no es admin)
+
+![[IMG/Pasted image 20221031172909.png]]
+
+y si nos metemos como admin
+
+![[IMG/Pasted image 20221031174627.png]]
+
+Perfecto, ya se parece mas a lo que queremos, ahora solo nos falta que lo pueda modificar solo si es el autor del review, asi que creemos una nueva class en nuestros permisos personalizados
+
 
 
