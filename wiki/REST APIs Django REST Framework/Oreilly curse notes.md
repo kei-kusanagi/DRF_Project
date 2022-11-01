@@ -3203,7 +3203,7 @@ nos da total acceso, pero... si vemos, este review esta hecho por mi super user 
 
 Bueno después de una breve agonía volvemos, nos quedamos con que queríamos ponerle permisos personalizados, y asi como lo hicimos en el anterior capitulo, en este tenemos que importarlos, pero de donde, pues crearemos nuestro propio archivo de permisos, en la carpeta /api/permissions y allí importamos nuestros permisos de "rest_frameework"
 ``from rest_framework import permission`` y aqui nos ayudaremos del ejemplo en la documentación, nuestro objetivo es si es "admin" podrá editar lo que sea, de modo contrario solo sera de lectura, Para esto creemos una ``class=AdminOrReadOnly(permissions.IsAdminUser)`` dentro importamos nuestros permisos y usaremos el que viene en la documentacion que es "IsAdminUser", ahora para implementarlo nos vienen estas dos bases
-![[IMG/Pasted image 20221031165422.png]]
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221031165422.png)
 
 El que usaremos sera este  ``.has_object_permission(self, request, view, obj)`` ya que es el que nos permite interactuar con un objeto en especifico, este se lo daremos al propietario del review, mientras que el otro de ``.has_permission(self, request, view)`` no tiene el permiso para modificar este objeto, ahora, cualquiera de esatas dos bases nos regresara un boleano, tanto True como False, como quien dice "tiene permiso? cierto/falso" si lo traducimos seria
 
@@ -3238,17 +3238,71 @@ class ReviewDetail(generics.RetrieveUpdateDestroyAPIView):
 ```
 
 Vamos a http://127.0.0.1:8000/watch/stream/review/3 y si no estamos identificados nos saldra esto solamente
-![[IMG/Pasted image 20221031172453.png]]
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221031172453.png)
 
 si iniciamos sesión como test (que no es admin)
 
-![[IMG/Pasted image 20221031172909.png]]
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221031172909.png)
 
 y si nos metemos como admin
 
-![[IMG/Pasted image 20221031174627.png]]
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221031174627.png)
 
-Perfecto, ya se parece mas a lo que queremos, ahora solo nos falta que lo pueda modificar solo si es el autor del review, asi que creemos una nueva class en nuestros permisos personalizados
+Perfecto, ya se parece mas a lo que queremos, ahora solo nos falta que lo pueda modificar solo si es el autor del review, asi que creemos una nueva class en nuestros permisos personalizados, asi que creemos nuestra nueva clase, se llamara "ReviewUserOrReadOnly", le pasaremos el BasePermission, leugo creamos nuestra funcion y le damos su if, pa que cheque que si el object.user es igual a la persona que hizo el review
+
+```Python
+...
+  
+
+class ReviewUserOrReadOnly(permissions.BasePermission):
+
+    def has_object_permission(self, request, view, obj):
+
+        if request.method in permissions.SAFE_METHODS:
+            return True
+        else:
+            return obj.review_user == request.user
+```
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221031180850.png)
+
+Ok, si iniciamos sesión con otro usuario no nos dejara modificarlo, solo nos dará el GET, si no iniciamos sesión igual
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221031180934.png)
+
+pero si iniciamos sesión con el usuario que hicimos el Review, nos dará las opciones completas pa modificarlo y hasta borrarlo
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221031181042.png)
+
+Podemos hacer algo similar en la parte superior. Entonces,podemos agregar lo mismo agregar directamente este tipo de permiso en AdminOrReadOnly. Entonces, si la request tiene permiso, es SAFE_METHOD. Ahora request.method es GET, si este es el caso, SAFE_METHODS significa GET. Entonces, si el método de solicitud es GET, entonces podemos devolver directamente verdadero, eso es todo. Y de lo contrario, vamos a probar todo lo demás, para que podamos agregar nuestra propia condición. Así que aquí lo que voy a hacer es hacer un return, lo cual es cierto porque si estamos accediendo a la solicitud de request pueden enviar esta solicitud (osea si estan mandando un request y aparte no tienen permisos de administrador pos namas le damos los SAFE_METHODS osea, puro get y nada que peuda modificar la base de datos). Pero si están tratando de acceder a la solicitud POST o cualquier otro tipo de solicitudes,  voy a verificar esta condición else ``bool(request.user and request.user.is_staff)`` , si esto es administrador o no, y listo eso es todo.
+
+En resumen si la solicitud es GET, entonces aceptaremos su solicitud. Si la solicitud no es GET, estamos probando si el usuario es administrador o no.
 
 
+Al final nuestras dos clases de permisos personalizadas "Custom Permissions" quedaría así
 
+```Python
+from rest_framework import permissions
+
+
+class AdminOrReadOnly(permissions.IsAdminUser):
+
+    def has_permission(self, request, view):
+
+
+        if request.method in permissions.SAFE_METHODS:
+            return True
+
+        else:
+            return bool(request.user and request.user.is_staff)
+
+
+class ReviewUserOrReadOnly(permissions.BasePermission):
+
+    def has_object_permission(self, request, view, obj):
+
+        if request.method in permissions.SAFE_METHODS:
+            return True
+
+        else:
+            return obj.review_user == request.user
+``` 
