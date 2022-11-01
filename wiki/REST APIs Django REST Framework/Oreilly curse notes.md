@@ -3474,3 +3474,62 @@ hay muchas maneras de usar autenticaciones (ni me lo recuerden) y ahorita usarem
 
 
 ## Basic Authentication
+
+Bueno ahora solo para propósitos de test haremos lo que es la autenticación básica, para empezar debemos importar los settings que vienen en la documentación https://www.django-rest-framework.org/api-guide/authentication/#setting-the-authentication-scheme ya que recordemos que estamos usando Django rest framework y asi funciona este, luego vamos y las pegamos en nuestro archivo "settings.py"
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221101163617.png)
+
+```Python
+...
+DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+
+# REST_FRAMEWORK = {
+#     'DEFAULT_PERMISSION_CLASSES': [
+#         'rest_framework.permissions.IsAuthenticated',
+#     ]
+# }
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.BasicAuthentication',
+        'rest_framework.authentication.SessionAuthentication',
+    ]
+}
+
+```
+
+solo quitamos el sessionAuthentication que no usaremos ahorita (ojo, si usáramos también el de arriba lo pondríamos poner con una coma, sin repetir REST_FRAMEWORK si no nos dará error)
+
+Listo, ya hecho esto podemos usar la BasicAuthentication en todo nuestro proyecto, ahora ya que esta aplicado a todo nuestro proyecto, vamos a nuestro archivo "views.py" y en neustra class ReviewList modificamos el permission_classes
+
+```Python
+...
+class ReviewList(generics.ListAPIView):
+    # queryset = Review.objects.all()
+    serializer_class = ReviewSerializer
+	
+	# Basic Authentication
+    permission_classes = [IsAuthenticated]
+...
+```
+
+Ojo esto lo sacamos de la documentación
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221101165912.png)
+
+
+ok vamos a probarlo, vamos a obtener nuestra review list a través del link http://127.0.0.1:8000/watch/2/reviews ... pero sera por postman
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221101171932.png)
+
+Perfecto, nos regresa ese bonito mensaje de error, ya que no estamos identificados como usuarios pero, como podemos pasarle los datos por postman ya que por la pagina podíamos darle arriba a la derecha donde decía login, pues por los headers, alli le pasaremos ell usuario y contraseña en forma codificada y para esto nos ayudaremos de la pagina, para pasar todo en base 64 https://www.base64encode.org/ 
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221101173104.png)
+
+esto lo pasamos en el Postman y 
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221101173159.png)
+
+Perfecto, ya tenemos nuestra Basic Authentication, ahora solo para seguir usando postman, vamos a nuestro archivo principal "watchmate/urls.py" y comentemos el ultimo path que fue el que pusimos para habilitar el login, asi de esta forma podremos seguir usando postman para mandar las autorizaciones
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221101173357.png)
