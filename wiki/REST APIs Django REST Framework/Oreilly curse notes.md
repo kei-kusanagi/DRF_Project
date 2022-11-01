@@ -3452,7 +3452,25 @@ Ahora, si queremos crear otro review, no nos va a dejar por la funcionalidad que
 ![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221101140737.png)
 
 
-Ahora si vemos que el avg_rating cambio ahora a 4.5, ya namas por ultimo añadirmos una / final a los paths para que no nos de el error si nos falta, al final de ``'<int:pk>``
+Ahora si vemos que el avg_rating cambio ahora a 4.5, ya namas por ultimo añadimos una / final a los paths para que no nos de el error si nos falta, al final de ``'<int:pk>``
 ```Python
 path('<int:pk>/', WatchDetailAV.as_view(), name='movie-detail'),
 ```
+
+
+## Introduction to Authentications
+
+Bueno, empezamos con lo chido, las autenticaciones, pero antes de pasar a verlas debemos entender la diferencia entre permiso y autenticación, podemos ir a la documentacion https://www.django-rest-framework.org/api-guide/authentication/ y hay una nota muy importante
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221101151159.png)
+
+que traduciendo nos dice que tengamos en cuenta que una autenticación por si sola, no permitirá ni rechazara una solicitud entrante, simplemente identifica quien realizo la solicitud... Es como cuando le dijimos a nuestra api que checara si quien hace la solicitud es administrador o no y luego le otorgamos permisos o no para modificar o borrar su review, cada que manejemos una restricción esto sera a través de una "permission class"
+
+Ahora hablemos sobre autenticación, esta nos ayuda a checar cada petición entrante "incoming request" y checa que cada request provenga de una credencial identificada (ya se apersona usuario etc que sea valido pues) como quien dice es cuando uno quiere hacer log in, esto checa si la request (que es el inicio de sesión) es valido, si lo es entonces es un usuario valido y esta autenticado, si no pues no.
+
+hay muchas maneras de usar autenticaciones (ni me lo recuerden) y ahorita usaremos lo que es la "BasicAuthentication" que en la misma documentación hablan que sea solo para hacer pruebas y la famosa JWT "JSON Web Token"
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221101152536.png)
+
+
+## Basic Authentication
