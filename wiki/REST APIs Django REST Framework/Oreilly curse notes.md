@@ -3306,3 +3306,153 @@ class ReviewUserOrReadOnly(permissions.BasePermission):
         else:
             return obj.review_user == request.user
 ``` 
+
+
+## Custom Calculation
+
+Hola, en este capitulo veremos el como hacer calculos con los datos que tenemos de la API, mas especificamente con los "reviews", osease el "rating" de la pelicula, algo asi como lo que hacen en IMDb
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221101130144.png)
+
+donde a base de los reviews de los usuarios se va haciendo el rating de la serie, pelicula o podcast en cuestion, es mas si damos click en el se despligan los porcentajes y vemos algo interesante en la barra de titulo
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221101130402.png)
+
+esta esta compuesta como el api que estamos creando, https://www.imdb.com/title/tt5923962/ratings/?ref_=tt_ov_rt primero va pues la pagina imbd, luego /title/ y luego viene el Id, este id se refiere a esta pelicula que en nuestro casos eria una watchlist y luego ratings, asi que para que se parezca mas, removeremos del path el "stream"
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221101130608.png])
+quedándonos asi
+
+```Python
+from django.db import router
+from django.urls import path, include
+from watchlist_app.api.views import ReviewList, ReviewDetail, WatchListAV, WatchDetailAV, StreamPlataformAV,StreamPlataformDetailAV, ReviewCreate, StreamPlataformVS
+
+from rest_framework.routers import DefaultRouter
+
+router = DefaultRouter()
+router.register('stream', StreamPlataformVS, basename='streamplataform')
+
+urlpatterns = [
+
+    path('list/', WatchListAV.as_view(), name='movie-list'),
+
+    path('<int:pk>', WatchDetailAV.as_view(), name='movie-detail'),
+
+    path('', include(router.urls)),
+
+    path('<int:pk>/review-create', ReviewCreate.as_view(), name='review-create'),
+    path('<int:pk>/reviews', ReviewList.as_view(), name='review-list'),
+    path('review/<int:pk>', ReviewDetail.as_view(), name='review-detail'),
+]
+```
+
+Listo ya tenemos nuestros path pero aun no tenemos nada que nos de el calculo respecto a los ratings, asi que tendremos que crear nuevos campos en nuestros modelos , asi que vamos a "models.py" y en nuestra class WatchList, agreguemos el numero total de reviews (esto seria para cada película) y el otro sera el "avg_rating" entonces cada que escribanos una review nueva para cada película o watchlist estos dos números se modificaran, antes que todo esto, tenemos que ir a nuestro panel de administración y borrar todas las reviews que tengamos (esto nada mas pa no tener mayor complicaciones)
+
+Entonces agregamos nuestro campo ``avg_rating = models.FloatField(default=0)`` al cual lo ponemos como un campo con punto flotante ya que puede ser 4.5 o asi y le ponemos que el valor por default sea cero(ojo esto se lo estamos agregando a cada watchlist, por ejemplo al que ya tenemos de python, aparte de los campos de titulo, storyline, plataform, le estamos agregando este campo a el, por ejemplo lo que hicimos con review que es otra clase es que relacionamos estos con los watchlist ok)
+
+Ahora agregaremos nuesto ``number_ratging = models.IntegerField(default=0)`` este sera IntegerField ya que se contara de uno en uno dependiendo cuantas veces le de review a nuestra watchlist y el valor de deafault sera cero y listo, no tenemos que hacer nada con el serializador ya que al llamar watchlist estamos mandando a llamar todos los campos
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221101132004.png)
+
+entonces, nuestra class WatchList quedaría asi
+```Python
+...
+class WatchList(models.Model):
+
+    title = models.CharField(max_length=50)
+    storyline = models.CharField(max_length=200)
+    
+    plataform = models.ForeignKey(StreamPlataform, on_delete=models.CASCADE, related_name="watchlist")
+    active= models.BooleanField(default=True)
+
+    # Custom Calculation
+    avg_rating = models.FloatField(default=0)
+    number_ratging = models.IntegerField(default=0)
+
+    created = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+
+        return self.title
+...
+```
+
+Muy bien, ahora hagamos las migraciones
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221101132345.png)
+Listo, ahora vamos a "views.py" que es donde tenemos nuestros cálculos funciones y demás y justo donde hacemos la validación de si ya tenemos un review o no allí es donde pondremos después el calculo, para estar seguros que no estamos haciendo este calculo de mas, entonces lo primero es hacer una comprobación para ver si el numero de reviews es 0, eso significa que podemos poner directamente el rating, de otro modo tenemos que promediarlo, entonces ponemos el if y seleccionamos este queryset que en este caso seria watchlist y su numero de ratings si esto es exactamente igual a 0 entonces directamente le asignamos el percentage del rating
+
+```Python
+...
+class ReviewCreate(generics.CreateAPIView):
+
+    serializer_class = ReviewSerializer
+
+    def get_queryset(self):
+        return Review.objects.all()
+
+    def perform_create(self, serializer):
+        pk = self.kwargs.get('pk')
+        watchlist = WatchList.objects.get(pk=pk)
+
+        review_user = self.request.user
+        review_queryset = Review.objects.filter(watchList=watchlist, review_user=review_user)
+
+        if review_queryset.exists():
+            raise ValidationError("You have already reviewed this movie!")
+
+        # Custom Calculation
+        if watchlist.number_ratging == 0:
+
+            watchlist.avg_rating = serializer.validated_data['rating']
+        else:
+...
+```
+
+Ahora si pasamos de esto (ósea que ya tengamos un rating mas) ahora si haremos el calculo, entonces lo que haremos después del else sera recalcular este campo ``watchlist.avg_rating`` y lo combinamos poniendo el viejo rating y luego el nuevo todo entre 2, suponiendo que nuestro viejo rating era 4.5 y el nuevo es de 5 seria 
+
+```Python
+
+# watchlist.avg_rating = ( 4.5 + 5 ) / 2
+# watchlist.avg_rating = 4.75
+	else:
+		watchlist.avg_rating = (watchlist.avg_rating + serializer.validated_data['rating'])/2
+```
+
+Ya lo unico que faltaria seria incrementar el numero de ratings en 1 y luego salvar nuestra watchlist
+
+```Python
+...
+	watchlist.number_ratging = watchlist.number_ratging + 1
+	watchlist.save()
+...
+```
+
+Listo luce bien, ahora si vamos a nuestro panel de administración veremos que ya tenemos nuestro campo de AVG rating
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221101134740.png)
+
+Entonces creemos un review, vallamos a abrir nuestra api http://127.0.0.1:8000/watch/2/review-create (recuerden que le cambiamos el path) y agreguemos una 
+```Json
+{
+    "rating": 5,
+    "description": "Good Movie!",
+    "active": true
+}
+```
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221101140154.png)
+
+perfecto, vemos que el rating es 5, si vamos a  http://127.0.0.1:8000/watch/2 vemos que el numero de ratings es 1 y el avg_rating es 5.0
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221101140243.png)
+
+Ahora, si queremos crear otro review, no nos va a dejar por la funcionalidad que pusimos, de dejar solo hacer un review por usuario, entonces nos logeamos con el de test 
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221101140737.png)
+
+
+Ahora si vemos que el avg_rating cambio ahora a 4.5, ya namas por ultimo añadirmos una / final a los paths para que no nos de el error si nos falta, al final de ``'<int:pk>``
+```Python
+path('<int:pk>/', WatchDetailAV.as_view(), name='movie-detail'),
+```
