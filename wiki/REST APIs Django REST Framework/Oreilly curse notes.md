@@ -3533,3 +3533,80 @@ esto lo pasamos en el Postman y
 Perfecto, ya tenemos nuestra Basic Authentication, ahora solo para seguir usando postman, vamos a nuestro archivo principal "watchmate/urls.py" y comentemos el ultimo path que fue el que pusimos para habilitar el login, asi de esta forma podremos seguir usando postman para mandar las autorizaciones
 
 ![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221101173357.png)
+
+
+## Token Authentication - Part 1
+
+Empecemos con lo bueno (creo es la tercera ves que lo menciono en este curso), por alguna razón se me complica mucho el asociar las autenticaciones por token, pero en este capitulo lo explica bien con un ejemplo de un estacionamiento.
+
+Para acceder a algún sitio web, necesitamos un username y un password, esto sera algo asi como un Log que contendrá el id o username y el password ``Log(id, password)`` como lo que hicimos en postman que le pasamos en una sola linea estos dos codificados, ok esto lo estamos mandando desde algún lugar a nuestro "endpoint", la cual nosotros definimos en nuestra api mediante las url, al momento de mandarlo al Endpoint y el verificar que si tienes las credenciales correctas el nos regresara un TOKEN, es como en un estacionamiento, al momento de entrar te dan un boleto=token, y a la hora de regresar, enseñas el TOKEN y ya puedes tener acceso a entrar y tomar tu carro
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221102145155.png)
+
+si queremos visitar nuestra pagina de cuenta "account page" necesitamos pasar el token dentro del request para que nos puedan regresar el contenido de esa pagina, de igual forma si queremos hacer un review igual debemos pasar el token dentro del request para que nos de chance de acceder o enviar cosas, cada que en el programa de nuestra api le decimos que si "IsAuthenticated" prácticamente lo que estamos checando es si la request lleva este token o no
+
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221102150732.png)
+
+Entonces, como usaremos esto en nuestra API, pues cada que un usuario se registra, le crearemos un token, este se quedara guardado en la base de datos, este token se le regresara al usuario para que pueda tener acceso a todos los datos, una ves que el usuario haga logout, este token se destruirá y no se volverá a crear uno nuevo hasta que el usuario haga login otra ves
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221102151200.png)
+
+
+Ahora, para implementar esto en nuestra api, tenemos que configurar unas cosas en nuestro archivo "settings.py" y allí según la documentación tenemos que agregar lo siguiente
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221102151532.png)
+
+Entonces vamos y de una ves agregamos las que están comentadas de la forma que debería ser (solo un REST_FRAMEWORK y lo demás settings separados por coma)
+
+```Python
+...
+REST_FRAMEWORK = {
+    #     'DEFAULT_PERMISSION_CLASSES': [
+    #     'rest_framework.permissions.IsAuthenticated',
+    # ],
+    # 'DEFAULT_AUTHENTICATION_CLASSES': [
+    #     'rest_framework.authentication.BasicAuthentication',
+    # ],
+
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+
+        'rest_framework.authentication.TokenAuthentication',
+
+    ]
+}
+```
+
+Ya poniendo los settings ahora debemos ir a las INSTALLED_APPS y declararla
+
+```Python
+...
+INSTALLED_APPS = [
+    'django.contrib.admin',
+    'django.contrib.auth',
+    'django.contrib.contenttypes',
+    'django.contrib.sessions',
+    'django.contrib.messages',
+    'django.contrib.staticfiles',
+    # _app's creadas
+    'watchlist_app',
+    'rest_framework',
+
+    'rest_framework.authtoken',
+]
+...
+```
+
+Ahora, la misma documentación nos pide que hagamos un migrate, esto nos creara los campos que necesitamos para los tokens
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221102153941.png)
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221102154136.png)
+
+Si entramos al panel de administración veremos que ya tenemos la sección de agregar tokens
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221102154329.png)
+
+Agreguemos los tokens manualmente a los dos usuarios que tenemos
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221102155037.png)
+
