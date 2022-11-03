@@ -3610,3 +3610,75 @@ Agreguemos los tokens manualmente a los dos usuarios que tenemos
 
 ![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221102155037.png)
 
+
+## Token Authentication - Part 2
+
+Ahora vamos con la parte 2, ya creamos nuestros tokens manualmente para nuestros usuarios ya que el hacerlo de manera normal tendriamos que borrar los usuarios, crear un nuevo super usuario y asi, por eso la hicimos manual, entonces ahorita vamos a hacerlo solo por fines practicos y pa aprender manualmente, asi que notemos bien nuestros tokens y a quien le pertenecen
+
+```
+[cf9fd2c4bd24856eac06cd53c8ad31833807dcb0]
+keikusanagi
+
+[d9c377b6859f14653187007ec350392f35ad6dba]
+test
+```
+
+Y vamos a nuestro postman y utilicemos nuestro ultimo request, el de 
+http://127.0.0.1:8000/watch/2/reviews
+solo que cambiaremos nuestro valor de autorización por Token seguido de cualquiera de los dos tokens que tenemos
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221102175217.png)
+
+Al darle sent sin problemas nos mandara la respuesta ya que en nuestras vistas solo pusimos que no tenia ni que estar logeado alguien para poder hacer un request tipo GET, es mas quitémosle el token 
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221102175236.png)
+
+Esto es como si no estuviéremos autentificados, pero ahora que pasa si hacemos un request para ver un review, normalmente nos dejaría ya que solo estamos haciendo un GET 
+http://127.0.0.1:8000/watch/review/5
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221102175637.png)
+
+Al ser un GET no hay bronca, nos deja verlo sin problemas, pero si queremos modificarlo con un PUT a nuestro review http://127.0.0.1:8000/watch/review/5 ya que en este lo tenemos en 4 de rating
+```Json
+{
+    "rating": 5,
+    "description": "Good Movie!",
+    "active": true
+}
+```
+
+Lo pondremos como PUT, luego en el Body ponemos este Json como raw y tipo JSON
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221102180023.png)
+
+Nos regresa un
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221102180045.png)
+
+ya que no le estamos pasando el token para demostrar que estamos autorizados para modificarlo, ahora este review es de nuestro usuario de test
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221102180131.png)
+
+asi que provemos, dandole el token de nuestro admin 
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221102180210.png)
+
+nos muestra presisamente que no tenemos permiso para modificartlo, ahora pasemosle el token dentro de la solicitud de neustro usuario de prueba
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221102180334.png)
+
+Ahora si nos dejo modificarlo
+
+Ahora la pregunta es como podemos obtener este token, el plan es crear un link por el cual se le manden request por medio de postman por ejemplo por el cual le mandemos nuestro usuario y password y nos regrese promedió de un response un token (claro si el usuario y password están acreditados) este token lo almacenaremos como el que hicimos ahorita y este token sera pasado en cada petición que hagamos, este sera el primer caso
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221102191453.png)
+
+
+El segundo caso sera importante ya que tratara sobre el registro de usuarios, ya saben obtener su usuario, password, confirmar su password y ya dando toda esta información le regresaremos un token
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221102191652.png)
+
+
+
+Y el tercer caso sera cuando el usuario necesite borrar su token y o pueda regenerarlo como en el caso que cada que hagamos Logout se destruya el token y cuando volvamos a hacer login se regenere
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221102191918.png)
+
