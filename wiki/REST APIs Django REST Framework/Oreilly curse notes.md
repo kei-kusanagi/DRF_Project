@@ -3774,3 +3774,154 @@ Configurándolo como un post, recordando en el Header poner la Authorization y n
 ![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221103125927.png)
 
 
+## Token Authentication - Part 4 (Registration)
+
+Bueno ya teniendo nuestro link para que nos regrese los tokens, debemos hacer nuestro registro, para esto usaremos los mismos campos que ya tenemos creados de nuestro modelos anteriormente así que no debemos sobre escribirlos (como quien dice ya REST framework otra ves nos da ya las herramientas que necesitamos respecto a usuarios, pero si queremos poner algunos campos de mas podemos crearlos dentro de nuestro archivo models.py)
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221103142419.png)
+
+
+Entonces vallamos a nuestro archivo "user_app/api/serielizers.py" y empecemos a crear nuestro serializador
+
+_¿Qué es un serializador? Los serializadores **son unos de los componentes más poderosos que tiene Django Rest Framework**. Estos permiten que estructuras complejas y modelos de nuestro proyecto en Django sean convertidos a estructuras nativas de Python y puedan ser convertidas fácilmente en JSON o XML ._
+
+Aqui importaremos nuestros usuarios del modelo que ya tiene Django como ya lo habíamos mencionado arriba, luego  importaremos nuestro serializadores de Django rest framework
+
+Después de esto crearemos nuestra class y le llamaremos "RegistrationSerializer" luego definimos nuestra class Meta, usaremos model = User y en los campos definiremos un campo extra que corresponderá al password2 para poder confirmarlo, ya que Django de default solo nos da username, email y password, entonces antes de definir el class Meta definimos nuestro campo que sera password2, asignándole que sea un CharFiueld y que sea solo write_only (esto significa que solo podrá escribirse y compararlo pues nosotros dentro del programa pero nadie mas lo podrá leer) y le añadimos un style que sea password pa que salgan los asteriscos esos al ponerlo.
+
+Casi por ultimo añadiremos argumentos extra, y le pasaremos que nuestro password (el normal) sera igual solo escritura.
+
+Ahora si por ultimo crearemos un metodo para validar nuestros datos (si no nos da un error) así que creamos y asignamos nuestras variables password y password2 y creamos nuestro if y le pasamos un raise error diciendo que los password deven ser iguales, después aqui tambien crearemos nuestra validacion de emails, para que 2 usuarios no peudantener el mismo email
+
+```Python
+from django.contrib.auth.models import User
+from rest_framework import serializers
+
+class RegustratinSerializer(serializers.ModelSerializer):
+    password2 = serializers.CharField(style={'input_type': 'password'}, write_only=True)
+
+    class Meta:
+        model = User
+        fields = ['username', 'email', 'password', 'password2']
+        extra_kwargs = {
+            'password': {'write_only': True}
+        }
+
+    def save(self):
+        password = self.validated_data['password']
+        password2 = self.validated_data['password2']
+
+        if password == password2:
+            raise serializers.ValidationError({'error': 'P1 and P2 should be same!'})
+```
+
+ahora si, vamos a nuestro archivo "user_app/api/views.py" y creemos nuestras funciones, empezamos importando nuesta api_view para poder usar los decoradores.
+
+Nuestra función se llamara registration_view, le añadimos antes su decorador api_view que se aplicara solo si es POST, luego ponemos nuestra condicional que si el request.method es POST, llamamos nuestro serializador que creamos "RegistrationSerializer" y le pasamos todos sus datos, si este serializador es valido ".is_valid():" salvamos el serializador y retornamos los datos
+
+```Python
+from rest_framework.decorators import api_view
+
+from user_app.api.serializers import RegustratinSerializer
+
+@api_view(['POST',])
+def registration_view(request):
+  
+    if request.method == 'POST':
+        serializer = RegustratinSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return serializer.data
+```
+
+Ahora tenemos que crear la url donde mandaremos el registro, asi que vamos a "user_app/api/urls.py" importamos nuestra vista y luego creamos el path
+
+```Python
+from django.urls import path
+from rest_framework.authtoken.views import obtain_auth_token
+ 
+from user_app.api.views import registration_view
+ 
+
+urlpatterns = [
+    path('login/', obtain_auth_token, name='login'),
+    path('register/', registration_view, name='register'),
+]
+```
+
+Listo ya tenemos todo para crear un usuario de prueba, así que vamos al postman y creemos uno, creamos una nueva pestaña, le pasamos la dirección http://127.0.0.1:8000/account/register/ y en el Body, en form-data le pasamos los 4 campos que declaramos y lo mandamos como POST pero el campo de password cambiémosle algún carácter para ver si nos marca el error
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221103150103.png)
+
+perfecto, pero si lo ponemos bien aun no nos lo salva ya que no hemos creado la función de que pasa si están bein los dos, así que regresemos a serializers.py y creemos primero la de comparar emails y después la de salvar el usuario
+
+Después del filtro del password ponemos un if que cheque si el mail que nos están pasando en el validated_data (ósea en el request) existe ya dentro de algún usuario usando la función User.objects.filter, si existe entonces le mandamos un raise error, y si no pues procedemos a crear la cuenta
+
+```Python
+...
+if User.objects.filter(email=self.validated_data['email']).exists():
+
+            raise serializers.ValidationError({'error': 'Email already exists!'})
+...
+```
+
+entonces creamos la variable "account" donde le asignaremos el User y dentro le pasaremos lo que es el email (validado) y el username que igual vendrán de los validated_data del request, luego le salvaremos el password con .set_password y le pasamos pues el password que habíamos declarado arriba en la función, luego solo queda salvarlo y regresar account para que se vean los datos
+
+```Python
+...
+    def save(self):
+
+        password = self.validated_data['password']
+        password2 = self.validated_data['password2']
+
+        if password != password2:
+            raise serializers.ValidationError({'error': 'P1 and P2 should be same!'})
+
+        if User.objects.filter(email=self.validated_data['email']).exists():
+            raise serializers.ValidationError({'error': 'Email already exists!'})
+        account = User(email=self.validated_data['email'], username=self.validated_data['username'])
+        account.set_password(password)
+        account.save()
+
+        return account
+...
+```
+
+Vamos a probar primero lo del e-mail. salvando un email en nuestro usuario keikusanagi y poniéndole el mismo en los datos que estamos pasando por postman
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221103152043.png)
+
+Perfecto, nos dice que el Email ya existe, ahora ya solo nos falta pasar el resultado de crear el usuario en nuestra vista (cosa que en el curso no hizo y nos dio un error bien raro), entonces vamos a views.py y en el return añadimos lo siguiente ``return Response(serializer.data)``
+
+```Python
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
+from user_app.api.serializers import RegustratinSerializer
+ 
+
+@api_view(['POST',])
+def registration_view(request):
+
+    if request.method == 'POST':
+        serializer = RegustratinSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+```
+
+Listo, entonces vallamos, pongamos bien todos los datos de usuario correo y password y 
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221103152410.png)
+
+perfecto, ya tenemos nuestro link para crear usuarios, pero aun nos falta que nos pase nuestro token, ya que si vamos al panel de administracion aun no tenemos nuestro token aunque ya creamos nuestro usuario
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221103152530.png)
+
+Así que vamos a nuestro link en postman para crear tokens y mandémosle una petición para crear uno con nuestros datos de usuario que acabamos de crear
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221103152652.png)
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221103152718.png)
+
+Ahora solo falta que al momento de crear nuestro registro pase el token automáticamente, esto sera seguramente al pasar el response
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221103152930.png)
+Pero eso lo veremos en nuestro siguiente episodio
