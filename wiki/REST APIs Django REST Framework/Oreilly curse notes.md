@@ -3924,4 +3924,5 @@ Así que vamos a nuestro link en postman para crear tokens y mandémosle una pet
 Ahora solo falta que al momento de crear nuestro registro pase el token automáticamente, esto sera seguramente al pasar el response
 
 ![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221103152930.png)
+
 Pero eso lo veremos en nuestro siguiente episodio
