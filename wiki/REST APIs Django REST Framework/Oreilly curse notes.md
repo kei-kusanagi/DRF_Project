@@ -3682,3 +3682,95 @@ Y el tercer caso sera cuando el usuario necesite borrar su token y o pueda regen
 
 ![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221102191918.png)
 
+## Token Authentication - Part 3 (Login)
+
+Muy bien, ahora vamos a crear una nueva app que llevemos todo lo que tenga que ver con cuentas, ya sea registrarse, hacer login todo eso. REST framework nos da bastantes herramientas para crearla, yo creí que seria un poco mas complicado pero bueno, empecemos creando una nueva app
+
+``python manage.py startapp user_app ``
+
+y dentro de esta crearemos una carpeta llamada "api" y luego nuestros 3 archivos "urls.py", "serializers.py" y "views.py"
+
+lo primero que agregaremos sera nuestras URL's ya que es nuestro objetivo de crear esta nueva app, el crear una url para hacer login y obtener nuestro token.
+
+Vamos a nuestro archivo "watchamte/urls.py" y agregamos nuestro path de paths jajajaa osease que tome encuenta las direcciones que usaremos en nuestra nueva app y le damos la direccion que sera "user_app.api.urls"
+
+```Python
+from django.contrib import admin
+from django.urls import path, include
+  
+
+urlpatterns = [
+    path('admin/', admin.site.urls),
+    path('watch/', include('watchlist_app.api.urls')),
+
+	# user_app path
+    path('account/',include('user_app.api.urls')),
+
+    # path('api-auth', include('rest_framework.urls')),
+]
+```
+
+Tambien vamos a nuestro archivo settings y agregamos nuestra nueva app
+
+```Python
+INSTALLED_APPS = [
+    'django.contrib.admin',
+    'django.contrib.auth',
+    'django.contrib.contenttypes',
+    'django.contrib.sessions',
+    'django.contrib.messages',
+    'django.contrib.staticfiles',
+    # _app's creadas
+    'watchlist_app',
+    'rest_framework',
+    'rest_framework.authtoken',
+    'user_app',
+]
+```
+
+Ya teniendo esto ahora si vamos a nuestro archivo "user_app/api/urls.py" y creemos el path que necesitaremos para que nos regrese el token, empezamos importando ``from rest_framework.authtoken.views import obtain_auth_token`` que es lo que nos regresara el token dependiendo del nombre de usuario y password que le mandemos dentro de nuestras peticiones
+
+```Python
+from django.urls import path
+from rest_framework.authtoken.views import obtain_auth_token
+
+urlspatterns = [
+    path('login/', obtain_auth_token, name='login')
+]
+```
+
+Listo, ahora vamos a nuestro postman a pedirle nuestro token
+
+Configuramos al direccion como http://127.0.0.1:8000/account/login/ que es la que acabamos de crear, leugo le pasaremos dentro del Body un "form-data" y le pondremos dos KEY, una sera el username y la otra el password y lo mandamos todo como un POST
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221103124952.png)
+
+Perfecto, con esto nos esta regresando un token como si hubiéramos echo log in, le mandamos por la petición nuestro usuario y password y nos regresa el token que si vemos en el panel de administration es el mismo
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221103125153.png)
+
+por ejemplo si le mandamos el password mal me va a decir 
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221103125231.png)
+
+Pero a ver con este token ya nos permitira por ejemplo crear reviews pasandoselo dentro de nuestras peticiones, ais que hagamos una prueba, vallamos a nuestro link para crear
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221103125432.png)
+
+http://127.0.0.1:8000/watch/3/review-create
+
+Pasemosle el siguiente Json
+```Json
+{
+
+    "rating": 5,
+
+    "description": "Great Movie",
+
+    "active": false
+
+}
+```
+
+Configurándolo como un post, recordando en el Header poner la Authorization y nuestro token
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221103125927.png)
+
+
