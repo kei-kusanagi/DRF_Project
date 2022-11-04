@@ -3796,7 +3796,7 @@ Ahora si por ultimo crearemos un metodo para validar nuestros datos (si no nos d
 from django.contrib.auth.models import User
 from rest_framework import serializers
 
-class RegustratinSerializer(serializers.ModelSerializer):
+class RegistrationSerializer(serializers.ModelSerializer):
     password2 = serializers.CharField(style={'input_type': 'password'}, write_only=True)
 
     class Meta:
@@ -3821,13 +3821,13 @@ Nuestra función se llamara registration_view, le añadimos antes su decorador a
 ```Python
 from rest_framework.decorators import api_view
 
-from user_app.api.serializers import RegustratinSerializer
+from user_app.api.serializers import RegistrationSerializer
 
 @api_view(['POST',])
 def registration_view(request):
   
     if request.method == 'POST':
-        serializer = RegustratinSerializer(data=request.data)
+        serializer = RegistrationSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
             return serializer.data
@@ -3895,14 +3895,14 @@ Perfecto, nos dice que el Email ya existe, ahora ya solo nos falta pasar el resu
 ```Python
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
-from user_app.api.serializers import RegustratinSerializer
+from user_app.api.serializers import RegistrationSerializer
  
 
 @api_view(['POST',])
 def registration_view(request):
 
     if request.method == 'POST':
-        serializer = RegustratinSerializer(data=request.data)
+        serializer = RegistrationSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data)
@@ -3926,3 +3926,74 @@ Ahora solo falta que al momento de crear nuestro registro pase el token automát
 ![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221103152930.png)
 
 Pero eso lo veremos en nuestro siguiente episodio
+
+
+## Token Authentication - Part 5 (Registration)
+
+Continuando con nuestra seccion de usuarios, ahora pasaremos con el asignarle sus respectivos tokens a las cuantas que vallamos registrando, para esto la documentacion nos tiene una respuesta
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221103181733.png)
+
+Entonces vallamos a nuestro archivo "user_app/models.py" y peguemos lo que nos dice alli
+
+```Python
+from django.conf import settings
+from django.db.models.signals import post_save
+from django.dispatch import receiver
+from rest_framework.authtoken.models import Token
+
+@receiver(post_save, sender=settings.AUTH_USER_MODEL)
+def create_auth_token(sender, instance=None, created=False, **kwargs):
+    if created:
+        Token.objects.create(user=instance)
+```
+
+Con esto generaremos tokens para cada usuario, ahora vamos a "user_app/api/views.py" y en la parte donde salvamos el serializador hagamos espacio para poder el nuevo método para crear los tokens ya que este validados los datos, los cuales pasaremos con la variable data, pero como tiene que ser un diccionario entonces creémosla en la parte de arriba antes del segundo if, tambien guardemos el serializer.save en la variable account para esta pasarla por medio del response al final, también crearemos una condicional else para pasarle los errores si hay alguno a la hora de salvar los datos. Con todo esto ahora solo falta pasar a llenar el diccionario vacío data que creamos con los datos como es el username, el email y un mensajito de creado satisfactoriamente.
+
+Aquí lo importante es que al momento de crear el token (al cual le llamaremos igual token) pasemos el método que nos esta nombrando la documentación
+``token = Token.objects.get(user=account).key``
+
+por ultimo importamos el user_app models que creamos según la documentación para que pueda importar y usar la creacion de tokens
+
+```Python
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
+  
+from rest_framework.authtoken.models import Token
+
+from user_app.api.serializers import RegistrationSerializer
+
+from user_app import models
+
+
+@api_view(['POST',])
+def registration_view(request):
+
+    if request.method == 'POST':
+        serializer = RegistrationSerializer(data=request.data)
+
+        data = {}
+
+        if serializer.is_valid():
+            account = serializer.save()
+
+            data['response'] = "Registration Successful"
+            data['username'] = account.username
+            data['email'] = account.email
+
+            token = Token.objects.get(user=account).key
+            data['token'] = token
+
+        else:
+            data = serializer.errors
+
+        return Response(serializer.data)
+```
+
+
+listo, así que vallamos a nuestro postman a crear un nuevo usuario mediante nuestro link de register y pasémosle los datos de usuario (recordando cambiar el username y el email para que no nos salga error)
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221103184112.png)
+
+
+Perfecto, ahora cada que registremos un usuario automáticamente se creara su token, ahora solo tenemos que encontrar una forma de que cada que hagamos logout se destruya ese token, pero eso lo veremos en el siguiente episodio
