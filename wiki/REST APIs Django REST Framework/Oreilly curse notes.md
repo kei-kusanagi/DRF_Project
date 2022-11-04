@@ -4103,6 +4103,7 @@ subimos y en nuestra ``class ReviewDetail`` ya tenemos permisos para que solo qu
 ![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221104173707.png)
 
 Nuestra ``class ReviewList`` no necesita cambios ya que todo mundo puede verla así que solo le quitamos la condicion que deva estar autenticado ya que queremos que todo el mundo pueda verla
+
 ![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221104173946.png)
 
 
