@@ -4055,3 +4055,59 @@ Perfecto, nos ah creado un nuevo token, con el cual podemos interactuar nuevamen
 ![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221104133345.png)
 
 Token invalido, perfecto, ya tenemos todo lo básico, ahora en la próxima lección probáremos toda nuestra app
+
+
+## Manual Testing Entire Project - Part 1
+
+Muy bien, es hora de empezar a testear todo nuestro proyecto, pero antes de eso tenemos que asegurarnos que es lo que queremos, en si queremos que esta API sea algo así como un clon de IMDb.
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221104151850.png)
+
+Si queremos lograr esto tenemos que cambiar algunas cosillas, por ejemplo en IMDb solo los administradores o miembros del staff pueden agregar watchlist, ya luego uno como usuario puede buscarlas y agregar su review y que solo el usuario dueño de la review y o un miembro del staff puedan modificar y o ocultar los reviews (por si alguno es falso o es spam), entonces para hacer todo esto, tenemos que modificar un poquito nuestra api para que en general el proceso luzca algo así
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221104151436.png)
+
+Entonces empecemos, vallamos a "watchlist_app/views.py" que es donde tenemos nuestra ASIGNACION de permisos y cambiemos un poco los que tenemos, empecemos con ``WatchDetailAV`` recordemos que esto nos regresa los detalles de una WatchList, entonces el GET esta bien, cualquier usuario puede ver los detalles pero el PUT y DELETE solo debería poder hacerlo los miembros del staff, así que podemos ir a la documentación https://www.django-rest-framework.org/api-guide/permissions/ y revisar esto ``permission_classes = [IsAuthenticated]``
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221104152322.png)
+
+Lo ponemos dentro de nuestra class y ahora brincamos a nuestro archivo de permissions.py para customizarlo como queremos
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221104152653.png)
+
+Aquí ya tenemos la class que nos proporciona los permisos que queremos, que es esta (bueno antes se llamaba AdminOrReadOnly pero la cambio pa que se vea mejor), entonces esta misma es la que usaremos así que quedaría así
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221104152911.png)
+
+Con esto, todo mundo podrá obtener como de lectura esto, pero si es parte del staff podrá hacer PUT y DELETE
+
+El siguiente que revisaremos sera ``WatchListAV`` aqui necesitamos prácticamente el mismo permiso para que todos los usuarios puedan leer solamente y los miembros del staff puedan realizar cambios 
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221104172731.png)
+
+Seguimos con ``StreamPlataformAV`` igual que los anteriores, nuestro staff puede modificar todo y los usuarios solo lectura
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221104172837.png)
+
+Con estos permisos que pusimos prácticamente ya tenemos todo el primer plano de nuestro diagrama referente a la administración, ahora seguiremos con la parte de plataformas de stream
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221104172953.png)
+
+
+Vamos mas arriba en el codigo a nuestra ``class StreamPlataformVS`` los mismos permisos para miembros del staff
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221104173219.png)
+
+
+subimos y en nuestra ``class ReviewDetail`` ya tenemos permisos para que solo quien hiso el review pueda modificarlo o borrarlo y cambiémoslo para que quede ``IsReviewUserOrReadOnly``
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221104173707.png)
+
+Nuestra ``class ReviewList`` no necesita cambios ya que todo mundo puede verla así que solo le quitamos la condicion que deva estar autenticado ya que queremos que todo el mundo pueda verla
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221104173946.png)
+
+
+Por ultimo nuestra ``class ReviewCreate`` que nos permite crear reviews pues allí si queremos que solo usuarios puedan crear reviews entonces le ponemos ese permiso
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221104174458.png)
+
+Y listo ya tenemos todo preparado para empezar las pruebas, primero crearemos un nuevo usuario con el cual probáremos todo por medio de post man, pero todo esto sera en el próximo capitulo
