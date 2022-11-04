@@ -3997,3 +3997,61 @@ listo, así que vallamos a nuestro postman a crear un nuevo usuario mediante nue
 
 
 Perfecto, ahora cada que registremos un usuario automáticamente se creara su token, ahora solo tenemos que encontrar una forma de que cada que hagamos logout se destruya ese token, pero eso lo veremos en el siguiente episodio
+
+
+## Token Authentication - Part 6 (Logout)
+
+Muy bien,  ya tenemos casi todo en nuestra api, nos falta hacer el logout, para esto crearemos un link en nuestras urls y crearemos una api_view que al momento de acceder a este link y pasarle nuestras credenciales pueda borrar el token que tenemos asignado.
+
+Vamos a nuestro archivo "views.py" (el de user_app) y creamos nuestra api_view, esta le asignaremos que sea un método POST, luego la función le daremos el nombre de logout_view y le pasaremos un request, luego hacemos la verificación, si el request method que pasamos es POST entonces le decimos que el ``request.user.auth_token`` lo borre ``.delete()`` que esto quiere decir que el request user (ósea el usuario que este logueado) tomemos su token de autorización y le demos cuello XD, luego regresamos un Response pasando el estatus de todo ok ``HTTP_200_OK`` (para esto tenemos que importar status de rest_framework):
+
+```Python
+...
+from rest_framework import status
+...
+
+@api_view(['POST',])
+def logout_view(request):
+
+    if request.method == 'POST':
+        request.user.auth_token.delete()
+        return Response(status= status.HTTP_200_OK)
+...
+```
+
+Ahora vamos a nuestro archivo "urls.py" y creamos nuestro link de logout donde mandamos a llamar esta función (la importamos primero arriba )
+
+```Python
+from django.urls import path
+from rest_framework.authtoken.views import obtain_auth_token
+
+from user_app.api.views import registration_view, logout_view
+
+urlpatterns = [
+    path('login/', obtain_auth_token, name='login'),
+    path('register/', registration_view, name='register'),
+    path('logout/', logout_view, name='logout'),
+]
+```
+
+Ok tenemos todo listo ahora pongámoslo a prueba, vamos a nuestro postman y pasemosle los datos por medio de un POST (recordemos que asi lo definimos) primero hagamos login
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221104132917.png)
+
+Ok todo correcto, alli tenemos nuestro token de nuestro usuario de ejemplo 5, ahora tomamos ese token y pasémoslo con nuestro link de logout http://127.0.0.1:8000/account/logout/ por medio de un POST y en headers pasemos nuestro token
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221104133112.png)
+
+Perfecto, si checamos nos regresa nuestro status de 200_OK y en el response tambien a desaparecido el token, es mas si vamos a nuestro apnel de adminitracion veremos que ya no esta
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221104133200.png)
+
+Ahora vallamos a nuestro postman a login y volvamos a loguear ese usuario de ejemplo 5
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221104133239.png)
+
+Perfecto, nos ah creado un nuevo token, con el cual podemos interactuar nuevamente, incluso si ponemos solo para probar el token anterior nos regresara este error
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221104133345.png)
+
+Token invalido, perfecto, ya tenemos todo lo básico, ahora en la próxima lección probáremos toda nuestra app
