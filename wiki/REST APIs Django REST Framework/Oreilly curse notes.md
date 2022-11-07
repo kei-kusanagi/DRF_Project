@@ -4112,3 +4112,45 @@ Por ultimo nuestra ``class ReviewCreate`` que nos permite crear reviews pues all
 ![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221104174458.png)
 
 Y listo ya tenemos todo preparado para empezar las pruebas, primero crearemos un nuevo usuario con el cual probáremos todo por medio de post man, pero todo esto sera en el próximo capitulo
+
+
+## Manual Testing Entire Project - Part 2
+
+Bueno pues siguiendo con el test en general haremos todo desde el principio. eso significa que borremos todos los usuarios (menos el super user) todos los watchlist y plataformas en nuestro panel de administración
+
+![[IMG/Pasted image 20221107122020.png]]
+
+Cuando borremos los usuarios automáticamente se borraran los tokens relacionados, al igual que los reviews relacionados con las watchlist que teníamos.
+
+Lo primero sera hacer login para que nos de nuestro token http://127.0.0.1:8000/account/login/ llenamos un POST request, le pasamos por medio de form-data nuestro username y password y le damos send
+![[IMG/Pasted image 20221107123646.png]]
+
+esto nos regresara el token con el cual haremos lo siguiente en nuestrs pruebas
+```Json
+{
+    "token": "cf9fd2c4bd24856eac06cd53c8ad31833807dcb0"
+}
+```
+
+El siguiente paso es crear una plataforma nueva mediante nuestro link http://127.0.0.1:8000/watch/stream/ recordemos que es pasarle una petición POST, luego en header le pasamos nuestro token como "Authorization" 
+
+![[IMG/Pasted image 20221107124040.png]]
+
+Y luego como body le pasamos un raw en formato de Json con los datos de nuestra plataforma none
+
+![[IMG/Pasted image 20221107124058.png]]
+
+Perfecto ya creamos nuestra primera plataforma y todo pro medio de postman y nuestros links de la API sigamos los mismos pasos para crear Netflix
+
+![[IMG/Pasted image 20221107124235.png]]
+
+
+Ok ahora añadiremos una watchlist mediante nuestro link http://127.0.0.1:8000/watch/list/ aquí para saber que campos agregar nos vamos a nuestro model y serán exactamente estos, menos los de avg_rating y eso porque esos se los añadiremos cuando hagamos nuestros reviews en unos minutos mas
+
+![[IMG/Pasted image 20221107124854.png]]
+
+![[IMG/Pasted image 20221107125415.png]]
+
+Perfecto, como plataform si queremos ver que id tiene las que creamos lo podemos hacer mediante postman, en el link de stream solo cambiamos el post al get (no importando que el body tenga datos) y listo nos regresa la lista de plataformas
+
+![[IMG/Pasted image 20221107125526.png]]
