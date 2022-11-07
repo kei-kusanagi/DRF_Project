@@ -4276,3 +4276,69 @@ Con esto terminamos las pruebas según el video, solo quiero hacer una mas y es 
 ![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221107151012.png)
 
 Perfecto, si nos crea un nuevo token, todo luce bastante bien 😁
+
+
+
+
+## JWT Authentication - Access Token and Refresh Token
+
+
+Muy bien, según el curso esto es algo opcional, pero pues yo particularmente vi que esto es de lo que mas se usa con respecto a las autenticaciones, entonces empezamos yendo a la pagina de la documentation donde nos detalla todos los pormenores https://jwt.io
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221107165621.png)
+
+Nos recomienda darle una leída a todo especialmente a la introducción https://jwt.io/introduction ya después de esto checar lo que es los Json Web Token nos dice irnos a la documentación de REST framework y la parte de simplejwt https://django-rest-framework-simplejwt.readthedocs.io/en/latest/ para poder empezar a configurar nuestro proyecto ya hecho para usar esto.
+
+Lo primero a hacer es instalarlo ``pip install djangorestframework-simplejwt``
+
+Así que vamos a nuestro proyecto y estando seguros que corre nuestro env darle el comando de pip install
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221107170851.png)
+
+Luego tenemos que ir a nuestro archivo settings.py y agregar su configuración
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221107170949.png)
+
+comentamos las anteriores
+
+```Python
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        # 'rest_framework.permissions.IsAuthenticated',
+        # 'rest_framework.authentication.BasicAuthentication',
+        # 'rest_framework.authentication.TokenAuthentication',
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    ]
+}
+```
+
+Con esto estaremos usando el simplejwt en ves de los tokens de autenticación que usábamos anteriormente, ahora necesitamos configurar las urls, esto lo haremos en el archivo "user_app/api/urls.py"
+
+```Python
+from django.urls import path
+from rest_framework.authtoken.views import obtain_auth_token
+from rest_framework_simplejwt.views import TokenObtainPairView,TokenRefreshView
+
+from user_app.api.views import registration_view, logout_view
+
+urlpatterns = [
+    path('login/', obtain_auth_token, name='login'),
+    path('register/', registration_view, name='register'),
+    path('logout/', logout_view, name='logout'),
+  
+    path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
+    path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
+]
+```
+
+Dejamos los anteriores ya que simplemente no los usaremos y no tiene caso comentarlos, algo que me paso aqui es que me marca error al importar simplejwt pero solo en el editor ya que en la consola el servidor sigue en pie. 
+
+Con esto terminamos al configuración y lo que ahora ara a diferencia a de como lo teníamos es que ya no almacenara los tokens en la base de datos, si no que los mantiene en el cache y ahora con cada login nos dará dos tokens, el Authentication Token "AT" y el Refresh Token "RT" estos tienen una duración de AT 5min y RT 24hrs, el AT nos dará acceso y el RT nos dará un nuevo AT cada que este se destruya, así bajamos el trafico de datos a la base de datos ya que no tendremos que estar checando y accediendo a los tokens cada ves que hagamos un request, estos se almacenaran de forma local de parte del cliente.
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221107173430.png)
+
+Todo esto es la primera parte, la segunda vendría siendo la estructura del JWT, que es muy única, si vamos a la documentación veremos que viene un token de ejemplo el cual viene dividido en 3 partes, el HEADER, PAYLOAD y VERIFY SIGNATURE
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221107173754.png)
+
+Aquí la parte importante es la SIGNATURE ya que allí viene la codificación de nuestro token, información que nos ayudara validar nuestros tokens, esa seria la segunda parte importante el como viene configurado el token, y eso es todo por este capitulo, en el siguiente veremos como crear este token con el link de login, refrescarlo y todo eso que suena bieeeeeeeeen complicado pero al parecer no lo es tanto usando este framework.
