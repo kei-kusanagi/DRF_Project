@@ -4118,12 +4118,12 @@ Y listo ya tenemos todo preparado para empezar las pruebas, primero crearemos un
 
 Bueno pues siguiendo con el test en general haremos todo desde el principio. eso significa que borremos todos los usuarios (menos el super user) todos los watchlist y plataformas en nuestro panel de administración
 
-![[IMG/Pasted image 20221107122020.png]]
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221107122020.png)
 
 Cuando borremos los usuarios automáticamente se borraran los tokens relacionados, al igual que los reviews relacionados con las watchlist que teníamos.
 
 Lo primero sera hacer login para que nos de nuestro token http://127.0.0.1:8000/account/login/ llenamos un POST request, le pasamos por medio de form-data nuestro username y password y le damos send
-![[IMG/Pasted image 20221107123646.png]]
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221107123646.png)
 
 esto nos regresara el token con el cual haremos lo siguiente en nuestrs pruebas
 ```Json
@@ -4134,23 +4134,145 @@ esto nos regresara el token con el cual haremos lo siguiente en nuestrs pruebas
 
 El siguiente paso es crear una plataforma nueva mediante nuestro link http://127.0.0.1:8000/watch/stream/ recordemos que es pasarle una petición POST, luego en header le pasamos nuestro token como "Authorization" 
 
-![[IMG/Pasted image 20221107124040.png]]
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221107124040.png)
 
 Y luego como body le pasamos un raw en formato de Json con los datos de nuestra plataforma none
 
-![[IMG/Pasted image 20221107124058.png]]
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221107124058.png)
 
 Perfecto ya creamos nuestra primera plataforma y todo pro medio de postman y nuestros links de la API sigamos los mismos pasos para crear Netflix
 
-![[IMG/Pasted image 20221107124235.png]]
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221107124235.png)
 
 
 Ok ahora añadiremos una watchlist mediante nuestro link http://127.0.0.1:8000/watch/list/ aquí para saber que campos agregar nos vamos a nuestro model y serán exactamente estos, menos los de avg_rating y eso porque esos se los añadiremos cuando hagamos nuestros reviews en unos minutos mas
 
-![[IMG/Pasted image 20221107124854.png]]
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221107124854.png)
 
-![[IMG/Pasted image 20221107125415.png]]
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221107125415.png)
 
 Perfecto, como plataform si queremos ver que id tiene las que creamos lo podemos hacer mediante postman, en el link de stream solo cambiamos el post al get (no importando que el body tenga datos) y listo nos regresa la lista de plataformas
 
-![[IMG/Pasted image 20221107125526.png]]
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221107125526.png)
+
+
+Bien, agreguemos mas watchlist a cada una de las plataformas
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221107135846.png)
+
+
+Muy bien, ya tenemos nuestra primera parte de las pruebas, que era hacerlo todo como administrador, ahora tenemos que registrar usuarios, hacer login con estos y registrar 2 o 3 reviews
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221107140010.png)
+
+
+Muy bien entonces vallamos a registrar un usuario de pruebas a nuestro link http://127.0.0.1:8000/account/register/ hagamos una petición POST , luego en body le pasamos los datos de nuestro nuevo usuario, como tip si no sabemos que datos son podemos solo darle en post y nos saldrá un error y los datos que necesitamos
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221107141617.png)
+
+entonces llenemos los datos, de echo no nos pide email pero pues como es un campo que pusimos se lo pondremos también
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221107141818.png)
+
+Perfecto, ya tenemos nuestro token de usuario, entonces tratemos de agregar una watchlist para ver si nos deja o solo si somos administradores
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221107142108.png)
+
+Perfecto, no nos deja ya que no tenemos el rango de staff, igual si queremos añadir una nueva serie no nos dejara
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221107142340.png)
+
+Ok entonces podemos decir que check en nuestra primera parte
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221107142425.png)
+
+ya pudimos crear cosas como admin, crear usuarios y probar si solo los admins podemos agregar mas cosas, entonces como usuarios debemos poder agregar reviews, así que hagámoslo con nuestro link http://127.0.0.1:8000/watch/5/review-create/ para agregar un review a nuestra serie de Prime Video "The Boys" (bastante buena por cierto)
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221107143241.png)
+
+Perfecto, ahora solo pa que se vea mas estético, agregamos esto al final de nuestro return en  "watchlist_app/models.py"
+
+```Python
+...
+def __str__(self):
+        return str(self.rating) + " | " + self.watchList.title + " | " + str(self.review_user)
+```
+
+Para poder ver quien hico el review en nuestra pagina de administración
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221107143506.png)
+
+Perfecto, probemos entonces que sólo podemos hacer un review en esta serie y si podemos modificarla 
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221107143617.png)
+
+Muy bien ahora démosle el método PUT para modificarla nada mas, para esto tenemos que pasarle un nuevo link indicándole que review queremos modificar,  primero hacemos un GET request de http://127.0.0.1:8000/watch/5/reviews/ para checar que numero tiene nuestro review
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221107143944.png)
+
+Ok es el review 8 asi que ahora modifiquemos el link para actualizarlo 
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221107144101.png)
+No olvidemos pasarle nuestro token de usuario y listo
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221107144314.png)
+
+Ahora intentemos hacer esto nuevamente pero siendo administradores, ya que tal ves su review infringe nuestras normas de comunidad, asi que pasémosle el token de administrador y...
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221107144734.png)
+
+Huy, auqui tenemos un problema ya que como administrador debíamos poder cambiar los comentarios de los usuarios, asi que revisemos nuestros permisos, vamos primero a "views.py" y checamos quein tiene permiso para los review's
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221107144957.png)
+
+
+OK aquí nos dice que ``[IsReviewUserOrReadOnly]`` entonces vamos a nuestros permisos y simplemente agréguenosle un ir a nuestro else indicándole que puede ser el usuario que lo creo ó si es staff
+
+```Python
+...
+class IsReviewUserOrReadOnly(permissions.BasePermission):
+
+    def has_object_permission(self, request, view, obj):
+        if request.method in permissions.SAFE_METHODS:
+            return True
+        else:
+            return obj.review_user == request.user or request.user.is_staff
+```
+
+Ahora probemos nuevamente 
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221107145256.png)
+
+Perfecto, ya podemos ponerle palomita a esto ya que ahora si hace lo que queremos, solo nos faltaría probar si con otro nuevo usuario podemos modificar esta review
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221107145414.png)
+
+
+Asi que regresemos a nuestro postman, a nuestra pestaña de registro de usuarios y creemos uno nuevo 
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221107145655.png)
+
+Ahora ponemos ese token de usuario en nuestro Headers y modificamos un poco el body y le damos send
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221107145839.png)
+
+Perfecto, no tenemos permiso ya que no somos miembros del staff ni los dueños de ese review, ahora vallamos a nuestro link para crear reviews de esta misma serie, pasémosle el token de test 2
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221107150302.png)
+
+Ahora si vamos a nuestro link de watch list podemos ver que en efecto tenemos 2 reviews de esta misma serie, asi como su avg_rating que seria 4.5 y asi
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221107150508.png)
+
+
+Ahora solo nos falta probar el logout, así que pasémosle el link le pasamos en el header nuestro token todo como POST request y listo, nos destruyo el token 
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221107150815.png)
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221107150827.png)
+
+Con esto terminamos las pruebas según el video, solo quiero hacer una mas y es crear un nuevo token de este usuario haciendo login
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221107151012.png)
+
+Perfecto, si nos crea un nuevo token, todo luce bastante bien 😁
