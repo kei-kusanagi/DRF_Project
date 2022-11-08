@@ -4404,11 +4404,84 @@ Vamos a nuestra review 9 creada por nuestro usuario de pruebas 2 y en el header 
 Perfecto, ahora borremoslo 
 ![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221108115842.png)
 
-Huy que nos tardamos mucho, pero no hay problema, generemos un nuevo token de acceso y pasemoslo
+Huy que nos tardamos mucho, pero no hay problema, generemos un nuevo token de acceso y pasémoslo
 
 ![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221108115940.png)
 
-Perfecto ya nos borro el comentario, ahora solo nos falta crear un nuevo comentario con nuestros token de acceso solo para ver si todo funciona bien, asi que vallamos a  y pasémosle el Bearer y nuestro nuevo token de acceso, luego como body le pasamos el review y listo
+Perfecto ya nos borro el comentario, ahora solo nos falta crear un nuevo comentario con nuestros token de acceso solo para ver si todo funciona bien, así que vallamos a  y pasémosle el Bearer y nuestro nuevo token de acceso, luego como body le pasamos el review y listo
 
 ![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221108120208.png)
+
+
+
+## JWT Authentication - Registration
+
+Muy bien, ya sabemos como se crean los tokens a la hora de hacer login pero como los creamos al momento de registrar un nuevo usuario, primero usemos uno de nuestros usuarios de prueba para generar un token y ver si pasa el id de este.
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221108152304.png)
+
+Si checamos en la pagina de https://jwt.io/#debugger-io veremos que en efecto nos da que es el usuario 8, sic hecamos en nuestra pagina de administracion veremos que tambien es el id de este usuario
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221108152353.png)
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221108152437.png)
+
+si le mandamos el token de refresh también nos dirá la misma información
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221108152530.png)
+
+Ahora, como podemos crear este token manualmente, si nos vamos a nuestro código en el archivo "user_app/api/views.py" lo creamos manualmente en la función "registration_view"
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221108152929.png)
+
+Entonces para hacer algo similar vamos a la documentación y busquemos como crearlos manualmente
+https://django-rest-framework-simplejwt.readthedocs.io/en/latest/creating_tokens_manually.html
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221108153043.png)
+
+Aquí nos viene explicado que si importamos el simplejwt RefreshToken este nos dejara crearlo con el objeto ``RefreshToken.for_user(user)`` y luego tenemos que retornar ese diccionario para tener acceso al refresh token y al access token
+
+Tenemos que pasarle a la variable refresh = el usuario que en este caso lo declaramos arriba con el serializador en el account y luego el data (que es lo que regresamos) le asignamos el diccionario que nos dice en la documentación.
+
+```Python
+...
+refresh = RefreshToken.for_user(account)
+            data['token'] = {
+                                'refresh': str(refresh),
+                                'access': str(refresh.access_token),
+                            }
+...
+```
+
+Ahora ya podremos usar nuestro link de register sin problemas, solo no olvidemos comentar nuestro ``from user_app import models`` porque no estamos generando los tokens por este metodo, ahora registremos un nuevo usuario para comprobar que esto sirve, vamos al link http://127.0.0.1:8000/account/register/ en Postman y agreguémosle unos datos para crear otro usuario de prueba
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221108154120.png)
+
+Perfecto, nos regresa nuestro usuario y los tokens de acceso y refresh
+
+Ahora hablemos de las ventajas y desventajas de JWT, una de las ventajas es que podemos controlar el tiempo de vida del token, si checamos la documentacion https://django-rest-framework-simplejwt.readthedocs.io/en/latest/settings.html 
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221108154415.png)
+
+Podemos aquí cambiar estos settings para que nuestro token viva mas tiempo o menos tiempo, esa es una de las ventajas de usar estos ya que podemos controlar su vida útil
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221108154542.png)
+
+Otra vetaja como ya la mencionamos es que no ocupa el trafico de la base de datos, pero una desventaja es que no tenemos control sobre ese token durante los proximos 5 minutos, ya que si nos vamos a nuestro panel de administracion vemos que alli no nos aparece este token en ningun lado
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221108154723.png)
+
+Lo único que podríamos hacer para "cortar" el acceso a este usuario seria quitarle el permiso de Active, o directamente borrar este usuario, ahora como pequeña tarea nos deja el cambiar el tiempo de vida del token cambiando los settings así que háganosla 
+
+simplemente si en los settings importamos el ``timedelta`` y luego añadimos el tiempo de vida que menciono que se usa normalmente (el access de 1 minuto y el refresh de 14 días) y listo
+
+```Python
+...
+from datetime import timedelta
+
+SIMPLE_JWT = {
+    'ROTATE_REFRESH_TOKENS' : True,
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=1),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=14),
+}
+```
 
