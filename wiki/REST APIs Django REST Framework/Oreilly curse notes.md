@@ -4342,3 +4342,73 @@ Todo esto es la primera parte, la segunda vendría siendo la estructura del JWT,
 ![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221107173754.png)
 
 Aquí la parte importante es la SIGNATURE ya que allí viene la codificación de nuestro token, información que nos ayudara validar nuestros tokens, esa seria la segunda parte importante el como viene configurado el token, y eso es todo por este capitulo, en el siguiente veremos como crear este token con el link de login, refrescarlo y todo eso que suena bieeeeeeeeen complicado pero al parecer no lo es tanto usando este framework.
+
+
+
+## JWT Authentication - Login
+
+Muy bien, ahora ya tenemos configurado el como crear nuestros JWT y el REFRESH token, vamos a probarlo, asi que vallamos a postman y pongamos el link http://127.0.0.1:8000/account/api/token/ y en la parte del body pongamos nuestro usuario y contraseña de administradores y pasémoslo como POST request
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221108112522.png)
+
+Si vamos a https://jwt.io/#debugger-io y ponemos nuestro token podemos ver su estructura y lo que significa, nos viene el header que nos dice en que algoritmo viene cifrado, nuestro payload diciéndonos que es un token de accesso y el id del jwt y nuestra signature
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221108112650.png)
+
+Ahora vamos a  probarlos, para esto añadamos una autorización para lectura para no estarle moviendo tanto a nuestra api, si vamos a nuestro panel de administración veremos que no viene ningún token nuevo, ya que estos como dijimos no se almacenan en la base de datos si no se almacenan temporalmente en el cache del cliente, en este caso nuestra computadora y con esto reducimos el trafico de datos de la base de datos.
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221108112947.png)
+
+Entonces ahora si vallamos a nuestro archivo "views.py" y agreguémosle (o des comentemos) el permiso para que solo estando autenticados podamos revisar nuestra lista
+
+```Python
+class ReviewList(generics.ListAPIView):
+    # queryset = Review.objects.all()
+    serializer_class = ReviewSerializer
+    permission_classes = [IsAuthenticated]
+```
+
+Ahora vallamos a Postman y con el link http://127.0.0.1:8000/watch/review/8/ para ver nuestro review #8 y en el body el pasamos nuestra token de autorización pero como Bearer
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221108113548.png)
+
+Perfecto, si nos lo da la informacion, pero que pasa si dejamos que pasen lso 5 minutos de vida del token:
+
+
+Ok, esta caducado, pero ahora como renovamos este token sin tener que loguearnos de nuevo, pues para eso esta el link de refresh que pusimos en el capitulo anterior http://127.0.0.1:8000/account/api/token/refresh/ , entonces se lo pasamos por Postman como un POST request y le pasamos el dato del refresh token pero por medio del body y ahora elegimos ``x-www-form-urlencoded`` como key le pasamos refresh y como value el token de refresh obviamente y esto nos dará un nuevo token de acceso que solo vivirá otros 5 minutos
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221108114042.png)
+
+
+Bien ahora si saltamos a la documentación podemos ver la información respecto a ROTATE_REFRESH_TOKENS https://django-rest-framework-simplejwt.readthedocs.io/en/latest/settings.html#rotate-refresh-tokens con esto podemos hacer que cada que pidamos un nuevo token de acceso también nos refresque el refresh token (valga la redundancia) esto lo haremos en nuestro archivo "settings.py" y ponemos al final nuestro Nuevo setting
+
+```Python
+...
+SIMPLE_JWT = {
+    'ROTATE_REFRESH_TOKENS' : True,
+}
+```
+
+
+Ahora si vamos a Postman y volvemos a refrescar nuestro token veremos que nos genera un nuevo token de acceso y de igual manera un nuevo token de refresh
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221108115145.png)
+
+
+Muy bien, ahora probemos nuestro nuevo token de accesso aprovechando que es la cuenta toda poderosa de staff vallamos y actualicemos alguna review y luego borrémosla
+
+Vamos a nuestra review 9 creada por nuestro usuario de pruebas 2 y en el header recordemos ponerle nuestro nuevo token de acceso como Beaber, luego le pasamos un nuevo json cambiando el rating y dejándole un mensajito
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221108115801.png)
+
+Perfecto, ahora borremoslo 
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221108115842.png)
+
+Huy que nos tardamos mucho, pero no hay problema, generemos un nuevo token de acceso y pasemoslo
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221108115940.png)
+
+Perfecto ya nos borro el comentario, ahora solo nos falta crear un nuevo comentario con nuestros token de acceso solo para ver si todo funciona bien, asi que vallamos a  y pasémosle el Bearer y nuestro nuevo token de acceso, luego como body le pasamos el review y listo
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221108120208.png)
+
