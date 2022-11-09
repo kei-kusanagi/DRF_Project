@@ -4610,3 +4610,77 @@ Ahora que pasa si queremos acceder a un DetailReview, por ejemplo el http://127.
 ![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221109132157.png)
 
 Con o sin token también nos saldrá el error 429 ya que ya agotamos nuestros intentos por día al hacer los intentos anteriores, entonces en el próximo capitulo veremos como podemos personalizar esta cuenta.
+
+
+## Throttle Rate (Custom and Scope)
+
+Ahora intentemos personalizar un poco mas nuestros Thorttle, para esto y usar Thorttle mas personalizados, tenemos que crear un nuevo archivo "watchlist_app/api/throttling.py" y en el crearemos nuestras nuevas class que usaremos para customizar las veces que un usuario registrado y uno anónimo podrán acceder a nuestras api, para esto primero comenzamos importando ``from rest_framework.throttling import UserRateThrottle`` luego creamos nuestras class ``class ReviewCreateThorttle`` y le pasamos ``(UserRateThorttle)`` dentro definiremos nuestro "scope" de igual manera creamos nuestra class ``class ReviewListThorttle`` y le asignamos su "scope"
+
+```Python
+from rest_framework.throttling import UserRateThrottle
+
+class ReviewCreateThorttle(UserRateThrottle):
+    scope = 'review-create'
+
+class ReviewListThorttle(UserRateThrottle):
+    scope = 'review-list'
+```
+
+Echo esto ahora vamos a definir la restricción de este "scope" esto lo haremos en nuestro archivo de "settings.py" justo debajo de las demás restricciones que tenemos para usuario anónimo y registrado 
+
+```Python
+...
+'DEFAULT_THROTTLE_RATES': {
+        'anon': '3/day',
+        'user': '5/day',
+        'review-create': '1/day',
+        'review-list': '10/day',
+    }
+...
+```
+
+Ya creado esto ahora debemos ir a nuestro "views.py" e importar estas class para poder usarlas
+
+```Python
+...
+from watchlist_app.api.throttling import ReviewCreateThorttle, ReviewListThorttle
+...
+```
+
+Ahora nos falta mencionar nuestras "Throttle class" en nuestra ``ReviewCreate`` y en ``ReviewList``
+
+```Python
+...
+class ReviewCreate(generics.CreateAPIView):
+    serializer_class = ReviewSerializer
+    permission_classes = [IsAuthenticated]
+    throttle_classes = [ReviewCreateThorttle]
+...
+class ReviewList(generics.ListAPIView):
+    # queryset = Review.objects.all()
+    serializer_class = ReviewSerializer
+    # permission_classes = [IsAuthenticated]
+    throttle_classes = [ReviewListThorttle, AnonRateThrottle]
+...
+```
+
+Y listo, ahora vamos a checarlo, ponemos en Postman nuestro link http://127.0.0.1:8000/watch/6/review-create/ para añadirle una review a nuestra serie de Moon Knight, nos autenticamos, luego le pasamos un Json y lo pasamos como POST
+
+```Json
+{
+    "rating": 5,
+    "description": "New review",
+    "active": true
+}
+```
+
+![[IMG/Pasted image 20221109160638.png]]
+
+
+Ahora con este mismo usuario, intentemos hacer otro review, ahora a nuestra serie de Lucifer http://127.0.0.1:8000/watch/8/review-create/
+
+![[IMG/Pasted image 20221109161229.png]]
+
+De igual forma si queremos checar alguna review solo nos dejara 10 veces, pongamos http://127.0.0.1:8000/watch/review/8/ en Postman e identifiquémonos como usuario y démosle GET 10 veces
+
+![[IMG/Pasted image 20221109161447.png]]
