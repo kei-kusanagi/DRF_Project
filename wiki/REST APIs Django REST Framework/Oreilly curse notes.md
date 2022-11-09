@@ -4491,21 +4491,21 @@ SIMPLE_JWT = {
 
 Muy bien, hagan de cuenta que lo anterior no ocurrio y quitamos todo lo de JWT que pusimos, ya hice pruebas y al parecer todo sigue funcionando bien, pero ahora veremos lo que es el "Throttling" que se traduce como 
 
-![[IMG/Pasted image 20221108175916.png]]
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221108175916.png)
 
 y esto es para proteger nuestra api ya que si la volvemos una open api fácilmente un bot podría mandarnos miles de solicitudes y saturar nuestro trafico de datos, entonces para esto existe el Throttling, si vamos a la documentación podemos ver lo siguiente
 https://www.django-rest-framework.org/api-guide/throttling/#throttling
 
-![[IMG/Pasted image 20221108180107.png]]
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221108180107.png)
 
 Podemos configurarlo en las settings gracias a restframework, lo que haremos sera limitar el numero de peticiones que podrán hacer los usuarios anónimos y también aunque siendo un numero un poco mas holgado el nuemro de peticiones que podrán hacer los usuarios ya registrados. 
 
 Como ejemplo toma la pagina de https://medium.com donde sin registrarte te dan de 25 a 30 request y después de registrarte y crear una cuenta gratis te dan mucho mas
 
-![[IMG/Pasted image 20221108180503.png]]
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221108180503.png)
 
 En nuestro caos le daremos este tipo de restricción a nuestra "Watch List" ya que esta se puede mandar a llamar cualquier cantidad de veces ya sea este registrado o no, para esto lo mas común seria usar ``UserRateThrottle`` y ``AnonRateThrottle``
 
-![[IMG/Pasted image 20221108180641.png]]
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221108180641.png)
 
 Entonces empecemos con el estrangulamiento pero esto lo veremos en la próxima clase 
