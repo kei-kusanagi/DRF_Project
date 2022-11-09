@@ -4508,4 +4508,105 @@ En nuestro caos le daremos este tipo de restricción a nuestra "Watch List" ya q
 
 ![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221108180641.png)
 
-Entonces empecemos con el estrangulamiento pero esto lo veremos en la próxima clase 
+Entonces empecemos con el estrangulamiento pero esto lo veremos en la próxima clase.
+
+
+
+## Throttle Rate (Anon and User)
+
+
+Muy bien, ahora nos toca implementar esto del Throttle, lo que necesitamos hacer primero es importar los settings que nos venían en la documentación a nuestro propio archivo de "settings.py"
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221109123835.png)
+
+Quedando así, solo modificaremos la parte de ``THROTTLE_CLASSES`` para que nos deje siendo usuario anónimo ``anon`` hacer 1 consulta por día y siendo usuario registrado ``user`` 3 por dia
+
+```Python
+...
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        # 'rest_framework.permissions.IsAuthenticated',
+        # 'rest_framework.authentication.BasicAuthentication',
+        'rest_framework.authentication.TokenAuthentication',
+        # JWT Authentication - Registration
+        # 'rest_framework_simplejwt.authentication.JWTAuthentication',
+    ],
+    'DEFAULT_THROTTLE_CLASSES': [
+        'rest_framework.throttling.AnonRateThrottle',
+        'rest_framework.throttling.UserRateThrottle'
+    ],
+    'DEFAULT_THROTTLE_RATES': {
+        'anon': '1/day',
+        'user': '3/day'
+    }
+}
+```
+
+Listo,  ahora esto se aplica a TODAS nuestras vistas que tenemos si lo dejamos asi como esta solo configurado en los settings, por lo cual cualquier consulta que haga contara ya sea ver los reviews, las watchlist, las plataformas de streaming todo y no importa si eres usuario registrado, si haces una consulta en cada una de las listas te contara como en un contador global hasta llegar a alcanzar las 3, así que vamos a nuestro Postman a probar http://127.0.0.1:8000/watch/5/review/ este link nos dará los reviews de nuestra serie The Boys, le pasamos un request SIN poner nada de nuestros tokens de usuarios y:
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221109125726.png)
+
+Perfecto, solo nos dejo hacer un request y al siguiente nos salió ese mensaje y un response nuevo "429 Too Many Request", ahora pasémosle nuestro token de usuario para probar si nos deja hacer solo 3 por día como lo configuramos en settings
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221109125915.png)
+
+Perfecto, solo 3 por día aun siendo el admin todo mamalon (osea el usuario keikusanagi), entonces, recordemos que esto se aplica de manera global gracias a los settings, pero como aplicarlo en determinadas vistas, por ejemplo, quiero que al revisar las listas de watchlist no tenga limite pero si al revisar los reviews, para esto entonces comentamos en "settings.py" esto
+
+```Python
+...
+    #'DEFAULT_THROTTLE_CLASSES': [
+    #    'rest_framework.throttling.AnonRateThrottle',
+    #    'rest_framework.throttling.UserRateThrottle'
+    #],
+    'DEFAULT_THROTTLE_RATES': {
+        'anon': '3/day',
+        'user': '5/day'
+    }
+}
+```
+
+Y dejamos solo nuestras preferencias a la hora de cuantos comentarios se podrán por usuario anónimo y registrado, es mas, cámbienosla a 3 y 5 respectivamente, ahora vamos a nuestras vistas en "views.py" y revisamos la documentación que nos dice
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221109130455.png)
+
+Y como siempre no solo copiemos y peguemos, tenemos que importar primero no solo el ``UserRateThrottle``si no también el ``AnonRateThrottle`` y después pegar en cada vista en la cual queramos usar el Throttle el ``throttle_classes = [UserRateThrottle, AnonRateThrottle]`` 
+
+
+```Python
+...
+from rest_framework.throttling import UserRateThrottle, AnonRateThrottle
+...
+class ReviewList(generics.ListAPIView):
+    # queryset = Review.objects.all()
+    serializer_class = ReviewSerializer
+    # permission_classes = [IsAuthenticated]
+    throttle_classes = [UserRateThrottle, AnonRateThrottle]
+
+    def get_queryset(self):
+        pk = self.kwargs['pk']
+        return Review.objects.filter(watchList=pk)
+
+class ReviewDetail(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Review.objects.all()
+    serializer_class = ReviewSerializer
+    permission_classes = [IsReviewUserOrReadOnly]
+    throttle_classes = [UserRateThrottle, AnonRateThrottle]
+...
+```
+
+Con esto le estamos diciendo que si quieren revisar las listas de reviews ``class ReviewList`` y ``class ReviewDetail`` solo podrán hacerlo 3 veces si son anónimos y 5 si son usuarios registrados
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221109131556.png)
+
+Perfecto, le quitamos el token como si fuéramos anónimos y solo nos dejo 3 veces, ahora con el token
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221109131632.png)
+
+Igual, 5 veces y luego "429 Too Many Requests".
+
+
+Ahora que pasa si queremos acceder a un DetailReview, por ejemplo el http://127.0.0.1:8000/watch/review/8/ 
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221109132157.png)
+
+Con o sin token también nos saldrá el error 429 ya que ya agotamos nuestros intentos por día al hacer los intentos anteriores, entonces en el próximo capitulo veremos como podemos personalizar esta cuenta.
