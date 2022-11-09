@@ -4674,13 +4674,55 @@ Y listo, ahora vamos a checarlo, ponemos en Postman nuestro link http://127.0.0.
 }
 ```
 
-![[IMG/Pasted image 20221109160638.png]]
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221109160638.png)
 
 
 Ahora con este mismo usuario, intentemos hacer otro review, ahora a nuestra serie de Lucifer http://127.0.0.1:8000/watch/8/review-create/
 
-![[IMG/Pasted image 20221109161229.png]]
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221109161229.png)
 
 De igual forma si queremos checar alguna review solo nos dejara 10 veces, pongamos http://127.0.0.1:8000/watch/review/8/ en Postman e identifiquémonos como usuario y démosle GET 10 veces
 
-![[IMG/Pasted image 20221109161447.png]]
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221109161447.png)
+
+Ahora tenemos que hablar de "ScopedRateThrottle" donde haremos algo similar a lo que hicimos pero en ves de crear un nuevo archivo, haremos lo que hicimos directamente 
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221109161814.png)
+
+Vamos a "views.py" y si quiero definir nuestra throttle class aquí mismo, y luego puedo definir mi throttle scope aquí y luego el count for throttle. Bueno, esto puede sonar confuso(bastante de echo), lo que voy a hacer es importar mi ScopedRateThrottle, luego vamos a nuestra ``class ReviewDetail`` donde podemos acceder a un elemento individualmente y cambiamos nuestra ``throttle_classes`` por esta, ahora nos falta poner nuestro scope, definimos la variable ``throttle_scope = 'review-detail'``
+
+```Python
+...
+from rest_framework.throttling import UserRateThrottle, AnonRateThrottle, ScopedRateThrottle
+...
+class ReviewDetail(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Review.objects.all()
+    serializer_class = ReviewSerializer
+    permission_classes = [IsReviewUserOrReadOnly]
+    throttle_classes = [ScopedRateThrottle]
+    throttle_scope = 'review-detail'
+...
+```
+
+Ya con esto configurado vamos a "settings.py" y allí definimos el tiempo de nuestro scope
+
+```Python
+...
+    'DEFAULT_THROTTLE_RATES': {
+        'anon': '3/day',
+        'user': '5/day',
+        'review-create': '1/day',
+        'review-list': '10/day',
+        'review-detail': '2/day',
+    }
+```
+
+Listo, vamos a postman al mismo link y chequemos los "reviewdetail" y chequémoslo 2 veces y a la tercera http://127.0.0.1:8000/watch/review/8/
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221109163229.png)
+
+Cabe recalcar que estos scope se convinan, por ejemplo aqui tenemos 
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221109163630.png)
+
+Esto significa que se pueden ver 12 veces por dia, pero lo podemos modificar para que el detail lo puedan ver 5 veces los que no sean usuarios y luego ponerle que si se registran puedan ver 100 al día, o lo que mas podría ser usado seria que se puedan solo ver 1 registro por segundo (ósea 60 por minuto) pero solo deje 100 por día.
