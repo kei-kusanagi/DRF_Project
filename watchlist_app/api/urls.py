@@ -1,6 +1,6 @@
 from django.db import router
 from django.urls import path, include
-from watchlist_app.api.views import ReviewList, ReviewDetail, WatchListAV, WatchDetailAV, StreamPlataformAV,StreamPlataformDetailAV, ReviewCreate, StreamPlataformVS, UserReview
+from watchlist_app.api.views import ReviewList, ReviewDetail, WatchListAV, WatchDetailAV, StreamPlataformAV,StreamPlataformDetailAV, ReviewCreate, StreamPlataformVS, UserReview, WatchList
 
 from rest_framework.routers import DefaultRouter
 
@@ -10,6 +10,8 @@ router.register('stream', StreamPlataformVS, basename='streamplataform')
 urlpatterns = [
     path('list/', WatchListAV.as_view(), name='movie-list'),
     path('<int:pk>/', WatchDetailAV.as_view(), name='movie-detail'),
+    # Filter, Search, Order
+    path('list2/', WatchList.as_view(), name='watch-list'),
 
     path('', include(router.urls)),
     # path('stream/', StreamPlataformAV.as_view(), name='stream'),
