@@ -4726,3 +4726,58 @@ Cabe recalcar que estos scope se convinan, por ejemplo aqui tenemos
 ![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221109163630.png)
 
 Esto significa que se pueden ver 12 veces por dia, pero lo podemos modificar para que el detail lo puedan ver 5 veces los que no sean usuarios y luego ponerle que si se registran puedan ver 100 al día, o lo que mas podría ser usado seria que se puedan solo ver 1 registro por segundo (ósea 60 por minuto) pero solo deje 100 por día.
+
+
+## Filtering Introduction
+
+Muy bien, hablemos de Filtering, esto es la forma en la que podemos mandar a buscar un elemento por medio de un link, es como por ejemplo en amazon al momento de buscar algo, si nos checamos en la barra de direcciones podemos ver lo que pasa, si le damos buscar Wiskas alimento humedo para gatos nosotros solo veremos que nos aparecen varias opciones, pero en la barra de direcciones vemos que aparece www.amazon.com.mx/s?k=Whiskas+Alimento+Húmedo+Gatos donde la ``/s`` nos esta diciendo que es una busqueda, la ``k=``  es de la key a buscar y luego ``Whiskas+Alimento+Húmedo+Gatos`` que es justo lo que pusimos en la barra de busqueda
+
+![[IMG/Pasted image 20221109185043.png]]
+
+Este es un tipo de  filtering mejor conocida como busqueda, otro es en la parte izquierda que podemos darle a alguna opcion y nos aparecera lo que buscamos "filtrado" por marca por ejemplo
+
+![[IMG/Pasted image 20221109185938.png]]
+
+y el ultimo tipo seria el Ordering que se refiere a ordenar los resultados respecto al mejor valorado, el menos o mayor precio etc 
+
+![[IMG/Pasted image 20221109190017.png]]
+
+
+Ahora si vamos a la documentación https://www.django-rest-framework.org/api-guide/filtering/  podemos ver que Django REST framework nos puede ayudar a configurar un link de búsqueda al cual le podemos pasar unos parámetros y hacernos un filtering respecto a esto 
+
+![[IMG/Pasted image 20221109190143.png]]
+
+Ya habíamos hecho algo similar en  el ReviewList donde creamos un queryset y luego lo reemplazamos por el resultado, aqui haremos algo similar 
+
+![[IMG/Pasted image 20221109190930.png]]
+
+Usaremos el "pk" y le añadiremos el nombre de usuario 
+
+![[IMG/Pasted image 20221109191213.png]]
+
+
+Entonces para implementarlo vallamos a "views.py" y creemos una nueva class ``UserReview`` como va a ser simplemente una lista usemos el ``generics.CreateAPIView`` , ahora definamos el ``get_queryset`` y asignémosles el user al "pk" y luego regresamos el objeto filtrado por username
+
+```Python
+...
+class UserReview(generics.ListAPIView):
+    serializer_class = ReviewSerializer
+
+    def get_queryset(self):
+        username = self.kwargs['username']
+        return Review.objects.filter(review_user__username=username)
+...
+```
+
+Ahora vamos a crear nuestra URL, vamos a "watchlist_app/api/urls.py" y creemos nuestro link
+
+```Python
+...
+from watchlist_app.api.views import ReviewList, ReviewDetail, WatchListAV, WatchDetailAV, StreamPlataformAV,StreamPlataformDetailAV, ReviewCreate, StreamPlataformVS, UserReview
+...
+    # Filtering
+    path('review/<str:username>/', UserReview.as_view(), name='user_review-detail'),
+]
+```
+
+Ya tenemos todo listo, ahora vallamos a nuestro Postman para realizar un filtro/busqueda por usuario 
