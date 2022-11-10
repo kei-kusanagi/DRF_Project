@@ -4732,28 +4732,28 @@ Esto significa que se pueden ver 12 veces por dia, pero lo podemos modificar par
 
 Muy bien, hablemos de Filtering, esto es la forma en la que podemos mandar a buscar un elemento por medio de un link, es como por ejemplo en amazon al momento de buscar algo, si nos checamos en la barra de direcciones podemos ver lo que pasa, si le damos buscar Wiskas alimento humedo para gatos nosotros solo veremos que nos aparecen varias opciones, pero en la barra de direcciones vemos que aparece www.amazon.com.mx/s?k=Whiskas+Alimento+Húmedo+Gatos donde la ``/s`` nos esta diciendo que es una busqueda, la ``k=``  es de la key a buscar y luego ``Whiskas+Alimento+Húmedo+Gatos`` que es justo lo que pusimos en la barra de busqueda
 
-![[IMG/Pasted image 20221109185043.png]]
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221109185043.png)
 
 Este es un tipo de  filtering mejor conocida como busqueda, otro es en la parte izquierda que podemos darle a alguna opcion y nos aparecera lo que buscamos "filtrado" por marca por ejemplo
 
-![[IMG/Pasted image 20221109185938.png]]
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221109185938.png)
 
 y el ultimo tipo seria el Ordering que se refiere a ordenar los resultados respecto al mejor valorado, el menos o mayor precio etc 
 
-![[IMG/Pasted image 20221109190017.png]]
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221109190017.png)
 
 
 Ahora si vamos a la documentación https://www.django-rest-framework.org/api-guide/filtering/  podemos ver que Django REST framework nos puede ayudar a configurar un link de búsqueda al cual le podemos pasar unos parámetros y hacernos un filtering respecto a esto 
 
-![[IMG/Pasted image 20221109190143.png]]
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221109190143.png)
 
 Ya habíamos hecho algo similar en  el ReviewList donde creamos un queryset y luego lo reemplazamos por el resultado, aqui haremos algo similar 
 
-![[IMG/Pasted image 20221109190930.png]]
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221109190930.png)
 
 Usaremos el "pk" y le añadiremos el nombre de usuario 
 
-![[IMG/Pasted image 20221109191213.png]]
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221109191213.png)
 
 
 Entonces para implementarlo vallamos a "views.py" y creemos una nueva class ``UserReview`` como va a ser simplemente una lista usemos el ``generics.CreateAPIView`` , ahora definamos el ``get_queryset`` y asignémosles el user al "pk" y luego regresamos el objeto filtrado por username
@@ -4780,4 +4780,60 @@ from watchlist_app.api.views import ReviewList, ReviewDetail, WatchListAV, Watch
 ]
 ```
 
-Ya tenemos todo listo, ahora vallamos a nuestro Postman para realizar un filtro/busqueda por usuario 
+Ya tenemos todo listo, ahora vallamos a nuestro Postman para realizar un filtro/búsqueda por usuario http://127.0.0.1:8000/watch/reviews/keikusanagi/ le pasamos ese link a Postman que es igual a como lo conformamos en el path, esto nos regresa todos los reviews hechos por mi usuario "keikusanagi"
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221110122621.png)
+
+Si vamos a la pagina de administración podemos corroborar esto
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221110122751.png)
+
+Probemos con "test4"
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221110122827.png)
+
+Muy bien, nuestro método de filtrado esta completo, ahora nos falta hacer el Filtering por medio de los parametrons de un  query "Filtering against query parameters"
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221110122956.png)
+
+Entonces esto es como la búsqueda que mencionábamos de amazon, tenemos un link de búsqueda que termina en ``/s`` y luego un "key value" que sera algo así como ``k=keikusanagi`` para que nos busque o filtre todo lo relacionado a este usuario, entonces lo que haremos sera ir a "views.py" y comentemos el query set que habíamos hecho, para esto solo cambiaremos un poco nuestra función haciendo que haga un mapeo del username 
+``username = self.request.query_params.get('username')``
+
+
+```Python
+...
+class UserReview(generics.ListAPIView):
+    serializer_class = ReviewSerializer
+
+    # def get_queryset(self):
+    #     username = self.kwargs['username']
+    #     return Review.objects.filter(review_user__username=username)
+    def get_queryset(self):
+        username = self.request.query_params.get('username')
+        return Review.objects.filter(review_user__username=username)
+...
+```
+
+
+Ahora vamos a "urls.py" y quitamos esto del path ``<str:username>/`` ya que el maeo lo estamos haciendo en la funcion
+
+```Python
+...
+    path('<int:pk>/review-create/', ReviewCreate.as_view(), name='review-create'),
+    path('<int:pk>/reviews/', ReviewList.as_view(), name='review-list'),
+    path('review/<int:pk>/', ReviewDetail.as_view(), name='review-detail'),
+
+	# Filtering
+    # path('reviews/<str:username>/', UserReview.as_view(), name='user_review-detail'),
+    path('reviews/', UserReview.as_view(), name='user_review-detail'),
+]
+```
+
+ahora solo tendremos que pasarle por postman el link de esta manera http://127.0.0.1:8000/watch/reviews/?username=test4
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221110124902.png)
+
+De echo si vemos, en la parte de Params se pone automáticamente ``username ! test4`` ya que son los parámetros de búsqueda que le estamos pasando, incluso si escribimos directamente en los parámetros nos a completa el link
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221110125030.png)
+
