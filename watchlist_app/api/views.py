@@ -20,6 +20,8 @@ from watchlist_app.api.throttling import ReviewCreateThorttle, ReviewListThorttl
 
 # django-filter
 from django_filters.rest_framework import DjangoFilterBackend
+# searchFilter
+from rest_framework import filters
 
 class UserReview(generics.ListAPIView):
     serializer_class = ReviewSerializer
@@ -175,8 +177,12 @@ class StreamPlataformAV(APIView):
 class WatchList(generics.ListAPIView):
     queryset = WatchList.objects.all()
     serializer_class = WatchListSerializer
-    filter_backends = [DjangoFilterBackend]
-    filterset_fields = ['title', 'plataform__name']
+    # filter_backends = [DjangoFilterBackend]
+    # filterset_fields = ['title', 'plataform__name']
+    
+    # searchFilter
+    filter_backends = [filters.SearchFilter]
+    search_fields = ['title', 'plataform__name']
 
 class WatchListAV(APIView):
 
