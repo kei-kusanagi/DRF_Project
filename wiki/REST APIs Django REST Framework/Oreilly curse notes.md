@@ -4956,3 +4956,150 @@ Esto como recordemos es la explicación de "DjangoFilterBackend" y recordemos qu
 Entonces si queremos como tal realizar una búsqueda (no como ahorita que mas bien realizamos un filtro donándole específicamente lo que queríamos buscar) entonces necesitamos usar "SearchFilter" https://www.django-rest-framework.org/api-guide/filtering/#searchfilter
 
 ![[IMG/Pasted image 20221110141005.png]]
+
+Vamos a "views.py" a nuestro ejemplo que hicimos de busqueda y pongamos ``filter_backends = [filters.SearchFilter]`` como dice la documentacion
+
+```Python
+...
+from rest_framework import filters
+...
+class WatchList(generics.ListAPIView):
+    queryset = WatchList.objects.all()
+    serializer_class = WatchListSerializer
+    # filter_backends = [DjangoFilterBackend]
+	# filterset_fields = ['title', 'plataform__name']
+
+# searchFilter
+    filter_backends = [filters.SearchFilter]
+    search_fields = ['title', 'plataform__name']
+...
+```
+
+Vamos a Postman y usemos el mismo link http://127.0.0.1:8000/watch/list2/ pero ahora le agregaremos como Params ``search=boys`` para que nos busque dentro de todas nuestras watchlist algo relacionado con boys (automaticamente Postman completara el link a quedar asi http://127.0.0.1:8000/watch/list2/?search=boys)
+
+![[IMG/Pasted image 20221110153403.png]]
+
+Perfecto, vemos que nos da los reviews que tiene la sere y aparte la serie aunque no escribimos la frase perfecta, por ejemplo si vamos al panel de administración vemos que si escribimos "the"
+
+![[IMG/Pasted image 20221110153552.png]]
+
+tenemos dos watchlist que tienen ese elemento, vallamos a Postman y pongamos http://127.0.0.1:8000/watch/list2/?search=the 
+
+![[IMG/Pasted image 20221110153622.png]]
+
+Perfecto, nos aparece todo lo relacionado con ">>The<< Boys" y "House of >>>the<<< Dragon" porque contienen the, no importando si es mayuscula o minuscula, si por ejemplo ponemos "on"
+
+![[IMG/Pasted image 20221110153800.png]]
+
+nos salen "House of the Dragon" y "Moon Knight"
+
+![[IMG/Pasted image 20221110153834.png]]
+
+Ya que terminan en "on" pero si ponemos solo "Dragon" (ósea la palabra especifica)
+
+![[IMG/Pasted image 20221110153908.png]]
+
+Nos da específicamente solo "House of the Dragon", pero que pasa si queremos por ejemplo una busqueda "exacta" en el titulo pero en la plataforma puedan poner net y la api entienda que se refieren a netflix, o por ejemplo pongamos una condicional para que el titulo sea exacto por ejemplo con la serie de Netflix de "Lucifer"
+
+![[IMG/Pasted image 20221110154621.png]]
+
+Si usamos entonces estas condicionales en el 'title'
+
+```Python
+...
+    # searchFilter
+    filter_backends = [filters.SearchFilter]
+    search_fields = ['=title', 'plataform__name']
+...
+```
+
+al momento de solo poner como 'title' "luci"
+
+![[IMG/Pasted image 20221110154736.png]]
+
+Nos saldra que no lo encuentra porque esta buscando exactamente una serie llamada lucif solamente, pero si le quitamos el signo de igual
+
+
+```Python
+...
+    # searchFilter
+    filter_backends = [filters.SearchFilter]
+    search_fields = ['title', 'plataform__name']
+...
+```
+
+Nos dara el resultado aproximado que seria nuestra serie de "Lucifer"
+
+![[IMG/Pasted image 20221110154837.png]]
+
+si usamos el símbolo de ``^`` al inicio ![[IMG/Pasted image 20221110154938.png]] nos buscara cosas que empiezan con lo que le estamos pasando de búsqueda, como el ejemplo que ya usamos donde pusimos "the" y nos salieron dos resultados
+![[IMG/Pasted image 20221110155038.png]]
+
+si ahora usamos esto nos saldra solo "The boys"
+
+```Python
+...
+    # searchFilter
+    filter_backends = [filters.SearchFilter]
+    search_fields = ['^title', 'plataform__name']
+...
+```
+
+![[IMG/Pasted image 20221110155128.png]]
+
+Muy bien ya solo nos queda el "OrderingFilter" igual que en los anteriores nos basaremos en lo que nos pide la documentación.
+https://www.django-rest-framework.org/api-guide/filtering/#orderingfilter
+
+![[IMG/Pasted image 20221110155512.png]]
+
+Primero regresamos prácticamente todo a como estaba en la primera opción de "DjangoFilterBackend" pero le ponemos ``[filters.SearchFilter]``
+
+```Python
+...
+# OrderingFilter
+    filter_backends = [filters.SearchFilter]
+    search_fields = ['title', 'plataform__name']
+...
+```
+
+![[IMG/Pasted image 20221110160718.png]]
+
+Nos dara ese bonito boton de busqueda pero nosotros queremos ordenarlos asi que le pondremos 
+
+```Python
+...
+    filter_backends = [filters.OrderingFilter]
+    ordering_fields = ['title', 'plataform__name']
+...
+```
+
+Y con esto nos lo ordenara dependiendo los campos que le pasamos, en este caso title y plataform name
+
+![[IMG/Pasted image 20221110161544.png]]
+
+
+Por ejemplo digamos que los ordene por el 'avg_rating'
+
+```Python
+...
+    filter_backends = [filters.OrderingFilter]
+    ordering_fields = ['avg_rating']
+...
+```
+
+
+![[IMG/Pasted image 20221110161745.png]]
+
+esto tambien lo podemos hacer en Postman, pasandole el link http://127.0.0.1:8000/watch/list2/?ordering=avg_rating
+
+![[IMG/Pasted image 20221110162418.png]]
+
+Asi como nos los muestra es de pequeño a mas grande, pero si usamos como en la documentación dice el símbolo ``-`` en solo el link
+
+http://127.0.0.1:8000/watch/list2/?ordering=-avg_rating
+
+![[IMG/Pasted image 20221110162451.png]]
+
+Nos da en orden inverso los ratings, del mas grande al mas pequeño
+
+![[IMG/Pasted image 20221110162807.png]]
