@@ -4837,3 +4837,122 @@ De echo si vemos, en la parte de Params se pone automáticamente ``username ! te
 
 ![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221110125030.png)
 
+
+
+
+## Filter, Search, Order
+
+
+Muy bien, ahora para usar esto necesitamos instalar un paquete ``pip install django-filter`` solo tengamos cuidado de que nuestro entorno virtual este activo
+
+![[IMG/Pasted image 20221110130729.png]]
+
+Luego vamos a "settings.py" y declaramos esta nueva app en INSTALED_APPS 
+
+
+```Python
+...
+INSTALLED_APPS = [
+    'django.contrib.admin',
+    'django.contrib.auth',
+    'django.contrib.contenttypes',
+    'django.contrib.sessions',
+    'django.contrib.messages',
+    'django.contrib.staticfiles',
+    # _app's creadas
+    'watchlist_app',
+    'rest_framework',
+    'rest_framework.authtoken',
+    'user_app',
+    'django_filters',
+]
+...
+```
+
+Algo importante que debemos considerar es que este tipo de filtro no se puede aplicar en nuestras "APIView"
+
+![[IMG/Pasted image 20221110132018.png]]
+
+si queremos aplicar un método de filtering aquí debemos aplicar el que vimos en la lección pasada, este método de dejango-filter lo podremos usar en nuestras clases genéricas como ListAPIView
+
+![[IMG/Pasted image 20221110132030.png]]
+
+En nuestro caos solo la usaremos en nuestra ``class ReviewList`` porque extraeremos información, asi que si queremos una pequeño demo vamos a la documentacion de "DjangoFilterBackend"
+https://www.django-rest-framework.org/api-guide/filtering/#djangofilterbackend
+![[IMG/Pasted image 20221110132225.png]]
+
+Y de echo alli viene los pasos a seguir, nosotros ya seguimos 2 solo falta agregar a los settings ``'DEFAULT_FILTER_BACKENDS'`` si queremos aplicar esto a todas nuestras class, pero como queremos aplicarlo solo a una class especifica nos vamos con el siguiente
+
+![[IMG/Pasted image 20221110132621.png]]
+
+
+Vamos a nuestro archivo "views.py" a nuestra ``class ReviewList`` y agregamos nuestro filtro, y abajo le especificamos que campos "fields" son los que deberá reconocer para buscar
+
+```Python
+...
+# django-filter
+from django_filters.rest_framework import DjangoFilterBackend
+...
+class ReviewList(generics.ListAPIView):
+    # queryset = Review.objects.all()
+    serializer_class = ReviewSerializer
+    # permission_classes = [IsAuthenticated]
+    throttle_classes = [ReviewListThorttle, AnonRateThrottle]
+    # django-filter
+    filter_backends = [DjangoFilterBackend]
+    filterset_fields = ['revieww_user__username', 'active']
+...
+```
+
+Ahora vamos a postman y seleccionemos el link de nuestra serie "The Boys" http://127.0.0.1:8000/watch/5/reviews/ y para hacer la búsqueda añadiremos unos parámetros, eso añadiéndole un sino de interrogación al final del link y con esto se activara la casilla de params y le podemos pasar alli alguno de los dos campos que declaramos arriba, el username y si esta active
+![[IMG/Pasted image 20221110133642.png]]
+
+Primero pasémosle el de si esta activo
+
+![[IMG/Pasted image 20221110133812.png]]
+
+Si queremos revisar el username le ponemos como parametro
+
+![[IMG/Pasted image 20221110134056.png]]
+
+De echo podemos mandar a buscar dos campos sol añadiéndole un ``&`` o añadiendo un nuevo parámetro en la parte de abajo
+
+![[IMG/Pasted image 20221110134314.png]]
+
+Ahora solo por propósitos de entender un poco mejor este método, haremos esta búsqueda pero en nuestra WatchList, pero si nos fijamos esta es una APIView no una generic, entonces creemos temporalmente una vista genérica de esta
+```Python
+...
+# Filter, Search, Order
+class WatchList(generics.ListAPIView):
+    queryset = WatchList.objects.all()
+    serializer_class = WatchListSerializer
+    filter_backends = [DjangoFilterBackend]
+    filterset_fields = ['title', 'plataform__name']
+...
+```
+
+Y tambien añadimos su path, recordemos que todo esto es temporal
+
+```Python
+...
+# Filter, Search, Order
+path('list2/', WatchList.as_view(), name='watch-list'),
+...
+```
+
+Ahora vamos a Postman a poner el link http://127.0.0.1:8000/watch/list2/ y añadimos detalles específicos a buscar, recordamos que le dimos como campos de referencia 'title' y 'plataform__name' así que busquemos alguno de estos, busquemos nuestra serie de "The boys" así que solo pongamos "boy" a ver que sale
+
+![[IMG/Pasted image 20221110140436.png]]
+
+Con esto vemos que tenemos que hacer un perfect match para que nos de nuestro resultado, esto es importante porque esto lo podremos usar cuando quermos saver exactamente el resultado de algo muy en especifico, por ejemplo en Amazon cuando le damos buscar laptops le podemos dar que nos filtre por solo las computadoras Asus o Lenovo, en este caso seria buscar algo en especifico
+
+![[IMG/Pasted image 20221110140726.png]]
+
+
+Esto como recordemos es la explicación de "DjangoFilterBackend" y recordemos que son 3
+
+![[IMG/Pasted image 20221110140907.png]]
+
+Entonces si queremos como tal realizar una búsqueda (no como ahorita que mas bien realizamos un filtro donándole específicamente lo que queríamos buscar) entonces necesitamos usar "SearchFilter" https://www.django-rest-framework.org/api-guide/filtering/#searchfilter
+
+![[IMG/Pasted image 20221110141005.png]]
