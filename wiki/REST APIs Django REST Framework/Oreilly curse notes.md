@@ -4845,7 +4845,7 @@ De echo si vemos, en la parte de Params se pone automáticamente ``username ! te
 
 Muy bien, ahora para usar esto necesitamos instalar un paquete ``pip install django-filter`` solo tengamos cuidado de que nuestro entorno virtual este activo
 
-![[IMG/Pasted image 20221110130729.png]]
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221110130729.png)
 
 Luego vamos a "settings.py" y declaramos esta nueva app en INSTALED_APPS 
 
@@ -4871,19 +4871,19 @@ INSTALLED_APPS = [
 
 Algo importante que debemos considerar es que este tipo de filtro no se puede aplicar en nuestras "APIView"
 
-![[IMG/Pasted image 20221110132018.png]]
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221110132018.png)
 
 si queremos aplicar un método de filtering aquí debemos aplicar el que vimos en la lección pasada, este método de dejango-filter lo podremos usar en nuestras clases genéricas como ListAPIView
 
-![[IMG/Pasted image 20221110132030.png]]
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221110132030.png)
 
 En nuestro caos solo la usaremos en nuestra ``class ReviewList`` porque extraeremos información, asi que si queremos una pequeño demo vamos a la documentacion de "DjangoFilterBackend"
 https://www.django-rest-framework.org/api-guide/filtering/#djangofilterbackend
-![[IMG/Pasted image 20221110132225.png]]
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221110132225.png)
 
 Y de echo alli viene los pasos a seguir, nosotros ya seguimos 2 solo falta agregar a los settings ``'DEFAULT_FILTER_BACKENDS'`` si queremos aplicar esto a todas nuestras class, pero como queremos aplicarlo solo a una class especifica nos vamos con el siguiente
 
-![[IMG/Pasted image 20221110132621.png]]
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221110132621.png)
 
 
 Vamos a nuestro archivo "views.py" a nuestra ``class ReviewList`` y agregamos nuestro filtro, y abajo le especificamos que campos "fields" son los que deberá reconocer para buscar
@@ -4905,19 +4905,19 @@ class ReviewList(generics.ListAPIView):
 ```
 
 Ahora vamos a postman y seleccionemos el link de nuestra serie "The Boys" http://127.0.0.1:8000/watch/5/reviews/ y para hacer la búsqueda añadiremos unos parámetros, eso añadiéndole un sino de interrogación al final del link y con esto se activara la casilla de params y le podemos pasar alli alguno de los dos campos que declaramos arriba, el username y si esta active
-![[IMG/Pasted image 20221110133642.png]]
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221110133642.png)
 
 Primero pasémosle el de si esta activo
 
-![[IMG/Pasted image 20221110133812.png]]
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221110133812.png)
 
 Si queremos revisar el username le ponemos como parametro
 
-![[IMG/Pasted image 20221110134056.png]]
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221110134056.png)
 
 De echo podemos mandar a buscar dos campos sol añadiéndole un ``&`` o añadiendo un nuevo parámetro en la parte de abajo
 
-![[IMG/Pasted image 20221110134314.png]]
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221110134314.png)
 
 Ahora solo por propósitos de entender un poco mejor este método, haremos esta búsqueda pero en nuestra WatchList, pero si nos fijamos esta es una APIView no una generic, entonces creemos temporalmente una vista genérica de esta
 ```Python
@@ -4942,20 +4942,20 @@ path('list2/', WatchList.as_view(), name='watch-list'),
 
 Ahora vamos a Postman a poner el link http://127.0.0.1:8000/watch/list2/ y añadimos detalles específicos a buscar, recordamos que le dimos como campos de referencia 'title' y 'plataform__name' así que busquemos alguno de estos, busquemos nuestra serie de "The boys" así que solo pongamos "boy" a ver que sale
 
-![[IMG/Pasted image 20221110140436.png]]
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221110140436.png)
 
 Con esto vemos que tenemos que hacer un perfect match para que nos de nuestro resultado, esto es importante porque esto lo podremos usar cuando quermos saver exactamente el resultado de algo muy en especifico, por ejemplo en Amazon cuando le damos buscar laptops le podemos dar que nos filtre por solo las computadoras Asus o Lenovo, en este caso seria buscar algo en especifico
 
-![[IMG/Pasted image 20221110140726.png]]
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221110140726.png)
 
 
 Esto como recordemos es la explicación de "DjangoFilterBackend" y recordemos que son 3
 
-![[IMG/Pasted image 20221110140907.png]]
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221110140907.png)
 
 Entonces si queremos como tal realizar una búsqueda (no como ahorita que mas bien realizamos un filtro donándole específicamente lo que queríamos buscar) entonces necesitamos usar "SearchFilter" https://www.django-rest-framework.org/api-guide/filtering/#searchfilter
 
-![[IMG/Pasted image 20221110141005.png]]
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221110141005.png)
 
 Vamos a "views.py" a nuestro ejemplo que hicimos de busqueda y pongamos ``filter_backends = [filters.SearchFilter]`` como dice la documentacion
 
@@ -4977,31 +4977,31 @@ class WatchList(generics.ListAPIView):
 
 Vamos a Postman y usemos el mismo link http://127.0.0.1:8000/watch/list2/ pero ahora le agregaremos como Params ``search=boys`` para que nos busque dentro de todas nuestras watchlist algo relacionado con boys (automaticamente Postman completara el link a quedar asi http://127.0.0.1:8000/watch/list2/?search=boys)
 
-![[IMG/Pasted image 20221110153403.png]]
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221110153403.png)
 
 Perfecto, vemos que nos da los reviews que tiene la sere y aparte la serie aunque no escribimos la frase perfecta, por ejemplo si vamos al panel de administración vemos que si escribimos "the"
 
-![[IMG/Pasted image 20221110153552.png]]
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221110153552.png)
 
 tenemos dos watchlist que tienen ese elemento, vallamos a Postman y pongamos http://127.0.0.1:8000/watch/list2/?search=the 
 
-![[IMG/Pasted image 20221110153622.png]]
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221110153622.png)
 
 Perfecto, nos aparece todo lo relacionado con ">>The<< Boys" y "House of >>>the<<< Dragon" porque contienen the, no importando si es mayuscula o minuscula, si por ejemplo ponemos "on"
 
-![[IMG/Pasted image 20221110153800.png]]
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221110153800.png)
 
 nos salen "House of the Dragon" y "Moon Knight"
 
-![[IMG/Pasted image 20221110153834.png]]
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221110153834.png)
 
 Ya que terminan en "on" pero si ponemos solo "Dragon" (ósea la palabra especifica)
 
-![[IMG/Pasted image 20221110153908.png]]
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221110153908.png)
 
 Nos da específicamente solo "House of the Dragon", pero que pasa si queremos por ejemplo una busqueda "exacta" en el titulo pero en la plataforma puedan poner net y la api entienda que se refieren a netflix, o por ejemplo pongamos una condicional para que el titulo sea exacto por ejemplo con la serie de Netflix de "Lucifer"
 
-![[IMG/Pasted image 20221110154621.png]]
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221110154621.png)
 
 Si usamos entonces estas condicionales en el 'title'
 
@@ -5015,7 +5015,7 @@ Si usamos entonces estas condicionales en el 'title'
 
 al momento de solo poner como 'title' "luci"
 
-![[IMG/Pasted image 20221110154736.png]]
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221110154736.png)
 
 Nos saldra que no lo encuentra porque esta buscando exactamente una serie llamada lucif solamente, pero si le quitamos el signo de igual
 
@@ -5030,10 +5030,10 @@ Nos saldra que no lo encuentra porque esta buscando exactamente una serie llamad
 
 Nos dara el resultado aproximado que seria nuestra serie de "Lucifer"
 
-![[IMG/Pasted image 20221110154837.png]]
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221110154837.png)
 
-si usamos el símbolo de ``^`` al inicio ![[IMG/Pasted image 20221110154938.png]] nos buscara cosas que empiezan con lo que le estamos pasando de búsqueda, como el ejemplo que ya usamos donde pusimos "the" y nos salieron dos resultados
-![[IMG/Pasted image 20221110155038.png]]
+si usamos el símbolo de ``^`` al inicio ![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221110154938.png]] nos buscara cosas que empieza)con lo que le estamos pasando de búsqueda, como el ejemplo que ya usamos donde pusimos "the" y nos salieron dos resultados
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221110155038.png)
 
 si ahora usamos esto nos saldra solo "The boys"
 
@@ -5045,12 +5045,12 @@ si ahora usamos esto nos saldra solo "The boys"
 ...
 ```
 
-![[IMG/Pasted image 20221110155128.png]]
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221110155128.png)
 
 Muy bien ya solo nos queda el "OrderingFilter" igual que en los anteriores nos basaremos en lo que nos pide la documentación.
 https://www.django-rest-framework.org/api-guide/filtering/#orderingfilter
 
-![[IMG/Pasted image 20221110155512.png]]
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221110155512.png)
 
 Primero regresamos prácticamente todo a como estaba en la primera opción de "DjangoFilterBackend" pero le ponemos ``[filters.SearchFilter]``
 
@@ -5062,7 +5062,7 @@ Primero regresamos prácticamente todo a como estaba en la primera opción de "D
 ...
 ```
 
-![[IMG/Pasted image 20221110160718.png]]
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221110160718.png)
 
 Nos dara ese bonito boton de busqueda pero nosotros queremos ordenarlos asi que le pondremos 
 
@@ -5075,7 +5075,7 @@ Nos dara ese bonito boton de busqueda pero nosotros queremos ordenarlos asi que 
 
 Y con esto nos lo ordenara dependiendo los campos que le pasamos, en este caso title y plataform name
 
-![[IMG/Pasted image 20221110161544.png]]
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221110161544.png)
 
 
 Por ejemplo digamos que los ordene por el 'avg_rating'
@@ -5088,18 +5088,18 @@ Por ejemplo digamos que los ordene por el 'avg_rating'
 ```
 
 
-![[IMG/Pasted image 20221110161745.png]]
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221110161745.png)
 
 esto tambien lo podemos hacer en Postman, pasandole el link http://127.0.0.1:8000/watch/list2/?ordering=avg_rating
 
-![[IMG/Pasted image 20221110162418.png]]
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221110162418.png)
 
 Asi como nos los muestra es de pequeño a mas grande, pero si usamos como en la documentación dice el símbolo ``-`` en solo el link
 
 http://127.0.0.1:8000/watch/list2/?ordering=-avg_rating
 
-![[IMG/Pasted image 20221110162451.png]]
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221110162451.png)
 
 Nos da en orden inverso los ratings, del mas grande al mas pequeño
 
-![[IMG/Pasted image 20221110162807.png]]
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221110162807.png)
