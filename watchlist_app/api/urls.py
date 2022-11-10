@@ -1,6 +1,6 @@
 from django.db import router
 from django.urls import path, include
-from watchlist_app.api.views import ReviewList, ReviewDetail, WatchListAV, WatchDetailAV, StreamPlataformAV,StreamPlataformDetailAV, ReviewCreate, StreamPlataformVS
+from watchlist_app.api.views import ReviewList, ReviewDetail, WatchListAV, WatchDetailAV, StreamPlataformAV,StreamPlataformDetailAV, ReviewCreate, StreamPlataformVS, UserReview
 
 from rest_framework.routers import DefaultRouter
 
@@ -22,4 +22,6 @@ urlpatterns = [
     path('<int:pk>/review-create/', ReviewCreate.as_view(), name='review-create'),
     path('<int:pk>/reviews/', ReviewList.as_view(), name='review-list'),
     path('review/<int:pk>/', ReviewDetail.as_view(), name='review-detail'),
+    # Filtering
+    path('review/<str:username>/', UserReview.as_view(), name='user_review-detail'),
 ]
