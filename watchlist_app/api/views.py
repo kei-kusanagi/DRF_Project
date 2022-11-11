@@ -23,6 +23,9 @@ from django_filters.rest_framework import DjangoFilterBackend
 # searchFilter
 from rest_framework import filters
 
+# Pagination
+from watchlist_app.api.pagination import WatchListPagination
+
 class UserReview(generics.ListAPIView):
     serializer_class = ReviewSerializer
 
@@ -189,6 +192,7 @@ class WatchListGV(generics.ListAPIView):
     # ordering_fields = ['avg_rating']
     filter_backends = [filters.OrderingFilter]
     ordering_fields = ['avg_rating']
+    pagination_class = WatchListPagination
 
 class WatchListAV(APIView):
 
