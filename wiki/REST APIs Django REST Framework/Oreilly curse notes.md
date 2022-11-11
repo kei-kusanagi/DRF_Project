@@ -5402,3 +5402,120 @@ class WatchListPagination(PageNumberPagination) :
     # last_page_strings = "end"
 ```
 
+
+## Pagination Part 2 - LimitOffset
+
+Nos  falto ver este tercer termino de la paginación que merece su propio capitulo porque la neta al principio no le entendí y al final tampoco, bueno me ayudo la documentación, por lo que entiendo el limit sigue siendo la cantidad limitada de "películas" por pagina que veremos por ejemplo si el limite es 3, de las 20 que tenemos solo nos mostrara 3 por pagina y el Offset, por lo que vi en un video de SQL, es desde que película vamos a empezar a enseñar, por ejemplo si le ponemos limit 3 offset 3 nos enseñara 3 películas por pagina empezando por la película 3 que tengamos agregada, bueno menos blablabla y mas pongámoslo a prueba.
+
+[LimitOffsetPagination](https://www.django-rest-framework.org/api-guide/pagination/#limitoffsetpagination)
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221111165900.png)
+
+Empecemos configurando nuestro proyecto, para esto debemos agregarlo a nuestros settings en "settings.py" y luego vamos a nuestro archivo "pagination.py" para agregar una nueva class
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221111171002.png)
+
+```Python
+...
+# LimitOffsetPagination
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination'
+    # 'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',
+    # 'PAGE_SIZE': 5,
+}
+```
+
+Luego en "pagination.py" primero importamos nuestro ``LimitOffsetPagination`` y luego creamos la class y le ponemos ``WatchListLOPagination`` y definimos como limite 5
+
+```Python
+from rest_framework. pagination import PageNumberPagination, LimitOffsetPagination
+...
+class WatchListLOPagination(LimitOffsetPagination):
+    default_limit =5
+```
+
+Bien ahora vallamos a nuestros "views.py" y en nuestra class ``WatchListGV`` añadámosla al final comentando la ``WatchListPagination`` anterior y no olvidemos importarla
+
+```Python
+...
+from watchlist_app.api.pagination import WatchListPagination, WatchListLOPagination
+...
+class WatchListGV(generics.ListAPIView):
+    queryset = WatchList.objects.all()
+    serializer_class = WatchListSerializer
+#LimitOffsetPagination
+    # pagination_class = WatchListPagination
+    pagination_class = WatchListLOPagination
+    
+    filter_backends = [filters.OrderingFilter]
+    ordering_fields = ['avg_rating']
+...
+```
+
+Ya esta todo configurado, saltemos a nuestro Postman y probemos nuestro amado link http://127.0.0.1:8000/watch/list2/  si lo ponemos así como esta nos devolverá nuestros 5 primeros resultados ya que recordemos que le pusimos un ``default_limit = 5`` y el orden nos esta mostrando desde el primero que se creo al 5to 
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221111172417.png)
+
+si le damos click al link que nos manda como "next" y mandamos la peticion, podemos ver que el siguiente "next" nos dice que el limit es 5 y el siguiente offset sera de 10, esto tiene sentido ya que la primera pagina nos mostro el offset 0 (osease empezando desde la primera serie) luego cuando le dimos next, este marcaba offset 5 (ósea estamos empezando desde el 5to elemento) entonces el siguiente (si sumamos 5+5) seria que empieza en el 10
+
+Si por ejemplo cambiamos el link de
+
+http://127.0.0.1:8000/watch/list2/?limit=5&offset=10
+
+a
+
+http://127.0.0.1:8000/watch/list2/?limit=10&offset=2
+
+Esto en teoría nos mostrara 10 elementos (limit) pero empezando desde el segundo elemento (offset), en nuestro caso seria la serie de Lucifer de Netflix
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221111173109.png)
+
+En efecto empieza por esta y como nota, nos da aun asi un link "previous" en el cual podremos ver desde el inicio de la lista pero solo con el limite a 10, y el link de "next" si nos muestra el mismo limite pero el offset seria que empiece donde este acabo, ósea en el 12
+
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221111173142.png)
+
+Ahora hablemos de una customization que tiene que es
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221111173452.png)
+
+Si ahorita le damos http://127.0.0.1:8000/watch/list2/?limit=20&offset=2 que significa que empiece en la segunda serie pero que nos enseñe 20 resultados, si nos fijamos tenemos solamente 20 entradas así que nos da opción de ver la anterior que seria las primeras 2 que se salto gracias al offset, entonces podemos configurar que el limite máximo sea el que queremos nosotros así
+
+```Python
+...
+class WatchListLOPagination(LimitOffsetPagination):
+    default_limit =5
+    max_limit = 10
+```
+
+Esto le dice a nuestra api que mostrar solo 10 elementos, no importando que el usuario le ponga que muestre 100000
+
+Ahora solo nos falta hablar de
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221111174051.png)
+Esto es como cuando le cambiamos el nombre de "page" a "Takeshi", osea que podemos personalizar la manera en que nuestro link muestra cual seria el limit y el inicio, asi que en nuestro archivo "pagination.py" pongamos
+
+```Python
+...
+class WatchListLOPagination(LimitOffsetPagination):
+    default_limit =5
+    max_limit = 10
+    limit_query_param = "limit"
+    offset_query_param = "start"
+```
+
+Y si vamos a Postman y mandamos nuestra lista veremos como cambia nuestro link de "next" de
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221111174538.png)
+
+A esto 
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221111174559.png)
+
+Se ven casi iguales así que cambiémoslo a español para que se vea la diferencia
+
+```Python
+...
+class WatchListLOPagination(LimitOffsetPagination):
+    default_limit =5
+    max_limit = 10
+    limit_query_param = "limite_de_resultados"
+    offset_query_param = "incia_en"
+```
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221111174719.png)
