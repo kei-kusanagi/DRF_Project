@@ -5182,3 +5182,223 @@ Ahora si viene lo bueno, la pagination, lo que nos hara trabajar con multiples p
 ![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221110184458.png)
 
 Listo, ahora si la siguiente lección entraremos de lleno con esto de la paginación con todas estas películas y series que hemos agregado.
+
+
+## Pagination Part 1 - PageNumber
+
+Muy Bien, hablemos de la pagination, como hicimos en la parte final del capitulo anterior agregamos alrededor de 20 series y peliculas a nuestro proyecto, esto tratando de emular un poco a paginas como Amazon donde al buscar algo como Xbox, obtendremos miles y miles de resultados 
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221111132200.png)
+
+Si vemos en la parte de abajo nos esta indicando que hay 7 paginas en total y en cada una nos muestran alrededor de 50 resultados, esto es porque Amazon no va a gastar recursos de su ancho de banda mostrándonos los mas de 350 resultados con imágenes y datos de un jalón, sabiendo que posiblemente entre los primeros 10 a 20 resultados este lo que buscamos, entonces nosotros haremos algo similar, si vamos a la documentación [Pagination](https://www.django-rest-framework.org/api-guide/pagination/#pagination) 
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221111132536.png)
+
+Vemos que Django REST Framework tambien nos tiene una herramienta para poder realizar esta sin moverle tanto al proyecto, simplemente agregando algunos settings
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221111132625.png)
+
+Asi que vamos a nuestro archivo de "settings.py" y echemos manos a la obra, solo cambiemos el 'PAGE_SIZE'  a 5 para que nos de un limite de 5 paginas
+
+```Python
+...
+REST_FRAMEWORK = {
+
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.TokenAuthentication',
+    ],
+    'DEFAULT_THROTTLE_RATES': {
+        'anon': '3/day',
+        'user': '5/day',
+        'review-create': '1/day',
+        'review-list': '10/day',
+        'review-detail': '2/day',
+    },
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',
+    'PAGE_SIZE': 5,
+}
+```
+
+Ahora vallamos a Postman y en nuestro link de lista2 demosle enviar un GET
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221111133016.png)
+
+Ahora nos da varios datos relacionados con la paginación como son 
+
+```Json
+"count": 20,
+    "next": "http://127.0.0.1:8000/watch/list2/?limit=5&offset=5",
+    "previous": null,
+    "results": [
+```
+
+Aqui vemos que nos da una cuenta de cuantas peliculas tenemos, luego nos da un link para la "next" o siguiente pagina, otra para la "previous" o la pagina anterior y lo resultados, de echo si le damos clcik al enlace automaticamente Postman nos abrira una nueva pestaña donde podremos darle sent de nuevo y nos dara los siguientes 5 resultados
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221111133534.png)
+
+Ahora, así como en los anteriores capítulos, la paginación tiene varias maneras de configurarse y se divide en este caso en estos 3
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221111133842.png)
+ahorita la que vimos fue ``LimitOffsetPagination`` y esta se esta aplicando a nuestro proyecto entero, entonces que pasa si queremos aplicarla solo a nuestra lista de películas pero no a los previews por ejemplo.
+
+Entonces ahora probemos el "PageNumberPagination", comenzamos comentando los settings que pusimos globalmente en la parte anterior, y creamos dentro de "watchlist_app/api/" un archivo llamado "pagination.py" aquí crearemos nuestras classes para poderlas aplicar por separado, empesamos importando ``from rest_framework. pagination import PageNumberPagination`` y luego tenemos un montón de settings que podemos agregar
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221111135056.png)
+
+Ahorita dejémoslo con el "PageNumberPagination" y digámosle que lo deje en 5 (para que tengamos 4 paginas pa nuestras 20 películas y series agregadas)
+
+```Python
+from rest_framework. pagination import PageNumberPagination
+
+class WatchListPagination(PageNumberPagination) :
+    page_size = 5
+```
+
+Ahora debemos ir a "views.py" importar esta nueva class y luego declararla en la class "WatchListGV" 
+
+
+```Python
+...
+# Pagination
+from watchlist_app.api.pagination import WatchListPagination
+...
+class WatchListGV(generics.ListAPIView):
+    queryset = WatchList.objects.all()
+    serializer_class = WatchListSerializer
+    filter_backends = [filters.OrderingFilter]
+    ordering_fields = ['avg_rating']
+# Pagination
+    pagination_class = WatchListPagination
+...
+```
+
+Probemos en postman con nuestro link http://127.0.0.1:8000/watch/list2/
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221111135917.png)
+
+Perfecto nos da 5 resultados por pagina, llegando hasta la pagina 4 y de alli nos dice que "next" es null porque ya no hay mas paginas
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221111140008.png)
+
+Ahora usemos otra configuración que tal
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221111140243.png)
+Este nos servirá para controlas el nombre del parámetro a pasar, esto no se entiende con solo decirlo pero pongámoslo a prueba, vallamos nuevamente a nuestro archivo de "pagination.py" y pongamos esta nueva configuración abajo de la anterior
+
+```Python
+from rest_framework. pagination import PageNumberPagination
+
+class WatchListPagination(PageNumberPagination) :
+    page_size = 5
+    page_query_param = "Pag"
+```
+
+Ahora vamos a Postman y vemos que al darle send al get el link de "next" cambiara al final diciéndonos solo "Pag" en ves de "Page" como era antes
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221111140847.png)
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221111140908.png)
+
+Este parámetro lo podemos cambiar a lo que queramos por ejemplo Takeshi (el nombre de mi gato)
+
+```Python
+from rest_framework. pagination import PageNumberPagination
+
+class WatchListPagination(PageNumberPagination) :
+    page_size = "Takeshi"
+```
+
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221111141009.png)
+
+Bueno, regresémoslo a "P" para mantener la seriedad de la API , ahora probemos
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221111141210.png)
+Este nuevo parámetro deja que el usuario decida el numero de resultados que quiere por pagina y se brinca el numero que le pusimos nosotros ``page_size = 5``, solo tenemos que ponerlo de bajo y todo listo
+
+```Python
+from rest_framework. pagination import PageNumberPagination
+
+class WatchListPagination(PageNumberPagination) :
+    page_size = 5
+    page_query_param = "p"
+    page_size_query_param = "size"
+```
+
+Ahora si vamos a Postman y damos un request normal parece que nada a cambiado
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221111141705.png)
+
+Pero ahora le podemos pasar el parámetro anterior ya sea escribiéndolo directo en el link empezando con un ``/?size=7`` o ponerlo directamente en la caja de Params
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221111141838.png)
+
+
+Si le damos en siguiente incluso podemos ver que el link junta los dos parámetros (el de pagina y el de size) con una ``&`` .
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221111141930.png)
+
+
+Ahora si seguimos con nuestras configuraciones personalizadas, podemos ver que hay 
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221111142406.png)
+Esta se refiere a que podemos limitar el numero de elementos por pagina que le podemos dar a alegir a nuestro usuario, algo asi como en la pagina https://coinmarketcap.com donde podemos ver que tienen miles y miles de paginas y si un usuario le da que le muestre 1000000000 datos no lo dejara ya que esta limitado a 20, 50 o 100 resultados por pagina
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221111142520.png)
+
+Entonces hagamos algo similar en nuestro proyecto, añadiremos esto al final de nuestro archivo "pagination.py" y dejémoslo en 10
+
+```Python
+from rest_framework. pagination import PageNumberPagination
+
+class WatchListPagination(PageNumberPagination) :
+    page_size = 5
+    page_query_param = "p"
+    page_size_query_param = "size"
+    max_page_size = 10
+```
+
+Entonces si vamos a Postman y le escribimos que nos de 100000000 resultados, aun asi solo nos dara 10 ya que es el maximo permitido
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221111142851.png)
+
+Si nos dejara ver 100000 resultados, no nos saltaría "next", saldría como null, en cambio aquí nos esta dejando ver solo 10 resultados ya que este es el máximo, es mas si le damos a "next" ya no nos dara otra ves la opcion de "next" ya que llegaremos al resultado #20
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221111143754.png)
+
+Ahora el siguiente parámetro que podemos configurar es 
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221111143928.png)
+que nos llevara a la ultima pagina, incluso ahora sin moverle nada al código si le damos en ``p=last`` (como lo dice la documentación) nos llevara a la ultima pagina segun el maximo de resultados que le dimos al principio
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221111144154.png)
+
+Pero tambien podemos editar la palabra last para poner la que nosotros queramos, solo tenemos que agregar al codigo
+
+
+```Python
+from rest_framework. pagination import PageNumberPagination
+
+class WatchListPagination(PageNumberPagination) :
+    page_size = 5
+    page_query_param = "p"
+    page_size_query_param = "size"
+    max_page_size = 10
+    last_page_strings = "Takeshi"
+```
+
+Ahora si vamos a Postman y le volvemos a dar "last" saldra que es una pagina invalida
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221111144358.png)
+
+En cambio si mencionamos a mi gato, nos lleva a la ultima pagina 
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221111144419.png)
+
+Bueno cambiémoslo a "end" pa que se siga viendo professional, aunque en el capitulo comenta que normalmente omite usar el ``page_query_param`` y el ``last_page_strings`` ya que por default tienen page y last así que no habría tanto problema a menos que enserio queramos usar una palabra clave en especifico, así que podríamos comentarlas y aun así quedaría bien
+
+```Python
+from rest_framework. pagination import PageNumberPagination
+
+class WatchListPagination(PageNumberPagination) :
+    page_size = 5
+    # page_query_param = "p"
+    page_size_query_param = "size"
+    max_page_size = 10
+    # last_page_strings = "end"
+```
+
