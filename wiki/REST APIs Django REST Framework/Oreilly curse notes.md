@@ -5103,3 +5103,82 @@ http://127.0.0.1:8000/watch/list2/?ordering=-avg_rating
 Nos da en orden inverso los ratings, del mas grande al mas pequeño
 
 ![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221110162807.png)
+
+
+
+## Project Update
+
+Muy bien, en este capitulo haremos algunos cambios respecto a nuestro proyecto, relacionados con links y algunas menciones como por ejemplo WatchList, que causa un error por estar declarado arriba igual entonces causa conflicto, entonces vamos a nuestro archivo "views.py" y renombremos nuestra "class WatchList" por "WatchListGV" (osea de General View)
+
+```Python
+...
+class WatchListGV(generics.ListAPIView):
+    queryset = WatchList.objects.all()
+    serializer_class = WatchListSerializer
+...
+```
+
+Tambien en "watchlist_app/api/urls.py" Tambien actualizamos esto, e las importaciones y en el path (valla, por eso me salía que había un error en objects en el archivo views pero aun así em dejaba correr el programa 😅)
+
+```Python
+...
+from watchlist_app.api.views import (ReviewList, ReviewDetail, WatchListAV, WatchDetailAV, StreamPlataformAV,StreamPlataformDetailAV, ReviewCreate, StreamPlataformVS, UserReview, WatchListGV)
+
+from rest_framework.routers import DefaultRouter
+...
+urlpatterns = [
+    path('list/', WatchListAV.as_view(), name='movie-list'),
+    path('<int:pk>/', WatchDetailAV.as_view(), name='movie-detail'),
+
+    # Filter, Search, Order
+    path('list2/', WatchListGV.as_view(), name='watch-list'),
+```
+
+El siguiente cambio es en esta vista general cambiar que al momento de hacer un request de nuestro path nos aparece toda la informacion de las reviews
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221110181525.png)
+
+Ok es mucha información cuando realmente abajo ya tenemos el avg_rating y si queremos revisar las reviews podemos usar nuestro otro link para revisar una película en particular, y en esta que es una lista de películas pues sobra tanto detalle entonces vamos a nuestro "serializers.py" y comentemos la relación a los reviews que hicimos hace algunos capítulos
+
+```Python
+...
+class WatchListSerializer(serializers.ModelSerializer):
+
+	# reviews = ReviewSerializer(many=True, read_only=True)
+    
+    class Meta:
+        model = WatchList
+        fields = "__all__"
+...
+```
+
+Con esto tendremos una vision mas limpia de nuestra lista Genérica de películas
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221110181808.png)
+
+Nuestro siguiente cambio sera cambiar que aparece el Id de la plataforma a la que pertenece un watchlist y no el nombre como tal.
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221110181956.png)
+
+Para lograr esto tenemos que recurrir a nuestro serializador, justo donde comentamos el anterior, llamaremos a nuestra variable "plataform" le decimos que sera un serializador con "serializers" del tipo "CharField" y luego le pasamos como fuente que modelo ira aquí o al cual hara objetivo y este sera "plataform.name"
+
+```Python
+...
+class WatchListSerializer(serializers.ModelSerializer):
+    # reviews = ReviewSerializer(many=True, read_only=True)
+    plataform = serializers.CharField(source='plataform.name')
+...
+```
+
+Vamos a Postman y volvemos a dar send a nuestra lista generica 2 http://127.0.0.1:8000/watch/list2/ 
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221110182433.png)
+
+
+Perfecto ya se ven los nombres de las plataformas en ves de ese ID, que aun existe, pero estamos haciéndole overrating por medio del serializador.
+
+Ahora si viene lo bueno, la pagination, lo que nos hara trabajar con multiples paginas asi que vallamos a nuestro panel de administración y añadamos unas 15 o 20 peliculas/series
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221110184458.png)
+
+Listo, ahora si la siguiente lección entraremos de lleno con esto de la paginación con todas estas películas y series que hemos agregado.
