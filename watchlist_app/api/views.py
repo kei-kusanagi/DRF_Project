@@ -174,7 +174,7 @@ class StreamPlataformAV(APIView):
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 # Filter, Search, Order
-class WatchList(generics.ListAPIView):
+class WatchListGV(generics.ListAPIView):
     queryset = WatchList.objects.all()
     serializer_class = WatchListSerializer
     # filter_backends = [DjangoFilterBackend]
