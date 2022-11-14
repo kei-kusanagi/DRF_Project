@@ -5611,7 +5611,7 @@ Esto para que nos podría servir? pues si por ejemplo tenemos un contrato o un c
 Esto no viene en el curso pero quise hurgar un poco mas en lo que era ``ordering`` para ver si podia ordenarlo como lo hicimos en el anterior capitulo según nuestro ``avg_rating``
 ![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221114112130.png)
 
-Segun esto podemos ponerle dentro de esta variable el método que queramos para ordenarlos por el 'slug', entonces cambie esto por el ``avg_rating`` y le puse un signo negativo para que me muestre del mayor al menor (algo ais como en amazon cuando le das en ordenar segun los mejor valorados)
+Segun esto podemos ponerle dentro de esta variable el método que queramos para ordenarlos por el 'slug', entonces cambie esto por el ``avg_rating`` y le puse un signo negativo para que me muestre del mayor al menor (algo así como en amazon cuando le das en ordenar según los mejor valorados)
 
 ```Python
 ...
@@ -5625,3 +5625,58 @@ class WatchListCPagination(CursorPagination):
 
 Y perfecto, si nos lo ordena del mas alto rating al menor 😁.
 
+
+
+## Browsable API Update
+
+Muy bien, vamos con el ultimo capitulo de este tema, convertir nuestra app en algo que pueda ser buscable, a que nos referimos con esto? 
+
+Hace tiempo ya pude conectar una api ya existente de Pokémon, en el cual al pasarle algunos request me devolvía un Json y este lo convertía yo ya en algo mas presentable 
+
+Convirtiendo la respuesta de la [PokeAPI](https://pokeapi.co/) de esto
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221114141413.png)
+
+A esto
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221114141248.png)
+
+Entonces si por ejemplo ponemos nuestra api ahorita como esta a producción al momento de ingresar un request por medio de un link les saldría esto:
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221114141534.png)
+
+Esto gracias a la interfaz de Django REST Framework, entonces para poder cambiar esto como si ya estuviéremos en producción simplemente tenemos que configurar un setting en nuestro archivo "settings.py" y checamos nuestra documentacion # [API Reference](https://www.django-rest-framework.org/api-guide/settings/#api-reference)
+
+Tambien en el video nos muestra que lo busco en stackoverflow 
+ [How to disable admin-style browsable interface of django-rest-framework?](https://stackoverflow.com/questions/11898065/how-to-disable-admin-style-browsable-interface-of-django-rest-framework)
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221114142519.png)
+
+Y allí nos viene la respuesta de poner eso en los settings
+
+```Python
+...
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.TokenAuthentication',
+    ],
+    'DEFAULT_THROTTLE_RATES': {
+        'anon': '3/day',
+        'user': '5/day',
+        'review-create': '1/day',
+        'review-list': '10/day',
+        'review-detail': '2/day',
+    },
+# LimitOffsetPagination
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',
+# Browsable API Update
+    'DEFAULT_RENDERER_CLASSES': (
+        'rest_framework.renderers.JSONRenderer' ,
+    )
+}
+```
+
+Lo guardamos y listo
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221114142642.png)
+
+Ya nos sale un JSON que fácilmente otros programas podrán interpretar
