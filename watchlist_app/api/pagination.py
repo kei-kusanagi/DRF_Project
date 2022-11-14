@@ -1,4 +1,4 @@
-from rest_framework. pagination import PageNumberPagination, LimitOffsetPagination
+from rest_framework. pagination import PageNumberPagination, LimitOffsetPagination, CursorPagination 
 
 class WatchListPagination(PageNumberPagination) :
     page_size = 5
@@ -12,3 +12,8 @@ class WatchListLOPagination(LimitOffsetPagination):
     max_limit = 10
     limit_query_param = "limite_de_resultados"
     offset_query_param = "incia_en"
+
+class WatchListCPagination(CursorPagination):
+    page_size = 5
+    ordering = '-avg_rating'
+    # cursor_query_param = 'takeshi'
