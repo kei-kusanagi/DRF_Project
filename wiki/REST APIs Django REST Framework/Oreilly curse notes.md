@@ -5519,3 +5519,109 @@ class WatchListLOPagination(LimitOffsetPagination):
 ```
 
 ![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221111174719.png)
+
+
+## Pagination Part 2 - Cursor
+
+A que se refiere esta -   [CursorPagination](https://www.django-rest-framework.org/api-guide/pagination/#cursorpagination) que es la que nos faltaba por ver? es como lo dice en su documentacion
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221114110611.png)
+
+Por ejemplo si nos metemos allí mismo en la paginación vemos que en la parte de arriba no viene el numero de pagina, al ser algo así como un curso nos viene solo Previous y Next:
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221114110658.png)
+
+Entonces vamos a llevarlo al código, solo recordemos que esta paginación depende de nuestro Datatime, va a ordenar siempre de las nuevas a las viejas publicaciones  
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221114111015.png)
+
+Vamos a nuestro archivo de "pagination.py" e importamos ``CursorPagination``, agreguemos una nueva class a la cual llamaremos ``WatchListLCPagination`` (ósea nada mas le cambiamos a CP por lo de Cursor Pagination) y luego solo le establecemos un limite de 5 paginas para hacer una prueba.
+
+```Python
+from rest_framework. pagination import PageNumberPagination, LimitOffsetPagination, CursorPagination
+...
+class WatchListLCPagination(CursorPagination ):
+    page_size = 5
+```
+
+Ya tenemos nuestra paginación, ahora tenemos que ir a nuestro archivo "views.py" a aplicarla, primero comenzamos importando nuestra nueva paginación ``WatchListLCPagination`` y luego en nuestra class ``WatchListGV`` agregamos esta como ``pagination_class = WatchListLCPagination``, no olvidemos comentar la anterior de ``LimitOffsetPagination`` y también el ``ordering_fields`` ya que si no nos dará un error, ya que tratara de ordenarla por el orden de ``-created`` y al darle que los ordene según el ``avg_rating`` nos dará error
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221114112130.png)
+
+
+```Python
+...
+from watchlist_app.api.pagination import WatchListPagination, WatchListLOPagination, WatchListLCPagination
+...
+class WatchListGV(generics.ListAPIView):
+    queryset = WatchList.objects.all()
+    serializer_class = WatchListSerializer
+#LimitOffsetPagination
+    # pagination_class = WatchListPagination
+    # pagination_class = WatchListLOPagination
+
+#CursorPagination
+    pagination_class = WatchListLCPagination
+
+	# filter_backends = [filters.OrderingFilter]
+    # ordering_fields = ['avg_rating']
+...
+```
+
+Ya teniendo esto configurado, pasemos a Postman con el link que ya conocemos http://127.0.0.1:8000/watch/list2/ y al mandarle ese request nos mostrara nuestros solo 5 resultados, ordenados del mas nuevo creado al mas viejo, sin tener numero de pagina, solo next
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221114112747.png)
+
+Perfecto, ahora veamos otro aspecto personalizable de este método como lo que es ``ordering`` (que justo fue lo que cambiamos arriba para no tener el error)
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221114112130.png)
+
+```Python
+...
+class WatchListCPagination(CursorPagination):
+    page_size = 5
+    ordering = 'created'
+...
+```
+
+
+Si le damos así como esta nos traerá la lista ahora empezando por el mas viejo al mas nuevo (siguiendo la instrucción de mostrar solo 5 por pagina)
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221114115002.png)
+
+Otra cosa que podemos personalizar es el link, en ves de que nos diga cursor, podemos decirle que nos ponga lo que nosotros queramos
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221114115240.png)
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221114115111.png)
+
+Solo agregamos esa variable y le asignamos el valor del nombre que queramos cambiar:
+
+```Python
+...
+class WatchListCPagination(CursorPagination):
+    page_size = 5
+    ordering = 'created'
+    cursor_query_param = 'takeshi'
+...
+```
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221114115325.png)
+
+Esto para que nos podría servir? pues si por ejemplo tenemos un contrato o un convenio y queremos que el usuario no salte a la ultima pagina con solo dar un click entonces podemos usar este  ``CursorPagination`` para que tenga mínimo que darle en "next" hasta que llegue hasta la ultima pagina.
+
+Esto no viene en el curso pero quise hurgar un poco mas en lo que era ``ordering`` para ver si podia ordenarlo como lo hicimos en el anterior capitulo según nuestro ``avg_rating``
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221114112130.png)
+
+Segun esto podemos ponerle dentro de esta variable el método que queramos para ordenarlos por el 'slug', entonces cambie esto por el ``avg_rating`` y le puse un signo negativo para que me muestre del mayor al menor (algo ais como en amazon cuando le das en ordenar segun los mejor valorados)
+
+```Python
+...
+class WatchListCPagination(CursorPagination):
+    page_size = 5
+    ordering = '-avg_rating'
+...
+```
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221114120117.png)
+
+Y perfecto, si nos lo ordena del mas alto rating al menor 😁.
+
