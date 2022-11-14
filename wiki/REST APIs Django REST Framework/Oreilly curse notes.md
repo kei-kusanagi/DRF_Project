@@ -5631,7 +5631,7 @@ Y perfecto, si nos lo ordena del mas alto rating al menor 😁.
 
 Muy bien, vamos con el ultimo capitulo de este tema, convertir nuestra app en algo que pueda ser buscable, a que nos referimos con esto? 
 
-Hace tiempo ya pude conectar una api ya existente de Pokémon, en el cual al pasarle algunos request me devolvía un Json y este lo convertía yo ya en algo mas presentable 
+Hace tiempo ya pude conectar una api ya existente de Pokémon, en el cual al pasarle algunos request me devolvía un Json y este lo convertía yo en algo mas presentable 
 
 Convirtiendo la respuesta de la [PokeAPI](https://pokeapi.co/) de esto
 ![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221114141413.png)
@@ -5644,9 +5644,9 @@ Entonces si por ejemplo ponemos nuestra api ahorita como esta a producción al m
 
 ![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221114141534.png)
 
-Esto gracias a la interfaz de Django REST Framework, entonces para poder cambiar esto como si ya estuviéremos en producción simplemente tenemos que configurar un setting en nuestro archivo "settings.py" y checamos nuestra documentacion # [API Reference](https://www.django-rest-framework.org/api-guide/settings/#api-reference)
+Esto gracias a la interfaz de Django REST Framework, entonces para poder cambiar esto como si ya estuviéremos en producción simplemente tenemos que configurar un setting en nuestro archivo "settings.py" y checamos nuestra documentación  [API Reference](https://www.django-rest-framework.org/api-guide/settings/#api-reference)
 
-Tambien en el video nos muestra que lo busco en stackoverflow 
+Tambien en el video nos muestra que lo busco en stack overflow 
  [How to disable admin-style browsable interface of django-rest-framework?](https://stackoverflow.com/questions/11898065/how-to-disable-admin-style-browsable-interface-of-django-rest-framework)
 
 ![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221114142519.png)
