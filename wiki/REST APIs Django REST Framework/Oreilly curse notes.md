@@ -5679,4 +5679,22 @@ Lo guardamos y listo
 
 ![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221114142642.png)
 
-Ya nos sale un JSON que fácilmente otros programas podrán interpretar
+Ya nos sale un JSON que fácilmente otros programas podrán interpretar.
+
+
+# Chapter 16 : Automated API Testing
+
+## API Testing - Registration
+
+Pasamos a el penúltimo capitulo, en este hablaremos de como hacer pruebas, y como siempre nuestro querido Django REST Framework nos tiene una solución y para cada caso que queramos 
+![[IMG/Pasted image 20221114151537.png]]
+
+
+Ya de default Django nos crea en cada app un archivo llamado "test.py"
+
+![[IMG/Pasted image 20221114151210.png]]
+
+Cave resaltar que las pruebas para la "user_app" debemos hacerlos en este archivo de ``user_app/tests.py`` y los de "watchlist_app" en el archivo ``watchlist_app/test.py`` y en caso de tener una aplicación con multiples apps se puede hacer una carpeta especifica para todos los test.
+
+En nuestro caso utilizaremos el [API Test cases](https://www.django-rest-framework.org/api-guide/testing/#api-test-cases) 
+![[IMG/Pasted image 20221114151112.png]]
