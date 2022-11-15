@@ -5730,6 +5730,7 @@ Ya nos sale un JSON que fácilmente otros programas podrán interpretar.
 ## API Testing - Registration
 
 Pasamos a el penúltimo capitulo, en este hablaremos de como hacer pruebas, y como siempre nuestro querido Django REST Framework nos tiene una solución y para cada caso que queramos 
+
 ![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221114151537.png)
 
 
@@ -5795,6 +5796,7 @@ En la documentación nos dice la estructura que debe tener nuestro cliente y la 
 ![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221114172506.png)
 
 Entonces devemos pasarle nuestro cliente como ``self.client.post( )`` y a este devemos pasarle dos datos, tanto la url a donde haremos objetivo como los datos, entonces para la url utilizaremos el reverse que importamos arriba, simplemente diciendole a que url apuntaremos, en este caso "register" 
+
 ![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221114172835.png)
 
 Entonces solo debemos escribir ``reverse('register'),`` y luego le pasamos los datos que en este caso seria nuestro ``data``, todo esto lo guardaremos en un ``response`` para poder hacer la comparación aquí, entonces lo hacemos con ``self.assertEqual`` le pasamos que si el codigo de status que nos devuelve el response es HTTP_200_OK entonces quiere decir que pudo registrar nuestro usuario de pruebas en la base de datos temporal correctamente y esto significa paso nuestra prueba
@@ -5826,6 +5828,7 @@ Ya tenemos listo nuestra prueba para ver si el registro de usuarios funciona, pe
 Esto correrá a la ves todos los archivos de test que tengan nuestras aplicaciones registradas
 
 ![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221114173843.png)
+
 Aqui corrimos nuestra prueba y salio todo bien, pero en el video el puso el ``status.HTTO_201_OK`` y no es 201 es 200
 
 ![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221114174019.png)
