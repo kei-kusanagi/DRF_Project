@@ -1,6 +1,5 @@
 
-Ya tenia el proyecto creado pero la regué tratando de añadirle archivos estáticos y una pagina de login, entonces opte por crearlo nuevamente (sirve practico)
-
+# Chapter 3 : API with Django
 ## Creating JSON Response - Individual Elements
 
 creamos nuestro proyecto de Django y de aquí es de donde saque la buena practica de ponerle ``_app`` para saber cuales son
@@ -203,6 +202,9 @@ aquí asignamos a "movie" el objeto según el "pk" y este lo desglosamos en data
 
 todo esto lo estamos haciendo dato por dato y es algo engorroso con lo que según el video "Django REST Framework" nos podrá ayudar por medio de sus "serializares"  "funciones basadas en vistas" y mas funciones, así que en la próxima lección empezaremos con el proyecto de verdad jajaja (chale)
 
+
+
+# Chapter 4 : Django REST Framework
 ## DRF Introduction
 
 primero iniciamos instalándolo ``pip install djangorestframework`` y lo añadimos a las INSTALLED_APPS
@@ -257,6 +259,9 @@ urlpatterns = [
 
 hecho esto podemos borrar nuestro anterior archivo de "urls.py" y comentar todo dentro del "views.py" anterior porque de ves en cuando regresaremos a verlo
 
+
+
+# Chapter 5 : Views and Serializers
 ## Serializers - GET Request
 
 Ahora creamos un nuevo archivo dentro de la carpeta api llamado "serializers.py" este es importante porque hara el mapeo de todos los valores paso a paso (por eso comentamos lo de "views.py" porque ya no lo haremos allí si no aquí)
@@ -2825,6 +2830,9 @@ y vamos a http://127.0.0.1:8000/watch/stream/3/, vemos que el botón de Delete o
 
 Y bueno en resumen con estos "modelViewSet" y con la ayuda de los Routers podemos con poquitas líneas tener todas las herramientas de un CRUD e incluso cambiando solamente el modelo hacer que todo sea de lectura y se configure automáticamente si mostrando cosas que no modifiquen nada (como el get)
 
+
+
+# Chapter 6 : Postman and Project Update
 ## Postman
 
 Hoy hablaremos de "Postman" la app que ya había usado antes para poder mandar las peticiones, ya que ahorita todo lo hemos estado haciendo tanto desde la pagina de administración como desde los mismos links gracias al poder de Django Rest Framework, lo descargamos (por si aun no lo tienen) https://www.postman.com creamos una cuenta y listo, todo free
@@ -3079,6 +3087,9 @@ Y listo, ya nos deja entrar a nuestra api desde nuestro usuario de pruebas, esto
 ![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221024115140.png)
 
 
+
+
+# Chapter 7 : Permissions
 ## Introduction to Permissions
 
 en esta lección, desglosaremos un poco mas los permisos que vimos en la anterior capitulo, donde ya pudimos crear un usuario de pruebas y ahora podemos hacer de todo lo permitido en la api con el, pero no en el area de administración, pero, queremos lograr que solo si este usuario creo el review, solo el 
@@ -3458,6 +3469,9 @@ path('<int:pk>/', WatchDetailAV.as_view(), name='movie-detail'),
 ```
 
 
+
+
+# Chapter 8 : Authentication
 ## Introduction to Authentications
 
 Bueno, empezamos con lo chido, las autenticaciones, pero antes de pasar a verlas debemos entender la diferencia entre permiso y autenticación, podemos ir a la documentacion https://www.django-rest-framework.org/api-guide/authentication/ y hay una nota muy importante
@@ -3473,6 +3487,10 @@ hay muchas maneras de usar autenticaciones (ni me lo recuerden) y ahorita usarem
 ![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221101152536.png)
 
 
+
+
+
+# Chapter 9 : Basic Authentication
 ## Basic Authentication
 
 Bueno ahora solo para propósitos de test haremos lo que es la autenticación básica, para empezar debemos importar los settings que vienen en la documentación https://www.django-rest-framework.org/api-guide/authentication/#setting-the-authentication-scheme ya que recordemos que estamos usando Django rest framework y asi funciona este, luego vamos y las pegamos en nuestro archivo "settings.py"
@@ -3535,6 +3553,9 @@ Perfecto, ya tenemos nuestra Basic Authentication, ahora solo para seguir usando
 ![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221101173357.png)
 
 
+
+
+# Chapter 10 : Token Authentication
 ## Token Authentication - Part 1
 
 Empecemos con lo bueno (creo es la tercera ves que lo menciono en este curso), por alguna razón se me complica mucho el asociar las autenticaciones por token, pero en este capitulo lo explica bien con un ejemplo de un estacionamiento.
@@ -4057,6 +4078,10 @@ Perfecto, nos ah creado un nuevo token, con el cual podemos interactuar nuevamen
 Token invalido, perfecto, ya tenemos todo lo básico, ahora en la próxima lección probáremos toda nuestra app
 
 
+
+
+
+# Chapter 11 : Manual Testing Entire Project
 ## Manual Testing Entire Project - Part 1
 
 Muy bien, es hora de empezar a testear todo nuestro proyecto, pero antes de eso tenemos que asegurarnos que es lo que queremos, en si queremos que esta API sea algo así como un clon de IMDb.
@@ -4280,6 +4305,10 @@ Perfecto, si nos crea un nuevo token, todo luce bastante bien 😁
 
 
 
+
+
+
+# Chapter 12 : JWT Authentication
 ## JWT Authentication - Access Token and Refresh Token
 
 
@@ -4487,6 +4516,10 @@ SIMPLE_JWT = {
 
 
 
+
+
+
+# Chapter 13 : Throttling
 ## Throttling Introduction
 
 Muy bien, hagan de cuenta que lo anterior no ocurrio y quitamos todo lo de JWT que pusimos, ya hice pruebas y al parecer todo sigue funcionando bien, pero ahora veremos lo que es el "Throttling" que se traduce como 
@@ -4728,6 +4761,10 @@ Cabe recalcar que estos scope se convinan, por ejemplo aqui tenemos
 Esto significa que se pueden ver 12 veces por dia, pero lo podemos modificar para que el detail lo puedan ver 5 veces los que no sean usuarios y luego ponerle que si se registran puedan ver 100 al día, o lo que mas podría ser usado seria que se puedan solo ver 1 registro por segundo (ósea 60 por minuto) pero solo deje 100 por día.
 
 
+
+
+
+# Chapter 14 : Filtering, Searching, Ordering
 ## Filtering Introduction
 
 Muy bien, hablemos de Filtering, esto es la forma en la que podemos mandar a buscar un elemento por medio de un link, es como por ejemplo en amazon al momento de buscar algo, si nos checamos en la barra de direcciones podemos ver lo que pasa, si le damos buscar Wiskas alimento humedo para gatos nosotros solo veremos que nos aparecen varias opciones, pero en la barra de direcciones vemos que aparece www.amazon.com.mx/s?k=Whiskas+Alimento+Húmedo+Gatos donde la ``/s`` nos esta diciendo que es una busqueda, la ``k=``  es de la key a buscar y luego ``Whiskas+Alimento+Húmedo+Gatos`` que es justo lo que pusimos en la barra de busqueda
@@ -5184,6 +5221,10 @@ Ahora si viene lo bueno, la pagination, lo que nos hara trabajar con multiples p
 Listo, ahora si la siguiente lección entraremos de lleno con esto de la paginación con todas estas películas y series que hemos agregado.
 
 
+
+
+
+# Chapter 15 : Pagination
 ## Pagination Part 1 - PageNumber
 
 Muy Bien, hablemos de la pagination, como hicimos en la parte final del capitulo anterior agregamos alrededor de 20 series y peliculas a nuestro proyecto, esto tratando de emular un poco a paginas como Amazon donde al buscar algo como Xbox, obtendremos miles y miles de resultados 
@@ -5682,8 +5723,10 @@ Lo guardamos y listo
 Ya nos sale un JSON que fácilmente otros programas podrán interpretar.
 
 
-# Chapter 16 : Automated API Testing
 
+
+
+# Chapter 16 : Automated API Testing
 ## API Testing - Registration
 
 Pasamos a el penúltimo capitulo, en este hablaremos de como hacer pruebas, y como siempre nuestro querido Django REST Framework nos tiene una solución y para cada caso que queramos 
