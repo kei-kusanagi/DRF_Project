@@ -5687,14 +5687,145 @@ Ya nos sale un JSON que fácilmente otros programas podrán interpretar.
 ## API Testing - Registration
 
 Pasamos a el penúltimo capitulo, en este hablaremos de como hacer pruebas, y como siempre nuestro querido Django REST Framework nos tiene una solución y para cada caso que queramos 
-![[IMG/Pasted image 20221114151537.png]]
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221114151537.png)
 
 
 Ya de default Django nos crea en cada app un archivo llamado "test.py"
 
-![[IMG/Pasted image 20221114151210.png]]
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221114151210.png)
 
 Cave resaltar que las pruebas para la "user_app" debemos hacerlos en este archivo de ``user_app/tests.py`` y los de "watchlist_app" en el archivo ``watchlist_app/test.py`` y en caso de tener una aplicación con multiples apps se puede hacer una carpeta especifica para todos los test.
 
 En nuestro caso utilizaremos el [API Test cases](https://www.django-rest-framework.org/api-guide/testing/#api-test-cases) 
-![[IMG/Pasted image 20221114151112.png]]
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221114151112.png)
+
+Empezaremos importando ``from rest_framework.test import APITestCase`` en nuestro archivo "user_app/tests.py"  luego si vamos a la documentación en la parte derecha nos aparece el enlace a GitHub donde tienen depositado estas funciones
+
+https://github.com/encode/django-rest-framework/blob/master/rest_framework/test.py
+
+Allí vemos que necesitamos un ``client_class``
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221114154048.png)
+
+ese ``APIClient`` es muy importante ya que si lo abrimos en GitHub podemos ver que gracias a esto podemos obtener todos los metodos como get, post, put, etc
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221114160603.png)
+
+Esto gracias a que le pasamos ``APIRequestFactory`` que nuevamente si lo abrimos en GitHub podemos ver todo lo que nos da 
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221114160732.png)
+
+Tambien utilizaremos importar ``from rest_framework import status`` para que nos de nuestros códigos de status como el 200_ok o el 404_not_found y así
+
+Ocuparemos importar también ``from django.urls import reverse`` este nos ayuda a hacer objetivo a nuestras URL's o nuestros endpoints
+
+Es algo complejo esto y una cosa importante es que todas nuestras funciones dentro de esta class que crearemos deben empezar forzosamente si o si con ``tes_`` por ejemplo ``test_resgistration`` o ``test_login``
+
+Bueno ahora si vamos a nuestro código al archivo "user_app/tests.py" e importemos lo que dijimos arriba y empecemos importando nuestros usuarios, esto viene dentro de ``from django.contrib.auth.models import User`` , también importaremos ``from rest_framework.authtoken.models import Token`` ya que usaremos los tokens en nuestras pruebas, ahora si crearemos nuestra class y la llamaremos ``RegisterTestCase`` y le pasaremos el ``APITestCase``
+
+Ya tenemos toda la estructura, ahora creemos nuestro primer caso de prueba para el registro de usuarios, en este caso solo haremos una prueba así que solo registraremos un caso y lo llamaremos ``def test_register(self)`` dentro de este caso probaremos todo, empezaremos obteniendo nuestros datos luego mandaremos un post request y luego obtendremos (get) una respuesta y checaremos si esta respuesta es correcta o no, pero para esto debemos crear un usuario como tal, pero no se preocupen, todo lo que creemos en estos casos de prueba, Django automáticamente creara una nueva base de datos temporal y no le moverá nadita a la nuestra
+
+Hasta ahorita nuestro archivo debería lucir así con todo y sus importaciones
+
+```Python
+from django.contrib.auth.models import User
+from django.urls import reverse
+
+from rest_framework import status
+from rest_framework.test import APITestCase
+from rest_framework.authtoken.models import Token
+
+class RegisterTestCase(APITestCase):
+    def test_register(self) :
+        data = {
+            "username": "testcase" ,
+            "email": "testcase@example.com",
+            "password": "NewPassword@123",
+            "password2": "NewPassword@123"
+        }
+```
+
+Ahora necesitamos un cliente para poder mandar nuestros POST request (ya tenemos el usuario de pruebas) # [APIClient](https://www.django-rest-framework.org/api-guide/testing/#apiclient)
+
+En la documentación nos dice la estructura que debe tener nuestro cliente y la estructura de datos que debemos pasarle
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221114172506.png)
+
+Entonces devemos pasarle nuestro cliente como ``self.client.post( )`` y a este devemos pasarle dos datos, tanto la url a donde haremos objetivo como los datos, entonces para la url utilizaremos el reverse que importamos arriba, simplemente diciendole a que url apuntaremos, en este caso "register" 
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221114172835.png)
+
+Entonces solo debemos escribir ``reverse('register'),`` y luego le pasamos los datos que en este caso seria nuestro ``data``, todo esto lo guardaremos en un ``response`` para poder hacer la comparación aquí, entonces lo hacemos con ``self.assertEqual`` le pasamos que si el codigo de status que nos devuelve el response es HTTP_200_OK entonces quiere decir que pudo registrar nuestro usuario de pruebas en la base de datos temporal correctamente y esto significa paso nuestra prueba
+
+Quedando así nuestra class:
+
+```Python
+from django.contrib.auth.models import User
+from django.urls import reverse
+
+from rest_framework import status
+from rest_framework.test import APITestCase
+from rest_framework.authtoken.models import Token
+
+class RegisterTestCase(APITestCase):
+    def test_register(self) :
+        data = {
+            "username": "testcase" ,
+            "email": "testcase@example.com",
+            "password": "NewPassword@123",
+            "password2": "NewPassword@123"
+        }
+        response = self.client.post(reverse('register'), data)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+```
+
+Ya tenemos listo nuestra prueba para ver si el registro de usuarios funciona, pero como la corremos? pues vamos a nuestra terminal, ya sea la del visual studio o la terminal de nuestro ordenados y teniendo activo nuestro entorno virtual le damos la instrucción
+``python manage.py test`` 
+Esto correrá a la ves todos los archivos de test que tengan nuestras aplicaciones registradas
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221114173843.png)
+Aqui corrimos nuestra prueba y salio todo bien, pero en el video el puso el ``status.HTTO_201_OK`` y no es 201 es 200
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221114174019.png)
+
+Dándonos ese error donde nos dice en que archivo y donde esta nuestro error
+
+``AssertionError: 200 != 201``
+
+Porque deje el error, porque este esta desde que creamos ese código de status, ya que el código real que nos debería arrojar no es ``200_OK``, si no el ``201_CREATED`` entonces vallamos a nuestro archivo "user_app/api/views.py" checamos que este importados nuestros códigos de status ``from rest_framework import status`` y en la parte de abajo de nuestra función ``registration_view`` en el momento que nos regresa nuestro ``Response(data)`` le agregamos que nos regrese nuestro código de status correcto
+
+```Python
+...
+@api_view(['POST',])
+def registration_view(request):
+
+    if request.method == 'POST':
+        serializer = RegistrationSerializer(data=request.data)
+
+        data = {}
+
+        if serializer.is_valid():
+            account = serializer.save()
+
+            data['response'] = "Registration Successful!"
+            data['username'] = account.username
+            data['email'] = account.email
+
+            token = Token.objects.get(user=account).key
+            data['token'] = token
+        else:
+            data = serializer.errors
+        return Response(data, status=status.HTTP_201_CREATED)
+```
+
+Cambiamos eso y ahora también nuestro código y volvemos a hacer las pruebas
+
+```Python
+...
+response = self.client.post(reverse('register'), data)
+self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+```
+
+
+De echo en la propia respuesta del test nos dicen que se creo una base de datos y que luego al final fue destruida, lo cual como decíamos no afecta en nada nuestra base de datos principal
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221114174724.png)
