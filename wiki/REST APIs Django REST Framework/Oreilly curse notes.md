@@ -5875,3 +5875,82 @@ self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 De echo en la propia respuesta del test nos dicen que se creo una base de datos y que luego al final fue destruida, lo cual como decíamos no afecta en nada nuestra base de datos principal
 
 ![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221114174724.png)
+
+
+## API Testing - Login and Logout
+
+
+Sigamos con los casos de prueba, ahora crearemos un test para probar el hacer Login y Logout, le llamaremos ``class LoginLogoutTestCase(APITestCase)`` y dentro des esta class crearemos un método (o funcion) llamada ``test_login`` y otro llamado  ``test_logout``. Para poder hacer estas pruebas tendremos que crear un usuario, podríamos pensar que con el del caso anterior serviría, pero nop, cada caso de prueba debe tener sus usuarios ya que recordemos que al final de cada prueba, esa pequeña base de datos se destruye. Entonces para no tener que crear 2 usuarios en esta class, mejor definamos un setUp, que sera una función que nos cree nuestros usuarios de prueba y este lo llamaremos en ``test_logout`` y en ``test_login`` 
+
+```Python
+...
+def setUp(self):
+        self.user = User.objects.create_user(username="example", password="NewPassword@123")
+```
+
+a tenemos nuestros usuarios, ahora creemos nuestro primer caso de prueba ``test_login`` primero empezamos definiendo su nombre, luego le asignamos el data usando las variables que ya asignamos en ``setUp`` y luego igual que el anterior le mandamos con client una peticion, en este caso de post y luego con reverse hacemos objetivo el link de login y a este le psaremos nuestro ``data``, luego con ``assertEqual`` checaremos este response a ver si nos regresa un codigo de estatus HTTP_200_ok
+
+```Python
+...
+    def setUp(self):
+        self.user = User.objects.create_user(
+            username="example",
+            password="NewPassword@123"
+            )
+            
+    def test_login(self):
+        data = {
+            "username": "texample",
+            "password": "NewPassword@123"
+        }
+        response = self.client.post(reverse('login'), data)
+        self. assertEqual(response.status_code, status.HTTP_200_OK)
+```
+
+Vamos a laterminal y corremos los test (en este caso se hara el anterior que hicimos tambien) y nos da un error que hicimos a proposito
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221115133312.png)
+
+Este error nos esta diciendo que en obtubimos un 400
+
+[Status Codes](https://www.django-rest-framework.org/api-guide/status-codes/#status-codes)
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221115133408.png)
+
+
+eso es porque el usuario que creamos y el usuario que le estamos pasando por el data en el test son diferentes
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221115133506.png)
+
+Entonces solo corrijamos esto y volvamos a correr el test
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221115133552.png)
+
+Muy bien, ahora definamos nuestro ``test_logout``, este sera un poco mas complicado ya que para hacer logout recordemos que tenemos que enviar un token para poderlo destruir, que literalmente lo que se hace es solo eso (destruir el token) ya que para cada petición que hacemos debemos de andarlo para indicar que estamos acreditados, entonces empezamos definiendo nuestro token con ``self.token`` a este le asignamos que obtenga el Token que se le asignaría al ``username"example"``, luego según la documentación debemos asignarle las credenciales de cliente (recordemos que lo que queremos hacer es autenticarnos) [Authenticating](https://www.django-rest-framework.org/api-guide/testing/#authenticating) 
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221115135323.png)
+
+Allí nos dice que lo primero que debemos hacer al querer obtener el token es obtener toda la información para poder hacer logout y esto se hace obteniendo las credenciales, entonces le pasaremos esto, solo añadiéndole el self al principio
+``self.client.credentials(HTTP_AUTHORIZATION='Token ' + self.token.key)``
+Ya tenemos esta parte (que es hacer otra ves login por asi decirlo) entonces ya lo que nos falta es ver que repsonse nos da al mandar toda esta informacion a nuestro link de logout, atraves de nuestro reverse. 
+
+Ahora solo nos faltara comprobar si el status que nos regresa es ok, ais como lo definimos en nuestra vista 
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221115135910.png)
+
+Que si hace logout y todo sale bien nos regresara HTTP_200_ok, entonces como el caso pasado hacemos un ``assertEqual`` y esto quedaria algo asi:
+
+```Python
+...
+    def test_logout(self):
+        self.token = Token.objects.get(user__username="example")
+        self.client.credentials(HTTP_AUTHORIZATION='Token ' + self.token.key)
+        response = self.client.post(reverse('logout'))
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+```
+
+Vamos a nuestra terminal y corremos la prueba
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221115140043.png)
+
+Perfecto, corrió los 3 test y en los 3 no nos genero ningún error, cosas importantes a recordar
+
+Al momento de hacer los siguientes test recordemos que si necesitamos mandar un get y con el tenemos que mandar un token para demostrar nuestras credenciales tenemos que seguir el metodo que hicimos en el logout, que es el asignar un token a nuestro usuario de pruebas y luego obtener ese token con el metodo ``client.credentials``
