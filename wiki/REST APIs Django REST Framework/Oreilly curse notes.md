@@ -6069,3 +6069,134 @@ Ahora corramos nuestras pruebas y perfecto, todo ok, aqui lo que estamos haciend
 Es lo mismo aca, le estamos dando el ID de la plataforma que creamos
 
 ![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221115182321.png)
+
+
+
+## API Testing - WatchList
+
+Ahora crearemos nuestros caso de prueba para nuestras Watchlist, comenzáremos llamando nuestra class ``WatchListTestCase`` y nuestra primera función sera un ``setUp`` como en los anteriores, ya que como lo definimos en las autorizaciones y permisos, necesitamos tener un usuario con rango de staff para poder crear una watchlist nueva, entonces buscaremos simular el ser un usuario normal que intente crear un nueva al link de creación de estas y también dentro de este setUp crearemos una plataforma ya que como vimos en relationships necesitamos de una plataforma para poder crear una watchlist y nos vasamos en los datos que declaramos en nuestro archivo "models.py"
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221116131506.pn )
+
+Con estos datos los pasamos como ``self.stream`` en nuestro setUp
+
+```Python
+...
+    def setUp(self):
+        self.user = User.objects.create_user(username="example", password="Passwors@123")
+        self.token = Token.objects.get(user__username=self.user)
+        self.client.credentials(HTTP_AUTHORIZATION='Token ' + self.token.key)
+  
+        self.stream = models.StreamPlataform.objects.create(
+            name= "Netflix",
+            about= "#1 Streaming Plataform",
+            website= "http://www.netflix.com",
+        )
+```
+
+Listo ya tenemos el setUp, ahora nuestra función de prueba ``test_watchlist_create``, le pasamos primeramente el data indicándole los datos que declaramos en nuestro archivo "models.py"
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221116123025.pn )
+
+Ya pasándole el data continuamos declarando el response diciéndole que el client sera un post y reverse hara objetivo el link de ``movie-list``, de allí el ``assertEqual`` checaremos que sea igual a ``HTTP_403_FORBIDDEN``
+
+```Python
+...
+    def test_watchlist_create(self):
+        data = {
+            "plataform": self.stream,
+            "title": "Example Movie",
+            "storyline": "Example Story",
+            "active": True
+        }
+        response = self.client.post(reverse('movie-list'), data)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+```
+
+
+Corremos nuestros test en la terminal y
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221116123740.pn )
+
+Muy bien ahora creemos los casos para obtener un get de la lista de watchlist y una watchlist individualmente, empecemos con ``test_watchlist_list``  pero para poder hacer que nos regrese una lista o un elemento individual tambien tenemos que aver podido crear una, ya que recordemos que en el test pasado estamos probando que NO nos deje crear una ya que no tenemos el status de staff, entonces en nuestro setUp le agregamos una ``self.watchlist`` con los elementos que agregamos en nuestro "models.py"
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221116123025.pn )
+
+Casi casi es copiar y pegar lo de la prueba ``test_watchlist_create`` solo que le definimos ``plataform`` como ``self.stream`` para que sea la que acabamos de crear
+
+```Python
+...
+def setUp(self):
+...
+        self.watchlist = models.WatchList.objects.create(
+            plataform=self.stream,
+            title= "Example Movie",
+            storyline="Example Story",
+            active= True
+        )
+...
+```
+
+Ahora si vamos a definir ``test_watchlist_list``   creamos su response diciéndole que es un get, el reverse hara objetivo a ``'movie-list'`` y nuestro ``assertEqual`` checara que nos de un status ``HTTP_200_OK``
+
+```Python
+...
+    def test_watchlist_list(self):
+        response = self.client.get(reverse('movie-list'))
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+...
+```
+
+Casi igual que el anterior hacemos el ``test_watchlist_ind`` solo que en el reverse va a necesitar un "pk" como argumento para saber a que watchlist en particular hara objetivo, en nuestro caso le pasaremos el id del que acabamos de crear, en este caso seria ``(self.watchlist.id,)``
+
+
+```Python
+...
+    def test_watchlist_ind(self):
+        response = self.client.get(reverse('movie-detail', args=(self.watchlist.id,)))
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+```
+
+Corremos la prueba en la terminal 
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221116132721.pn )
+
+Muy bien, ya probamos casi todo lo que pueda hacer un usuario respecto a nuestras watchlist, pero como podemos ver en el ## [Example](https://www.django-rest-framework.org/api-guide/testing/#example) de la documentación, podemos probar varios ``assertEqual`` en una sola función 
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221116132932.pn )
+
+Por ejemplo probar que el titulo de la película sea el mismo que declaramos en el setUp, ya que la prueba  de ``test_watchlist_ind`` solo nos esta confirmando que en efecto obtenemos una watchlist, cual? pues quien save 🤷‍♀️, entonces al final de la prueba podemos agregarle otro ``self.assertEqual`` preguntándole si lo que obtenemos en el ``title`` de este objeto es identico a ``'Example Movie'``
+
+```Python
+...
+def test_watchlist_ind(self):
+        response = self.client.get(reverse('movie-detail', args=(self.watchlist.id,)))
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        self.assertEqual(models.WatchList.objects.get().title, 'Example Movie')
+```
+
+Vamos a terminal y
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221116133626.pn )
+
+Bueno para eso sirven los test, había escrito mal el titulo en el setUp
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221116133744.pn )
+ahora podemos hacer lo mismo para que en el elemento individual nos cuente si solo tenemos una  watchlist, prácticamente copiamos lo del [Example](https://www.django-rest-framework.org/api-guide/testing/#example) 
+
+```Python
+...
+def test_watchlist_ind(self):
+        response = self.client.get(reverse('movie-detail', args=(self.watchlist.id,)))
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        self.assertEqual(models.WatchList.objects.get().title, 'Example Movie')
+        self.assertEqual(models.WatchList.objects.count(), 1)
+```
+
+
+Checamos la prueba en la terminal
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221116134056.pn )
+
+Perfecto todo bien todo correcto y yo que me... (seguro completaron la frase ![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221116134150.png) )
