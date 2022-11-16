@@ -5952,3 +5952,120 @@ Vamos a nuestra terminal y corremos la prueba
 Perfecto, corrió los 3 test y en los 3 no nos genero ningún error, cosas importantes a recordar
 
 Al momento de hacer los siguientes test recordemos que si necesitamos mandar un get y con el tenemos que mandar un token para demostrar nuestras credenciales tenemos que seguir el método que hicimos en el logout, que es el asignar un token a nuestro usuario de pruebas y luego obtener ese token con el método ``client.credentials``
+
+
+## API Testing - StreamPlatform
+
+Ahora veremos como crear nuestros casos de prueba para nuestras plataformas de stream, para esto prácticamente importamos lo del anterior archivo pero ahora lo pegamos en nuevo archivo "watchlist_app/tests.py" en este haremos todas las pruebas para esta parte de la app, también tenemos que importar nuestros serializadores y nuestros models
+
+```Python
+from django.contrib.auth.models import User
+from django.urls import reverse
+
+from rest_framework import status
+from rest_framework.test import APITestCase
+from rest_framework.authtoken.models import Token
+
+from watchlist_app.api import serializers
+from watchlist_app import models
+```
+
+Para poder hacer estas pruebas vemos que son necesarias cosas como cuando hablamos hace mucho de las "relathionships" en este caso para poder hacer una prueba de hacer un "review" necesitamos una "watchlist" a la cual hacerle el review y de igual manera para poder tener una "watchlist" necesitamos tener una "stream plataform" para referenciarla, entonces como le hicimos anterior mente, tenemos que crear dentro de nuestra class y funciones primero una plataforma, luego un watchlist y por ultimo un review, asi que empecemos con nuestra class la cual llamaremos  ``class StreamP1atformTestCase(APITestCase)`` y nuestra primera prueba sera ``test_streamplataform_create`` entonces empesamos creando nuestro ``data`` el cual si checamos nuestros modelos nos dice que para crearla necesitamos llenar los siguientes datos
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221115172717.png)
+
+Entonces se los pasamos dentro del data, y después le tenemos que crear un ``response`` al cual le pasaremos el ``client.post`` (ya que el método para crear una plataforma es POST) y hacemos objetivo con el ``reverse`` nuestro link ``'streamplataform-list'`` y a este le pasamos el data.
+
+Ya por ultimo tenemos que hacer el ``assertEqual()`` para comparar el status code que nos dará al mandar esto.
+
+Algo IMPORTANTE a recordar es que esto de crear una plataforma solo lo puede ser las personas del staff, asi como lo definimos en los permisos
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221115173501.png)
+
+Entonces como cuando quisimos hacer logout, tenemos que pasarle un token de autorización que tenga el nivel de staff para poder checar que se cree correctamente, de echo si mandamos asi como esta el request (haciendo la prueba) nos regresara esto
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221115174806.png)
+
+Nos esta diciendo que tenemos un error 401, que significa que no esta autorizado para esta operacion.
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221115173856.png)
+
+
+Entonces debemos agregarle este permiso, entonces como en la prueba anterior creemos nuestro ``detUp``, empezamos agregando nuestro ``self.user`` le asignamos los objetos y ``.creat_user`` y le pasamos el ``username`` y su ``password``, luego le pasamos su token con ``self.token`` y luego le creamos sus credenciales con ``self.client.credentials``
+
+Ahora si lo dejamos asi como esta, nos debería regresar un error ``HTTP_403_FORBIDDEN`` ya que es un usuario normal, no uno que sea parte del staf
+
+
+```Python
+...
+class StreamP1atformTestCase(APITestCase):
+  
+    def setUp(self):
+        self.user = User.objects.create_user(username="example", password="Passwors@123")
+        self.token = Token.objects.get(user__username=self.user)
+        self.client.credentials(HTTP_AUTHORIZATION='Token ' + self.token.key)
+  
+    def test_streamplataform_create(self):
+        data = {
+            "name": "Netflix",
+            "about": "#1 Streaming Plataform",
+            "website": "http://www.netflix.com",
+        }
+        response = self.client.post(reverse('streamplataform-list'), data)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+```
+
+Listo, si lo corremos así veremos que en efecto nos da error 403, sin querer hemos creado una prueba para testear efectivamente que si un usuario no tiene credenciales de staff no podrá crear una plataforma de streaming
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221115175547.png)
+
+Entonces solo cambiemos el ``assertEqual`` para que compruebe que nos mande el ``HTTP_403_FORBIDDEN``
+
+```Python
+self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+```
+
+Aprovechando que ya creamos nuestro usuario "NORMAL" hagamos otras dos pruebas de lo que puede hacer un usuario con estas credenciales, este seria el tener un GET de la lista entera de plataformas, lo llamaremos ``test_streamplataform_list``, entonces creamos nuestra función y le asignamos un response, en este  le asignamos con ``.client.get`` la petición que sera un GET y con el reverse apuntamos a el mismo link de ``'streamplataform-list'`` y terminamos con el ``assertEqual`` en este caso al obtener la lista nos regresara un HTTP_200_OK
+
+```Python
+...
+    def test_streamplataform_list(self):
+        response = self.client.get(reverse('streamplataform-list'))
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+```
+
+Si hacemos la prueba nos saldra que todo esta bien
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221115180536.png)
+
+Pero esto es porque no tenemos ninguna plataforma creada, en si no hay problema con esto porque estamos probando un usuario "NORMAL" pero si tratamos de obtener un elemento en individual no podremos por esta misma razón, entonces podemos añadir a nuestro ``setUp`` el método para crear un elemento.
+
+```Python
+...
+    def setUp(self):
+        self.user = User.objects.create_user(username="example", password="Passwors@123")
+        self.token = Token.objects.get(user__username=self.user)
+        self.client.credentials(HTTP_AUTHORIZATION='Token ' + self.token.key)
+  
+        self.stream = models.StreamPlataform.objects.create(
+            name= "Netflix",
+            about= "#1 Streaming Plataform",
+            website= "http://www.netflix.com",
+            )
+```
+
+Con esto estamos creando una plataforma, la cual su ID sera el "1", entonces ya podemos hacer nuestra prueba de obtener con un GET un elemento individual, vamos a crear una nueva función llamada ``test_streamplataform_ind`` igual con el ``client.get`` le pasaremos nuestra petición GET y con el reverse haciendo objetivo a ``'streamplataform-detail'`` y en este caso no le pasaremos  el data, le pasaremos un ``args`` y le pasaremos en el el id de nuestro stream que creamos en el setup, sabemos que es el 1 pero para asegurarnos le pasaremos así ``args=(self.stream.id,)``. Ya con esto ahora haremos nuestra comparación ``assertEqual``
+
+```Python
+...
+    def test_streamplataform_ind(self):
+        response = self.client.get(reverse('streamplataform-detail', args=(self.stream.id,)))
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+```
+
+Ahora corramos nuestras pruebas y perfecto, todo ok, aqui lo que estamos haciendo con pasarle un argumento es como cuando en los links en postman le pasamos el numero de id del objeto que queremos revisar por ejempolo neustra serie de "The boys" el cual lleva el id 5
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221115182620.png)
+
+Es lo mismo aca, le estamos dando el ID de la plataforma que creamos
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221115182321.png)
