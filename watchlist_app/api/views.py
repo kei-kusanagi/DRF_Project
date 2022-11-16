@@ -105,6 +105,8 @@ class ReviewList(mixins.ListModelMixin, mixins.CreateModelMixin, generics.Generi
         return self.create(request, *args, **kwargs)
 '''
 class StreamPlataformDetailAV(APIView):
+    permission_classes = [IsAdminOrReadOnly]
+    throttle_classes = [AnonRateThrottle]
 
     def get(self, request, pk):
         try:
