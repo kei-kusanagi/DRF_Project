@@ -6115,6 +6115,7 @@ Ya pasándole el data continuamos declarando el response diciéndole que el clie
 
 
 Corremos nuestros test en la terminal y
+
 ![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221116123740.png)
 
 Muy bien ahora creemos los casos para obtener un get de la lista de watchlist y una watchlist individualmente, empecemos con ``test_watchlist_list``  pero para poder hacer que nos regrese una lista o un elemento individual tambien tenemos que aver podido crear una, ya que recordemos que en el test pasado estamos probando que NO nos deje crear una ya que no tenemos el status de staff, entonces en nuestro setUp le agregamos una ``self.watchlist`` con los elementos que agregamos en nuestro "models.py"
