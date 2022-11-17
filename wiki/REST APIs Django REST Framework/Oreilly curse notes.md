@@ -6471,3 +6471,28 @@ Ahora solo nos falta el READ del CRUD y el DELETE, hagamos la función ``test_re
 Vamos a la terminal y que bonito, todos los test corriendo perfectamente
 
 ![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221116205208.png)
+
+
+## API Testing - UserTestCase
+
+
+Muy bien, seguimos con nuestras pruebas, seguírmelos con la prueba para obtener con un GET las reviews de un usuario en particular, si vamos a nuestro archivo de "urls.py" podemos ver la estructura que le podemos dar.
+
+![[IMG/Pasted image 20221117115524.png]]
+
+Entonces debemos crear nuestra función dándole la misma estructura que tenemos con el link, esta funcion la llamaremos ``test_review_user`` le pasaremos el ``cllient.get`` y ahora NO usaremos el reverse, en ves de esto pasaremos el link ``('/watch/reviews/?username' + self.user.username)`` y luego haremos un ``assertEqual`` igualito al anterior que solo cheque que nos regrese un codigo ``HTTP_200_ok``
+
+```Python
+...
+def test_review_user(self):
+
+        response = self.client.get('/watch/reviews/?username' + self.user.username)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+```
+
+![[IMG/Pasted image 20221117120505.png]]
+
+Este review viene de la class ``UserReview(generics.LisAPIView)`` así que no requiere ninguna clase de autenticación o permiso para poder verla así que debemos poder obtener un GET de este link sin problemas, así que vamos a la terminal
+
+![[IMG/Pasted image 20221117120536.png]]
