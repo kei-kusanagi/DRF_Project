@@ -6496,3 +6496,30 @@ def test_review_user(self):
 Este review viene de la class ``UserReview(generics.LisAPIView)`` así que no requiere ninguna clase de autenticación o permiso para poder verla así que debemos poder obtener un GET de este link sin problemas, así que vamos a la terminal
 
 ![[IMG/Pasted image 20221117120536.png]]
+
+
+## Test Driven Development - TDD
+
+En esta lectura no escribiremos código, solo sera una breve introducción al TDD o en español, desarrollo guiado por prueba, en Wikipedia dice literalmente 
+
+_Es una práctica de ingeniería de software que involucra otras dos prácticas: Escribir las pruebas primero (Test First Development) y Refactorización (Refactoring)._
+
+_Fuente: Wikipedia
+(https://es.wikipedia.org/wiki/Desarrollo_guiado_por_pruebas)_
+
+Hay dos técnicas, una es ir escribiendo las pruebas antes de incluso escribir el código, y la segunda es prácticamente refactorizar, yo pensabas que es lo que estamos haciendo pero nop, aquí  que hacen es escribir las pruebas dentro de las vistas no en un archivo de pruebas. 
+
+Con esto eliminamos estar haciendo funcionalidades que no pidió el cliente y evitar retrasos y tiempos que serian muertos, aparte nos da modularidad a nuestro programa, si llegas a hacer un cambio sabes que no vas a destruir todo el demás código, porque al hacer primero la prueba antes de el código nos permite testear antes de arruinarlo todo.
+
+
+El TDD un poco mas simplificado es antes de ponerte a hacer tu código funcional, primero pensar en la prueba, ya teniendo una que funcione ahora si ir haciendo el código o refactorizando y como ya tenemos la prueba, podemos ir viendo ahora si que en tiempo real si la prueba pasa de verde a rojo y en el momento corregir el código para volver a pasar la prueba a verde.
+
+Todo esto parece muy fácil pero porque no hay mucha gente usándolo, pues hablemos de las desventajas de usar TDD o mas bien las cosas que cuestan mas trabajo al usarlo, estas empiezan con que todos estamos acostumbrados a primero hacer el código, luego los test o de plano no hacer los test y esto es porque si tenemos que hacer las pruebas primero tenemos que tener muy en claro cuales serán nuestros inputs y nuestro outputs, si no no vamos a poder hacer nuestros test de ninguna forma, lo segundo que pude dificultar esta practica el el hecho de hacer el test en si, el hecho de tener un alto acoplamiento al framework o codependencias externas puede ser un impedimento a hacer el test, la tercera seria la de identificar esos pasos pequeños para poder realizar nuestro test, refiriéndose a un ejemplo de un carro de compras donde para hacer las pruebas empezamos con casos pequeños como comprobar que si el carrito de compras esta vacío, nuestro total sea 0, si el carrito tiene un articulo comprobar ahora que el total sea el costo del articulo, si tenemos dos artículos, comprobar que el costo sea la suma de los dos y así ir subiéndole que sumándole que el costo de envió, que si promociones de 2x1, etc, etc. Pero empezar con paso pequeñitos, y a eso se refiere este tercer impedimento ya que a veces el tratar de dividir esos pasos complejos en pasos pequeños suele ser mucho mas complicado y el cuarto impedimento es que sentiremos que nos volvemos mas lentos desarrollando, lo cual es normal ya que estamos aplicando mucho mas cosas que no estamos acostumbrados a usar y eso va a mermar nuestra productividad.
+
+Ahora ya vimos las 4 desventajas principales pero TDD nos aporta también ventajas, la primera es la gran cobertura de test que tendrá nuestro código, si hemos aplicado bien las tres faces de RED-GREEN-REFACTOR el código que hemos desarrolladlo sera el mínimo necesario para pasar todas las pruebas, la segunda es que tendremos un feedback constante de estar sabiendo que nuestro código esta funcionando correctamente ya que constantemente estaremos corriendo las pruebas para avanzar al siguiente segmento del código, otra ventaja de usar TDD es que en si los test nos hablan, nos están explicando muy bien cuales son las carencias de nuestro código, como si nuestro código necesita muchas dependencias o muchos assets, estos test nos estará dando información en tiempo real de que nuestra implementación no es la mejor, de esta forma podemos decir que los test nos aportan dos grandes cosas 1.- nos están diciendo que nuestra funcionalidad es la correcta y la 2.- es darnos información sobre la calidad del código que estamos produciendo.
+
+Una de las ventajas mas importantes de TDD es el hecho que nos fuerza a dividir un problema muy grande a varios mas pequeños, de forma que podemos ir resolviendo estos problemas pequeños uno a uno de forma interactiva incremental para al final acabar resolviendo ese problema mas grande _DIVIDE Y VENCERÁS_  
+
+como sugirió en el curso, yo me vi estos videos para entender un poco mas de lo que es TDD
+https://youtu.be/q6z3jFZl8oI
+https://youtu.be/I-IczCsXDks
