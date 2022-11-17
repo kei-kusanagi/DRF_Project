@@ -6327,7 +6327,7 @@ class ReviewTestCase(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_429_TOO_MANY_REQUESTS)
 ```
 
-Ahora probaremos hacer una review siendo un usuario sin autenticar, esto estará fácil ya que prácticamente tenemos todo echo, solo tenemos que quitar la parte donde lo manda un usuario esta review, pero nop, no es asi de sencillo. Necesitamos forzar una autenticación falsa si no nos marcara un error de que faltan datos en el request ## [Forcing authentication](https://www.django-rest-framework.org/api-guide/testing/#forcing-authentication)
+Ahora probaremos hacer una review siendo un usuario sin autenticar, esto estará fácil ya que prácticamente tenemos todo echo, solo tenemos que quitar la parte donde lo manda un usuario esta review, pero nop, no es asi de sencillo. Necesitamos forzar una autenticación falsa si no nos marcara un error de que faltan datos en el request [Forcing authentication](https://www.django-rest-framework.org/api-guide/testing/#forcing-authentication)
 
 ![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221116192803.png)
 
@@ -6478,7 +6478,7 @@ Vamos a la terminal y que bonito, todos los test corriendo perfectamente
 
 Muy bien, seguimos con nuestras pruebas, seguírmelos con la prueba para obtener con un GET las reviews de un usuario en particular, si vamos a nuestro archivo de "urls.py" podemos ver la estructura que le podemos dar.
 
-![[IMG/Pasted image 20221117115524.png]]
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221117115524.png)
 
 Entonces debemos crear nuestra función dándole la misma estructura que tenemos con el link, esta funcion la llamaremos ``test_review_user`` le pasaremos el ``cllient.get`` y ahora NO usaremos el reverse, en ves de esto pasaremos el link ``('/watch/reviews/?username' + self.user.username)`` y luego haremos un ``assertEqual`` igualito al anterior que solo cheque que nos regrese un codigo ``HTTP_200_ok``
 
@@ -6491,11 +6491,11 @@ def test_review_user(self):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 ```
 
-![[IMG/Pasted image 20221117120505.png]]
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221117120505.png)
 
 Este review viene de la class ``UserReview(generics.LisAPIView)`` así que no requiere ninguna clase de autenticación o permiso para poder verla así que debemos poder obtener un GET de este link sin problemas, así que vamos a la terminal
 
-![[IMG/Pasted image 20221117120536.png]]
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221117120536.png)
 
 
 ## Test Driven Development - TDD
@@ -6521,6 +6521,65 @@ Ahora ya vimos las 4 desventajas principales pero TDD nos aporta también ventaj
 Una de las ventajas mas importantes de TDD es el hecho que nos fuerza a dividir un problema muy grande a varios mas pequeños, de forma que podemos ir resolviendo estos problemas pequeños uno a uno de forma interactiva incremental para al final acabar resolviendo ese problema mas grande _DIVIDE Y VENCERÁS_  
 
 como sugirió en el curso, yo me vi estos videos para entender un poco mas de lo que es TDD
-https://youtu.be/q6z3jFZl8oI
 
-https://youtu.be/I-IczCsXDks
+
+[QUÉ ES TDD - Test-driven development](https://youtu.be/q6z3jFZl8oI)
+
+[Test Driven Development (TDD): Lo que nunca te han explicado!](https://youtu.be/I-IczCsXDks)
+
+
+## Project Completed
+
+Este es otro video meramente informativo, en el cual se explica el que usemos lo que es el ``pip freeze`` para poder crear nuestro archivo ``requeriment.txt`` el cual nos servirá para cuando compartamos el proyecto o subamos el proyecto a Heroku (nunca mas) o AWS o Digital Ocean, este proveedor pueda reconocer con que paquetes estamos corriendo este proyecto, para esto en la terminal y ya corriendo nuestro entorno virtual, debemos poner el comando ``pip freeze`` el cual nos regresara los paquetes que tenemos actualmente 
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221117140306.png)
+
+Para capturar todo esto en nuestro archivo requirements, debemos darle el comando ``pip freeze > requirements.txt`` y esto nos creara el archivo (tenemos que tener cuidado de estar en nuestra carpeta raíz)
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221117140401.png)
+
+
+Otra cosa que podemos hacer para dejar un poco mas presentable nuestro proyecto, es las importaciones, si vamos a nuestro famoso archivo "watchlist_app/api/views.py" y vemos la parte de hasta arriba vemos que tenemos un espagueti machín de importaciones
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221117140908.png)
+
+Si nos vamos por ejemplo a nuestro import de ``serializers``
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221117141121.png)
+
+Vemos que estamos importando estas 3 class, si presionamos la tecla ``Ctrl`` y damos click en ``serializers`` nos lleva automaticamente al archivo "serializers.py" que es de donde estamos importando esto
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221117141236.png)
+
+Si vemos estamos importando las únicas 3 clases que hay, entonces esto en el archivo "views.py" podemos dejarlo un poco mas limpio, cambiando la importación para decirle que nos importe todo, cambiando nuestro import de esto:
+
+```Python
+...
+from watchlist_app.api.serializers import WatchListSerializer, StreamPlataformSerializer, ReviewSerializer
+...
+class UserReview(generics.ListAPIView):
+
+    serializer_class = ReviewSerializer
+...
+```
+
+a esto y aparte cambiando cada ves que mandamos a llamar el serializador usando ``serializers.`` y la clase a la cual nos estamos refiriendo, algo así :
+
+```Python
+...
+from watchlist_app.api import serializers
+...
+class UserReview(generics.ListAPIView):
+    serializer_class = serializers.ReviewSerializer
+...
+```
+
+Solo tendríamos que refactorizar y añadirle el ``serializers.`` en cada parte donde estamos llamando una de estas funciones, en este caso solo tenemos 3 y pues no se ve la diferencia, de echo parece mas trabajo, pero esto nos servirá al momento de usar alguna importación donde solo nos interese importar elementos individuales y esta tenga cientos de métodos diferentes, por ejemplo en :
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221117141934.png)
+
+Que si damos ``Ctrl`` y click en ella nos muestra que tenemos un montón de class para permissions.
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221117141955.png)
+
+Esto solo es informativo así que regresaremos el código a como estaba, aunque me parece una buena practica.
