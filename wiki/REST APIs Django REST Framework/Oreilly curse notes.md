@@ -6202,3 +6202,271 @@ Checamos la prueba en la terminal
 ![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221116134056.png)
 
 Perfecto todo bien todo correcto y yo que me... (seguro completaron la frase ![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221116134150.png) )
+
+
+
+
+## API Testing - ReviewTestCase
+
+
+
+Empezaremos con las pruebas para hacer nuestro reviews, primero como las veces anteriores, después de crear nuestra class a la cual llamaremos ``ReviewTestCase``, debemos definir nuevamente nuestro setUp, de la misma manera que lo hicimos en el ultimo ya que si checamos nuestro "models.py", necesitamos un usuario para hacer la review y para hacerla necesitamos que sea a una watchlist y esta necesita una streamplataform para poder ser creada
+
+```Python
+...
+class ReviewTestCase(APITestCase):
+
+    def setUp(self):
+        self.user = User.objects.create_user(username="example", password="Passwors@123")
+        self.token = Token.objects.get(user__username=self.user)
+        self.client.credentials(HTTP_AUTHORIZATION='Token ' + self.token.key)
+  
+        self.stream = models.StreamPlataform.objects.create(
+            name= "Netflix",
+            about= "#1 Streaming Plataform",
+            website= "http://www.netflix.com",
+        )
+        self.watchlist = models.WatchList.objects.create(
+            plataform=self.stream,
+            title= "Example Movie",
+            storyline="Example Story",
+            active= True
+        )
+```
+
+Con esto ya podemos probar todo lo que puede hacer un usuario, que en este caso podrá hacer CREATE, READ, UPDATE y DELETE ("CRUD"), entonces declaramos nuestra función, a la cual llamaremos ``test_review_create`` para probar que puede crear un review, entonces como todas las veces anteriores primero creamos nuestro ``data`` el cual vamos a pasarle los datos que declaramos en "model.py" para poder crear un review
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221116185432.png)
+
+Luego creamos nuestro response diciendo le que el client sera un post, con reverse apuntamos a ``review-create`` y le pasaremos como argumento el id de la watchlist que creamos en el setup, luego le pasamos nuestro data
+
+Después de eso ahora hacemos nuestro ``assertEqual`` checando que nos de como respuesta ``HTTP_201_CREATED``
+
+```Python
+...
+    def test_review_create(self):
+
+        data = {
+
+            "review_user" :self.user,
+
+            "rating" : 5,
+
+            "description": "Great Movie!",
+
+            "watchlist" : self.watchlist,
+
+            " active" : True
+
+        }
+
+        response = self.client.post(reverse('review-create', args=(self.watchlist.id,)), data)
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+```
+
+Vamos a la terminal y corremos las pruebas
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221116190334.png)
+
+Si recordamos un poco nuestra configuración que hicimos, le dijimos a nuestra api que NO podemos dejar que un usuario pueda crear mas de 1 review en una sola watchlist, entonces que pasa si en la prueba le ponemos que cree otro
+
+```Python
+...
+        response = self.client.post(reverse('review-create', args=(self.watchlist.id,)), data)
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+        response = self.client.post(reverse('review-create', args=(self.watchlist.id,)), data)
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+```
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221116191446.png)
+
+Esto nos genera un error y nos dice que nos regresa el status 429, si vamos a la documentación [Client Error - 4xx](https://www.django-rest-framework.org/api-guide/status-codes/#client-error-4xx) nos dice que a hehco demasiados request, ya que solo le permitimos uno por usuario de este tipo
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221116191539.png)
+
+Entonces solo cambiemos el request que nos da para asi ya tener otra prueba dentro de esta misma, de echo podemos agregarle el test que agregamos donde comprobamos si es el mismo nombre, pero ahora de la review y el contador de reviews
+
+```Python
+...
+class ReviewTestCase(APITestCase):
+  
+    def setUp(self):
+        self.user = User.objects.create_user(username="example", password="Passwors@123")
+        self.token = Token.objects.get(user__username=self.user)
+        self.client.credentials(HTTP_AUTHORIZATION='Token ' + self.token.key)
+  
+        self.stream = models.StreamPlataform.objects.create(
+            name= "Netflix",
+            about= "#1 Streaming Plataform",
+            website= "http://www.netflix.com",
+        )
+        self.watchlist = models.WatchList.objects.create(
+            plataform=self.stream,
+            title= "Example Movie",
+            storyline="Example Story",
+            active= True
+        )
+    def test_review_create(self):
+        data = {
+            "review_user" :self.user,
+            "rating" : 5,
+            "description": "Great Movie!",
+            "watchlist" : self.watchlist,
+            " active" : True
+        }
+        response = self.client.post(reverse('review-create', args=(self.watchlist.id,)), data)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(models.Review.objects.count(), 1)
+        self.assertEqual(models.Review.objects.get().rating, 5)
+  
+        response = self.client.post(reverse('review-create', args=(self.watchlist.id,)), data)
+        self.assertEqual(response.status_code, status.HTTP_429_TOO_MANY_REQUESTS)
+```
+
+Ahora probaremos hacer una review siendo un usuario sin autenticar, esto estará fácil ya que prácticamente tenemos todo echo, solo tenemos que quitar la parte donde lo manda un usuario esta review, pero nop, no es asi de sencillo. Necesitamos forzar una autenticación falsa si no nos marcara un error de que faltan datos en el request ## [Forcing authentication](https://www.django-rest-framework.org/api-guide/testing/#forcing-authentication)
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221116192803.png)
+
+Esto nos ayudara a crear un usuario Fake por asi decirlo y este pasara como datos 
+``force_authenticate(request, user=None, token=None)`` 
+
+entonces hagamos nuestra función llamada ``test_review_create_anauth`` le pasamos el data igual al que hemos estado haciendo y usamos nuestro ``force_authenticate`` y le decimos que nuestro ``user=None`` , luego hacemos nuestro response igualito y en el ``assertEqual`` le decimos que el status que regresara sera el ``HTTP_401_UNAUTHORIZED`` ya que es un usuario anónimo y según nuestros permisos no puede crear un review nadie sin estar registrado
+
+```Python
+...
+    def test_review_create_anauth(self):
+
+        data = {
+
+            "review_user": self.user,
+
+            "rating" : 5,
+
+            "description": "Great Movie!",
+
+            "watchlist" : self.watchlist,
+
+            " active" : True
+
+        }
+
+  
+
+        self.client.force_authenticate(user=None)
+
+        response = self.client.post(reverse('review-create', args=(self.watchlist.id,)), data)
+
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+```
+
+Corremos nuestras pruebas en la terminal
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221116193431.png)
+
+Perfecto, según el CRUD ya pudimos probar el CREATE y READ nos falta el UPDATED o PUT pa los cuates, entonces hagamos nuestra función llamada ``test_review_update`` le pasamos el data anterior pero le cambiamos el rating por ejemplo, la descripción le añadimos un "updated" y el active lo pasamos a false, por ultimo ya saben, el response pasándole el ``client.put`` y el reverse hace objetivo a nuestro link de ``'review-detail'`` este a su ves necesita un argumento para indicarle que review es el que queremos modificar entonces se lo pasamos y luego el data, ya solo nos resta hacer nuestro assertEqual que compare que nos de ``HTTP_200_OK``... aaaaaaaaaaa sonaba fácil pero no, para poder modificar un review tenemos que crear otro review, entonces hagamos uno manualmente en nuestro setUp de nuestra ``class ReviewTestCase`` (así como creamos manualmente nuestra plataforma de stream y nuestra watchlist)
+
+```Python
+...
+class ReviewTestCase(APITestCase):
+  
+    def setUp(self):
+...
+        self.review = models.Review.objects.create(
+            review_user=self.user,
+            rating= 5,
+            description= "Great Movie!",
+            watchList= self.watchlist,
+            active= True
+        )
+...
+  
+    def test_review_update(self):
+        data = {
+            "review_user": self.user,
+            "rating" : 4,
+            "description": "Great Movie! - Updated",
+            "watchlist" : self.watchlist,
+            " active" : False
+        }
+  
+        response = self.client.post(reverse('review-create', args=(self.review.id,)), data)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST
+```
+
+Parecería que ya esta pero nooooooooo, esto nos dará un error y esto se debe a que nos dara un error 
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221116202145.png)
+
+Si checamos esa linea de codigo es del ``test_review_create`` y es porque nos esta dando el error de que ya tenemos un review cread (el que acavamos de crear manualmente) entonces nos salta el error desde alli, para soluciuonarlo entonces devemos crear otra watchlist y a esta hacerle el review que revisaremos en este ultimo test y esta misma la pasaremos en el review que estamos creando
+
+```Python
+...
+class ReviewTestCase(APITestCase):
+    def setUp(self):
+...
+
+        self.watchlist2 = models.WatchList.objects.create(
+            plataform=self.stream,
+            title= "Example Movie",
+            storyline="Example Story",
+            active= True
+        )
+        self.review = models.Review.objects.create(
+            review_user = self.user,
+            rating = 5,
+            description = "Great Movie!",
+            watchList=self.watchlist2,
+            active= True
+        )
+```
+
+Parece que ya quedo pero otra ves no
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221116202850.png)
+
+Nos da un error ya que ahora tenemos dost reviews, así que solo vallamos a esa linea pongamosle que ahora tendremos 2
+
+```Python
+self.assertEqual(models.Review.objects.count(), 2)
+```
+
+y...
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221116203206.png)
+
+Otro ``$%Q"#$%`` error, ahora en la linea 127, este método ya no es valido ahora porque ahora tenemos multiples objetos, asi que solo coméntenosla
+
+```Python
+# self.assertEqual(models.Review.objects.get().rating, 5)
+```
+
+Veamos si...
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221116203512.png)
+
+A PORFIN 
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%20Aplausos-2.gif)
+
+
+Todo este relajo sirvió para ver porque sirven las pruebas, sirve para que podamos automatizar la creación de estos reviews en otro watchlist y que quede todo bien configurado para todas las pruebas ya que sirvió checar que las que se rompían eran las anteriores.
+
+Ahora solo nos falta el READ del CRUD y el DELETE, hagamos la función ``test_review_list`` y ``test_review_ind``, pa aprovechar los get, en la primera obtendremos la lista de reviews de una watchlist y en la segunda un get de una review en particular, les pasamos sus response con lo fácil que es obtener un get, en el reverse hacemos objetivo a ``review-list`` y ``review-detail`` respectivamente y le pasamos como argumento el ``watchlist.id`` y a la otra el ``review.id`` esto nos tendrá que regresar en ambas ocasiones un status code en el ``assertEqual`` igual a ``HTTP_200_OK`` 
+
+```Python
+...
+    def test_review_list(self):
+        response = self.client.get(reverse('review-list', args=(self.watchlist.id,)))
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+	def test_review_ind(self):
+        response = self.client.get(reverse('review-detail', args=(self.review.id,)))
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+```
+
+Vamos a la terminal y que bonito, todos los test corriendo perfectamente
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221116205208.png)
