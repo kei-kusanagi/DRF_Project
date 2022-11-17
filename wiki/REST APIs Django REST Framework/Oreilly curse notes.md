@@ -6522,4 +6522,5 @@ Una de las ventajas mas importantes de TDD es el hecho que nos fuerza a dividir 
 
 como sugirió en el curso, yo me vi estos videos para entender un poco mas de lo que es TDD
 https://youtu.be/q6z3jFZl8oI
+
 https://youtu.be/I-IczCsXDks
