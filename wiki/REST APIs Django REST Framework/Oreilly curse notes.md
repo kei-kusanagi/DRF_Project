@@ -6508,7 +6508,7 @@ Vamos a cruzar los dedos 🤞 y correr nuestras pruebas
 ![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/oh.gif)
 
 
-Perfecto, si corrió nuestra prueba, ahora vallamos al siguiente capitulo (😅 no cierto, aquí acabo el curso solo que no había echo esta prueba que dejo de tarea, hay ya me dio sentimiento 😌 ).
+Perfecto, si corrió nuestra prueba, ahora vallamos al siguiente capitulo (😅 no cierto, aquí acabo el curso solo que no había hecho esta prueba que dejo de tarea, hay ya me dio sentimiento 😌 ).
 
 
 
@@ -6519,7 +6519,7 @@ Muy bien, seguimos con nuestras pruebas, seguírmelos con la prueba para obtener
 
 ![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221117115524.png)
 
-Entonces debemos crear nuestra función dándole la misma estructura que tenemos con el link, esta funcion la llamaremos ``test_review_user`` le pasaremos el ``cllient.get`` y ahora NO usaremos el reverse, en ves de esto pasaremos el link ``('/watch/reviews/?username' + self.user.username)`` y luego haremos un ``assertEqual`` igualito al anterior que solo cheque que nos regrese un codigo ``HTTP_200_ok``
+Entonces debemos crear nuestra función dándole la misma estructura que tenemos con el link, esta función la llamaremos ``test_review_user`` le pasaremos el ``cllient.get`` y ahora NO usaremos el reverse, en ves de esto pasaremos el link ``('/watch/reviews/?username' + self.user.username)`` y luego haremos un ``assertEqual`` igualito al anterior que solo cheque que nos regrese un codigo ``HTTP_200_ok``
 
 ```Python
 ...
