@@ -6473,6 +6473,47 @@ Vamos a la terminal y que bonito, todos los test corriendo perfectamente
 ![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221116205208.png)
 
 
+Por ultimo nos deja la tarea de hacer un test para borrar un reviews como usuario, entonces hasta mero abajo creamos nuestro test, le llamaremos ``test_review_delete`` le vamos a pasar un data, este sera el usuario únicamente ya que por las restricciones le pusimos que solo el dueño del review podría borrarlo, por otra parte tambien tenemos que modificar nuestro archivo de settings, ya que le pusimos que solo podria hacer un usuario registrado 2 consultas de review-detail por dia, entonces vamos a ponerle 3
+
+```Python
+...
+'DEFAULT_THROTTLE_RATES': {
+        'anon': '3/day',
+        'user': '5/day',
+        'review-create': '1/day',
+        'review-list': '10/day',
+        'review-detail': '3/day',
+    },
+```
+
+Ya que modificamos esto seguimos con el test, el client sera ``delete`` el reverse apuntara ``'review-detail'`` , le pasaremos como argumentos el id que estamos queriendo borrar que en este caso sera el que declaramos en el setup entonces le decimos ``(self.review.id,)`` (no olvidemos esa coma de el final) y le pasamos también el data,
+
+Ahora hacemos nuestro ``assertEqual`` diciéndole que compruebe que nos regrese el ``HTTP_204_NO_CONTENT`` ya que si recordamos en el capitulo donde probamos manualmente el borrar un review nos regresaba ese código de status, ya que fue el que declaramos en "watchlist_app/api/views.py"
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221118143737.png)
+Entonces nuestra prueba quedaría codificada asi:
+
+```Python
+...
+    def test_review_delete(self):
+        data = {
+            "review_user": self.user,
+        }
+        response = self.client.delete(reverse('review-detail', args=(self.review.id,)), data)
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+```
+
+Vamos a cruzar los dedos 🤞 y correr nuestras pruebas
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221118143813.png)
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/oh.gif)
+
+
+Perfecto, si corrió nuestra prueba, ahora vallamos al siguiente capitulo (😅 no cierto, aquí acabo el curso solo que no había echo esta prueba que dejo de tarea, hay ya me dio sentimiento 😌 ).
+
+
+
 ## API Testing - UserTestCase
 
 
