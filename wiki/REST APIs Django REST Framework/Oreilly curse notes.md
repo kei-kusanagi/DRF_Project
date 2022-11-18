@@ -6204,10 +6204,7 @@ Checamos la prueba en la terminal
 Perfecto todo bien todo correcto y yo que me... (seguro completaron la frase ![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221116134150.png) )
 
 
-
-
 ## API Testing - ReviewTestCase
-
 
 
 Empezaremos con las pruebas para hacer nuestro reviews, primero como las veces anteriores, después de crear nuestra class a la cual llamaremos ``ReviewTestCase``, debemos definir nuevamente nuestro setUp, de la misma manera que lo hicimos en el ultimo ya que si checamos nuestro "models.py", necesitamos un usuario para hacer la review y para hacerla necesitamos que sea a una watchlist y esta necesita una streamplataform para poder ser creada
@@ -6491,6 +6488,7 @@ Ya que modificamos esto seguimos con el test, el client sera ``delete`` el rever
 Ahora hacemos nuestro ``assertEqual`` diciéndole que compruebe que nos regrese el ``HTTP_204_NO_CONTENT`` ya que si recordamos en el capitulo donde probamos manualmente el borrar un review nos regresaba ese código de status, ya que fue el que declaramos en "watchlist_app/api/views.py"
 
 ![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221118143737.png)
+
 Entonces nuestra prueba quedaría codificada asi:
 
 ```Python
