@@ -6603,69 +6603,141 @@ Ahora vamos a nuestro archivo "watchlist_app/views.py" donde probamos haciendo n
 
 Entonces borremos todo esto
 
-![[IMG/Pasted image 20221117182126.png]]
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221117182126.png)
 
 Para continuar vallamos a "watchlist_app/api/urls.py" y limpiemos un poco esto
 
-![[IMG/Pasted image 20221117182258.png]]
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221117182258.png)
 
 Comencemos borrando los path's que ya comentamos por si acaso y ya no volvimos a usar, ahora si vemos nuestras importaciones podemos hacer lo que hablamos hace poco de limpiar un poco las importaciones y mas esta de views ya que nosotros mismos la creamos y vamos a importar todo lo que esta alli, entonces cambiemos de esto
 
-![[IMG/Pasted image 20221117182509.png]]
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221117182509.png)
 
 a esto, recuerden poner antes de donde se usen estas vistas ``views.``
 
-![[IMG/Pasted image 20221117182731.png]]
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221117182731.png)
 
 Ahora ya limpiecito esto vamos a nuestro archivo "watchlist_app/api/views.py" este necesita un bueeeeeeen de limpieza
 
 
-![[IMG/Pasted image 20221117183907.png]]
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221117183907.png)
 
 Lo primero que haremos sera limpiar las importaciones, empezando con una erramienta de VisualStudio que nos permitira acomodar todas estas segun si son de RESTFramework o nuestras apps etc, hacemos click derecho en este archivo y le damos donde dice "Ordenar las importaciones"
 
-![[IMG/Pasted image 20221117184111.png]]
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221117184111.png)
 
 Y como por arte de magia pasamos de ese hermoso desorden a esto
 
-![[IMG/Pasted image 20221117184324.png]]
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221117184324.png)
 
 Tambien iremos removiendo todo eso que comentamos que estubo bien para aprender pero ya no lo volvimos a usar
 
-![[IMG/Pasted image 20221117184757.png]]
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221117184757.png)
 
 Los filtros de búsqueda que usamos también, que comentamos por si acaso pero pues igual allí se quedaron nada mas
 
-![[IMG/Pasted image 20221117184906.png]]
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221117184906.png)
 
 Ahora, tenemos la opción para ver nuestra lista de Watch ``WatchListAV`` y ``WatchListGV`` así que podemos remover la ``WatchListGV`` ya que esta solo la usamos para probar el Filter, Search y Order
 
-![[IMG/Pasted image 20221117185334.png]]
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221117185334.png)
 
 Entonces también vallamos a "watchlist_app/api/views.py" y removamos esto
 
-![[IMG/Pasted image 20221117185702.png]]
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221117185702.png)
 
 Tambien otra cosa que esta de mas aquí mismo es la class ``StreamPlataformAV`` así que démosle cuello también
 
-![[IMG/Pasted image 20221117190036.png]]
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221117190036.png)
 
 Otra que también nos sobra es ``StreamPlataformDetailAV``
 
-![[IMG/Pasted image 20221117190231.png]]
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221117190231.png)
 
 Ahora para seguir con la limpieza, es una buena practica importar solo las cosas que necesitamos, pero en caso de nuestros propios serializadores pues no tiene caso que importemos cada uno individualmente ya que pues todos los creamos nosotros y si estamos importando 3 es porque solo esos tres tenemos, entonces hagamos como al principio e importemos todos y luego ya los llamamos dentro de la función especifica, en este caso esto lo haremos con las que nos puso automaticamente hasta abajo el acomodo de importaciones ya que estas son las que nosotros hicimos, empezando con ``pagination``
 
-![[IMG/Pasted image 20221117190836.png]]
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221117190836.png)
 
 De esta ya no estamos usando ninguna ya que borramos el ``WatchListGV`` asi que bye, sigamos con ``serializers`` que es el que tenemos un buen
 
-![[IMG/Pasted image 20221117191440.png]]
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221117191440.png)
 
 Listo ya se ve mas bonito, sigamos con las demas, ya que tengamos esto veremos algo muy similar
 
-![[IMG/Pasted image 20221117192034.png]]
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221117192034.png)
 
 Todas estas importaciones se hacen de ``from watchlist_app.api`` entonces las podemos poner todas en una simple linea 
 
-![[IMG/Pasted image 20221117192138.png]]
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221117192138.png)
+
+perfecto, se ve mucho mas limpio, ahora vallamos a nuestro archivo "user_app/api/urls.py" y se ve bastante limpio también, a lo mucho seria cambiar de lugar el link de registro, luego login y al ultimo logout para que lleve una secuencia
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221118103817.png)
+
+Le dejo los comentarios sobre tokens ya que estos siento que si podría llegar a usarlos mas adelante, ahora para seguir la limpieza vamos a nuestro archivo "user_app/api/views.py" y vemos que se ve bien, a lo mucho necesitaría un acomodo automático de las importaciones y dejamos de la misma manera lo de JWT authentication
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221118104233.png)
+
+Ya por ultimo en user__app vamos a "user_app/api/serializers.py" y pues todo esta bien, vamos al otro archivo de serializers que tenemos el "watchlist_app/api/serializers.py" y removamos igual toda la paja que a no nos sirvió
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221118104947.png)
+
+Mucho mejor
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221118105116.png)
+
+Ahora vamos a "watchlist_app/api/urls.py" y veamos que podemos mejorar
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221118105853.png)
+
+Vamos a cambiar un poco los links que tenemos, empezando por el de ``'movie-list'`` al principio del curso usabamos el link ``/movie/list`` para obtener la lista de peliculas entonces podemos dejarlo  vacio para que al momento que pongamos ``/watch/`` nos muestre la lista de peliculas en automatico y se vea un poco mas ordenado, tambien haremos un cambio en los links de ``'review-create'`` ``'review-list'`` y ``'review-detail'`` para que parescan un poco mas a lo que tenemos en amazon, por ejemplo si vamos a algun articulo y vemos la seccion de reviews
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221118111014.png)
+
+Vemos en la parte de arriba la estructura del link 
+``https://www.amazon.com.mx/Microsoft-Game-Studios-Control-Inalambrico/product-reviews/B09GHQVX3N/ref=cm_cr_dp_d_show_all_btm?ie=UTF8&reviewerType=all_reviews``
+
+Si vemos viene como ``/product-reviews/`` y luego el id del producto ``B09GHQVX3N/`` asi ya tenemos conformado el link de ver reviews, pero el de crear esta un poco diferente al nuestro
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221118111320.png)
+
+``https://www.amazon.com.mx/review/create-review/?ie=UTF8&channel=reviews-product&asin=B09GHQVX3N``
+
+Si vemos este viene ``/review/`` y luego el ``reate-review/`` entonces podemos cambiar el nuestro de
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221118111443.png)
+
+a esto
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221118111503.png)
+
+Para que sea un poco mas consistente en la estructura que estamos teniendo, de igual forma cambiaremos nuestro link de filtro para que no se confunda, ya que actualmente tenemos que acceder con ``reviews/`` + ``username/`` entonces lo cambiaremos para que sea ``user-reviews/`` + ``username/``
+
+Ya por ultimo también cambiamos el de ``'review-detail'``
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221118111941.png)
+
+Para que empate con la estructura del link, lo habíamos dejado en singular porque solo mostraría un review pero así se ve mejor.
+
+
+Teniendo ya al parecer todos nuestros cambios hechos, el 100% de las veces corremos el riesgo de que se rompa nuestro código por algo que hayamos movido, asi que en ves de revisar linea por linea, o corres simplemente el servidor (porque esto literalmente si nos deja correrlo pero no sabremos del error hasta probar cada uno de los links que tenemos) pues correremos nuestros "test" 
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221118112334.png)
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221118112424.png)
+
+Ok que no cunda el pánico, vamos a checar de que trata el error, dice que es en nuestro ``test_review_user`` vamos entonces a "user_app/tests.py"
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221118112745.png)
+
+Vemos que el error esta aquí, ya que nosotros cambiamos el url al cual se esta refiriendo, entonces simplemente cambiémoslo y corramos la prueba
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221118112913.png)
+
+
+Muy bien, ya lo ultimo que nos falta por hacer es que todo esto paresca un dominio, algo ais como lo que usa google o facebook, si queremos usar sus api's no seria ``www.google.com/register`` seria algo mas como ``www.google.com/api/register`` entonces vallamos a "watchmate/urls.py" y simplemente modifiquemos nuestros dos pats, el de "watch" y el de "account" y listo
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221118114035.png)
+
+Ahora, cada que hagamos un cambio es buena idea correr las pruebas para checar que este cambio no nos quebró el código, como en este caso, que nuevamente es el mismo problema que tuvimos anteriormente, solo modifiquemos el link que le pasamos en la prueba y listo
+
+![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221118114254.png)
+
+Y bueno, eso ah sido todo en el curso, aun nos falta completar una tarea así que aun no acabamos
