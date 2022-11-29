@@ -3755,7 +3755,7 @@ Ya teniendo esto ahora si vamos a nuestro archivo "user_app/api/urls.py" y creem
 from django.urls import path
 from rest_framework.authtoken.views import obtain_auth_token
 
-urlspatterns = [
+urlpatterns = [
     path('login/', obtain_auth_token, name='login')
 ]
 ```
@@ -3770,9 +3770,11 @@ Perfecto, con esto nos esta regresando un token como si hubiéramos echo log in,
 ![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221103125153.png)
 
 por ejemplo si le mandamos el password mal me va a decir 
+
 ![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221103125231.png)
 
 Pero a ver con este token ya nos permitira por ejemplo crear reviews pasandoselo dentro de nuestras peticiones, ais que hagamos una prueba, vallamos a nuestro link para crear
+
 ![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221103125432.png)
 
 http://127.0.0.1:8000/watch/3/review-create
@@ -3798,6 +3800,7 @@ Configurándolo como un post, recordando en el Header poner la Authorization y n
 ## Token Authentication - Part 4 (Registration)
 
 Bueno ya teniendo nuestro link para que nos regrese los tokens, debemos hacer nuestro registro, para esto usaremos los mismos campos que ya tenemos creados de nuestro modelos anteriormente así que no debemos sobre escribirlos (como quien dice ya REST framework otra ves nos da ya las herramientas que necesitamos respecto a usuarios, pero si queremos poner algunos campos de mas podemos crearlos dentro de nuestro archivo models.py)
+
 ![image](/wiki/REST%20APIs%20Django%20REST%20Framework/IMG/Pasted%20image%2020221103142419.png)
 
 
